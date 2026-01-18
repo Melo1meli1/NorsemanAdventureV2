@@ -1,1 +1,1 @@
-# bacheloroppgave_grSA_2026
+# Bacheloroppgave_grSA_2026
