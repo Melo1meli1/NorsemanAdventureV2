@@ -1,17 +1,9 @@
 ---
-name: User Story
-title: "[US.XX] User Story Name"
+name: Bug Report
+about: Report a bug or unexpected behavior
+title: "[BUG] Brief description of the bug"
 ---
 
 ### Description
-**As** [role]
-**I want** [action]
-**so that** [value/purpose]
+What happened?
 
-### Acceptance Criteria
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-### Related to
-* Epic: [Mention Epic here]

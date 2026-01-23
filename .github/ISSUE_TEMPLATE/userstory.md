@@ -1,5 +1,6 @@
 ---
 name: User Story
+about: Implement a functional User Story from the requirements/vision document
 title: "[US.XX] User Story Name"
 ---
 
