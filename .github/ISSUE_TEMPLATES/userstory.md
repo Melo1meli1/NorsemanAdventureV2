@@ -1,18 +1,17 @@
 ---
 name: User Story
-title: "[US.XX] Navn på User Story"
+title: "[US.XX] User Story Name"
 ---
 
-### Beskrivelse
-**Som** [rolle]
-**ønsker jeg** [handling]
-**slik at** [verdi/formål]
+### Description
+**As** [role]
+**I want** [action]
+**so that** [value/purpose]
 
-### Akseptansekriterier
-*(Kopier direkte fra kravdokumentet og konverter til sjekkliste)*
-- [ ] Kriterie 1
-- [ ] Kriterie 2
-- [ ] Kriterie 3
+### Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
 
-### Relatert til
-* Epic: [Nevn Epic her]
+### Related to
+* Epic: [Mention Epic here]
