@@ -1,7 +1,7 @@
 ---
-name: Technical Task
-about: Teknisk underoppgave (Sub-issue) for koding
-title: "[TASK] <Kort beskrivelse>"
+name:  Task
+about: Techinal Sub-issue
+title: "[TASK] <Short description>"
 ---
 
 ### Short description of the task
