@@ -1,0 +1,26 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  sonarcloud:
+    # Disabled until test coverage is set up
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=shizaahmad27_bacheloroppgave_grSA_2026
+            -Dsonar.organization=shizaahmad27
+            -Dsonar.sources=na
