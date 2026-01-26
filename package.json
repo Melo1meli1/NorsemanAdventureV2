@@ -4,9 +4,12 @@
   },
   "devDependencies": {
     "eslint": "^9",
+    "eslint-plugin-react": "^7",
+    "globals": "^15",
     "husky": "^9",
     "lint-staged": "^16",
-    "prettier": "^3"
+    "prettier": "^3",
+    "typescript-eslint": "^8"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
