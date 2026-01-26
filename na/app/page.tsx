@@ -6,7 +6,7 @@ export default async function Home() {
   return (
     <main className="p-8">
       <h1 className="text-xl font-bold">Supabase connected</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <pre>{JSON.stringify(    data, null, 2)}</pre>
     </main>
   )
 }
