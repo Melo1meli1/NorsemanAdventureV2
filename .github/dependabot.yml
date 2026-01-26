@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Holder dependencies oppdatert, men ignorerer store endringer automatisk
+    open-pull-requests-limit: 10
