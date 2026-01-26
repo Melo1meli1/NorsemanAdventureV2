@@ -1,5 +1,18 @@
 {
   "dependencies": {
     "@supabase/supabase-js": "^2.91.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ],
+    "!package-lock.json": []
+  },
+  "scripts": {
+    "prepare": "husky"
   }
 }
