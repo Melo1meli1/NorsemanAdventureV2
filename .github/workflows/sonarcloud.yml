@@ -6,12 +6,10 @@ on:
   pull_request:
 
 jobs:
-  analyze:
+  sonarcloud:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -21,7 +19,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=shizaahmad27
-            -Dsonar.organization=shizaahmad27_bacheloroppgave_grSA_2026
+            -Dsonar.projectKey=shizaahmad27_bacheloroppgave_grSA_2026
+            -Dsonar.organization=shizaahmad27
             -Dsonar.sources=na
-            -Dsonar.projectBaseDir=.

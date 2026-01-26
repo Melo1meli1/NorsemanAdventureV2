@@ -1,6 +1,12 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.91.1"
+    "@supabase/supabase-js": "^2.93.1"
+  },
+  "devDependencies": {
+    "eslint": "^9",
+    "husky": "^9",
+    "lint-staged": "^16",
+    "prettier": "^3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
