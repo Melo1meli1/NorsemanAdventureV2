@@ -119,27 +119,27 @@ export default function AdminDashboardPage() {
             {kpiCards.map((card) => (
               <article
                 key={card.label}
-                className="flex transform flex-col gap-3 rounded-2xl border border-orange-500/30 bg-neutral-900/90 px-5 py-4 transition hover:-translate-y-0.5 hover:border-orange-400/60 hover:bg-neutral-900"
+                className="flex transform flex-col justify-center rounded-2xl border border-orange-500/30 bg-neutral-900/90 px-6 py-4 transition hover:-translate-y-0.5 hover:border-orange-400/60 hover:bg-neutral-900"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <span
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium ${
+                    className={`flex h-12 w-12 items-center justify-center rounded-full ${
                       card.tone === "orange"
-                        ? "bg-orange-500/20 text-orange-300"
+                        ? "bg-orange-500/20 text-orange-500"
                         : card.tone === "green"
-                          ? "bg-emerald-500/20 text-emerald-300"
+                          ? "bg-green-500/20 text-green-400"
                           : card.tone === "yellow"
-                            ? "bg-amber-500/20 text-amber-300"
-                            : "bg-sky-500/20 text-sky-300"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-blue-500/20 text-blue-400"
                     }`}
                   >
                     ●
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-2xl font-semibold text-neutral-50">
+                    <span className="text-2xl font-bold text-neutral-50">
                       {card.value}
                     </span>
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-sm text-neutral-400">
                       {card.label}
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Latest orders */}
-          <section className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/80">
+          <section className="overflow-hidden rounded-2xl border border-orange-500/20 bg-neutral-900/90">
             <header className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
               <h2 className="text-sm font-semibold md:text-base">
                 Siste bestillinger
@@ -189,11 +189,21 @@ export default function AdminDashboardPage() {
                     <span className="font-medium text-neutral-50">
                       {order.name}
                     </span>
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-sm text-neutral-400">
                       {order.tour}
                     </span>
                   </div>
-                  <span className="text-xs">{order.status}</span>
+                  <span className="text-xs font-medium">
+                    {order.status === "Bekreftet" ? (
+                      <span className="rounded-full bg-orange-500/20 px-2 py-1 text-orange-200">
+                        {order.status}
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-neutral-800 px-2 py-1 text-neutral-300">
+                        {order.status}
+                      </span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
