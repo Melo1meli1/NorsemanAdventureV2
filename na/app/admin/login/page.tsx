@@ -4,11 +4,11 @@ import Image from "next/image";
 
 export default function AdminLoginPage() {
   return (
-    <main className="bg-page-background flex min-h-screen items-center justify-center px-4">
+    <main className="bg-pg-background flex min-h-screen items-center justify-center px-4">
       {/* Login card */}
       <section
         aria-labelledby="admin-login-title"
-        className="flex w-full max-w-md flex-col gap-6 rounded-2xl border border-neutral-800 bg-neutral-900/90 px-8 py-10 shadow-xl shadow-black/40"
+        className="bg-card flex w-full max-w-md flex-col gap-6 rounded-2xl border border-neutral-800 px-8 py-10 shadow-xl shadow-black/40"
       >
         {/* Logo / brand */}
         <div className="flex flex-col items-center gap-3">
