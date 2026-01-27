@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function AdminLoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
+    <main className="bg-page-background flex min-h-screen items-center justify-center px-4">
       {/* Login card */}
       <section
         aria-labelledby="admin-login-title"

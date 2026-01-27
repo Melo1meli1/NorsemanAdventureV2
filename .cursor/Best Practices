@@ -1,0 +1,139 @@
+## Next.js + Supabase – Best Practices
+
+### 1. Arkitekturvalg
+
+- **App Router**
+  - Bruk Next.js **App Router** (`app/`), ikke Pages Router (`pages/`).
+  - Dette er den moderne og anbefalte måten å bygge Next.js-applikasjoner på.
+
+- **Server Components**
+  - Hent data fra Supabase direkte i **Server Components** med `async/await`.
+  - Unngå å hente data i `useEffect` på klienten når det ikke er nødvendig.
+  - Fordeler:
+    - Raskere førsteinnlasting (SSR/SSG).
+    - Bedre sikkerhet (ingen eksponering av nøkler i klientkode).
+
+- **Server Actions**
+  - Bruk **Next.js Server Actions** for alle skjemaer og mutasjoner:
+    - F.eks. US.01 (registrering), US.02 (innlogging) osv.
+  - Unngå å lage manuelle API-endepunkter under `pages/api/...` når det ikke trengs.
+  - Fordeler:
+    - Mindre boilerplate.
+    - Tett kobling mellom UI og logikk.
+    - Bedre type-sikkerhet og enklere feilhåndtering.
+
+---
+
+### 2. Supabase – Type Safety og Struktur
+
+- **Type Safety (viktig!)**
+  - Kjør `supabase gen types typescript` automatisk (f.eks. via npm-script).
+  - Ikke skriv manuelle TypeScript-interfaces for databasen.
+  - La Supabase generere typer basert på tabellene dine.
+  - Fordeler:
+    - Ved endringer i databasen vil TypeScript-kompileringen feile der typene ikke lenger stemmer.
+    - Viser **robusthet** og reduserer runtime-feil.
+
+- **Supabase Auth**
+  - Bruk `@supabase/ssr` (**Supabase Auth Helpers for Next.js**).
+  - Dette håndterer cookies og session sikkert på serveren.
+  - Unngå å bygge egen sesjonshåndtering når Supabase kan gjøre det for deg.
+
+---
+
+### 3. Row Level Security (RLS) – Sikkerhet (US.22 & US.08)
+
+- **Aktiver RLS**
+  - Slå på **Row Level Security** på relevante tabeller (f.eks. `tours`, `bookings`).
+
+- **Eksempelpolicy for `tours`-tabellen**
+  - **Lesetilgang (SELECT)**: Tillat lesing for alle (offentlig liste over turer).
+  - **Skrivetilgang (INSERT/UPDATE/DELETE)**:
+    - Kun autentiserte brukere med rolle `admin`.
+  - Dokumentér disse policyene eksplisitt i rapporten:
+    - Hvilke tabeller har RLS?
+    - Hvilke regler gjelder for hvem?
+
+---
+
+### 4. Konkrete løsninger for Visjonsdokumentet
+
+#### 4.1 US.05 – Bildehåndtering (Drag & Drop)
+
+- Bruk **`react-dropzone`** for drag & drop-opplasting.
+- Last opp bilder direkte til **Supabase Storage**.
+- Lagre bildet sin URL i `tours`-tabellen.
+- Gevinst:
+  - Brukervennlig og moderne bildeopplasting.
+  - Skalerbar lagring og enkel integrasjon med databasen.
+
+#### 4.2 US.12 – Sanntidsoversikt
+
+- Bruk **Supabase Realtime**:
+  - Abonner på endringer i `bookings`-tabellen.
+  - Når en ny booking kommer inn, oppdateres admin-dashboardet automatisk (uten refresh).
+- Gevinst:
+  - Ekte sanntid, vil imponere sensor.
+  - Underbygger visjonsdokumentets krav til responsivitet og moderne teknologi.
+
+#### 4.3 US.07 – Dynamisk Booking & Ventelister
+
+- Bruk **database-transaksjoner** eller **Supabase RPC (stored procedures)**:
+  - Sikre at to personer ikke kan booke den siste plassen samtidig.
+  - Implementer logikk for:
+    - Reduksjon av antall ledige plasser.
+    - Flytting til venteliste når kapasitet er nådd.
+- Gevinst:
+  - Viser forståelse for **datakonsistens (ACID)**.
+  - Unngår race conditions og dobbeltbookinger.
+
+---
+
+### 5. Kodekvalitet & Vedlikeholdbarhet
+
+- **Husky & lint-staged**
+  - Sett opp **Husky** med pre-commit hook.
+  - Kjør **lint-staged** på alle endrede filer før commit:
+    - For `.js`, `.ts`, `.tsx`:
+      - `eslint --fix`
+      - `prettier --write`
+    - For `.json`, `.css`, `.md`:
+      - `prettier --write`
+  - Gevinst:
+    - Ingen commits med brutt stil eller enkle feil.
+    - Mindre støy i pull requests.
+    - Koden i `main` følger alltid prosjektets standard.
+
+- **Komponentstruktur**
+  - Hold komponentene **små** og fokusert.
+  - Bruk **colocation**:
+    - F.eks. `app/tours/_components/TourCard.tsx` i stedet for en kjempestor `components/`-mappe.
+  - Del opp:
+    - Skjemakomponenter.
+    - Presentasjonskomponenter.
+    - Layout-komponenter.
+
+---
+
+### 6. WCAG & Universell Utforming
+
+- **WCAG 2.1 AA**
+  - Sikre at applikasjonen følger prinsipper for universell utforming.
+
+- **eslint-plugin-jsx-a11y**
+  - Legg til `eslint-plugin-jsx-a11y`.
+  - Få varsler hvis:
+    - Bilder mangler `alt`-tekst.
+    - Interaktive elementer mangler `aria`-attributter.
+    - Semantikk brytes.
+
+- **Lighthouse-tester**
+  - Kjør **Lighthouse** i Chrome DevTools.
+  - Mål: 100/100 på **Accessibility**.
+  - Ta skjermbilde og legg i rapporten som dokumentasjon.
+
+---
+
+### 7. Formulering til rapporten (Kvalitetssikring)
+
+> For å sikre kodekvalitet og hindre at feil eller inkonsekvent formatering ble sjekket inn i kildekoden, ble det implementert Git Hooks ved hjelp av Husky og lint-staged. Dette tvang gjennom en kjøring av ESLint og Prettier på alle endrede filer før hver commit (pre-commit hook). Dette reduserte støy i pull requests og sikret at hovedgrenen (main) alltid fulgte prosjektets kodestandard.
