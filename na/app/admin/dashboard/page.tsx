@@ -5,6 +5,9 @@ import {
   ImageIcon,
   ClipboardList,
   LogOut,
+  BookOpen,
+  Users,
+  MapPin,
 } from "lucide-react";
 
 const navItems = [
@@ -15,17 +18,17 @@ const navItems = [
 ];
 
 const kpiCards = [
-  { label: "Totale bestillinger", value: "8", tone: "orange" },
-  { label: "Bekreftet", value: "2", tone: "green" },
-  { label: "Venteliste", value: "1", tone: "yellow" },
-  { label: "Aktive turer", value: "5", tone: "blue" },
+  { label: "Totale bestillinger", value: "8", tone: "orange", Icon: BookOpen },
+  { label: "Bekreftet", value: "2", tone: "green", Icon: Users },
+  { label: "Venteliste", value: "1", tone: "yellow", Icon: Users },
+  { label: "Aktive turer", value: "5", tone: "blue", Icon: MapPin },
 ];
 
 export default function AdminDashboardPage() {
   return (
-    <main className="bg-page-background flex min-h-screen text-neutral-50">
+    <main className="bg-pg-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-neutral-800 bg-neutral-950/95 md:flex">
+      <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
         {/* Logo and title */}
         <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500">
@@ -86,7 +89,7 @@ export default function AdminDashboardPage() {
       {/* Main content area */}
       <section className="flex flex-1 flex-col">
         {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950/80 px-4 py-4 backdrop-blur md:px-8">
+        <header className="bg-pg-background flex items-center justify-between border-b border-neutral-800 px-4 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -106,7 +109,7 @@ export default function AdminDashboardPage() {
 
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-xs font-semibold text-neutral-950 shadow-md shadow-orange-500/40 hover:bg-orange-400 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:outline-none md:text-sm"
+            className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-400 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none md:text-sm"
           >
             <span>Se nettside</span>
           </button>
@@ -119,7 +122,7 @@ export default function AdminDashboardPage() {
             {kpiCards.map((card) => (
               <article
                 key={card.label}
-                className="flex transform flex-col justify-center rounded-2xl border border-orange-500/30 bg-neutral-900/90 px-6 py-4 transition hover:-translate-y-0.5 hover:border-orange-400/60 hover:bg-neutral-900"
+                className="bg-card hover:bg-card/90 flex transform flex-col justify-center rounded-2xl border border-orange-500/30 px-6 py-4 transition hover:-translate-y-0.5 hover:border-orange-400/60"
               >
                 <div className="flex items-center gap-4">
                   <span
@@ -133,7 +136,7 @@ export default function AdminDashboardPage() {
                             : "bg-blue-500/20 text-blue-400"
                     }`}
                   >
-                    ●
+                    <card.Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div className="flex flex-col">
                     <span className="text-2xl font-bold text-neutral-50">
@@ -149,14 +152,14 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Latest orders */}
-          <section className="overflow-hidden rounded-2xl border border-orange-500/20 bg-neutral-900/90">
+          <section className="bg-card overflow-hidden rounded-2xl border border-orange-500/20">
             <header className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
               <h2 className="text-sm font-semibold md:text-base">
                 Siste bestillinger
               </h2>
               <button
                 type="button"
-                className="inline-flex items-center gap-1 rounded-full border border-orange-500/60 px-3 py-1.5 text-xs font-medium text-orange-200 hover:bg-orange-500/10"
+                className="inline-flex items-center gap-1 rounded-md border border-orange-500/60 px-3 py-1.5 text-xs font-medium text-orange-200 hover:bg-orange-500/10"
               >
                 <span>Se alle</span>
                 <span>›</span>
