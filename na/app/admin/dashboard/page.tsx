@@ -31,8 +31,10 @@ export default function AdminDashboardPage() {
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
         {/* Logo and title */}
         <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500">
-            <span className="text-sm font-semibold text-neutral-950">M</span>
+          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+            <span className="text-primary-foreground text-sm font-semibold">
+              M
+            </span>
           </div>
           <span className="text-sm font-semibold tracking-wide">ADMIN</span>
         </div>
@@ -42,9 +44,9 @@ export default function AdminDashboardPage() {
           {/* Active item */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2.5 font-medium text-orange-200"
+            className="bg-primary text-primary-foreground flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-medium"
           >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-orange-500/90 text-neutral-950">
+            <span className="bg-primary text-primary-foreground inline-flex h-8 w-8 items-center justify-center rounded-md">
               <Home className="h-4 w-4" aria-hidden="true" />
             </span>
             <span>Oversikt</span>
@@ -68,20 +70,20 @@ export default function AdminDashboardPage() {
         {/* User section */}
         <div className="space-y-3 border-t border-neutral-800 px-4 py-4 text-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-sm font-semibold text-neutral-950">
+            <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full text-base font-semibold">
               A
             </div>
             <div className="flex flex-col">
-              <span className="font-medium">admin</span>
+              <span className="font-bold text-white">admin</span>
               <span className="text-xs text-neutral-400">Administrator</span>
             </div>
           </div>
           <button
             type="button"
-            className="flex items-center gap-2 text-xs text-neutral-400 hover:text-neutral-100"
+            className="flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80"
           >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            <span>Logg ut</span>
+            <LogOut className="h-5 w-5" aria-hidden="true" />
+            <span>LOGG UT</span>
           </button>
         </div>
       </aside>
@@ -100,18 +102,15 @@ export default function AdminDashboardPage() {
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-orange-500/90 text-neutral-950">
-                <Home className="h-4 w-4" aria-hidden="true" />
-              </span>
               <h1 className="text-lg font-semibold md:text-xl">Oversikt</h1>
             </div>
           </div>
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-400 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:outline-none md:text-sm"
+            className="bg-primary text-primary-foreground hover:bg-accent focus-visible:ring-ring inline-flex items-center justify-center rounded-md px-4 py-2 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none md:text-sm"
           >
-            <span>Se nettside</span>
+            <span>SE NETTSIDE </span>
           </button>
         </header>
 
@@ -122,13 +121,13 @@ export default function AdminDashboardPage() {
             {kpiCards.map((card) => (
               <article
                 key={card.label}
-                className="bg-card hover:bg-card/90 flex transform flex-col justify-center rounded-2xl border border-orange-500/30 px-6 py-4 transition hover:-translate-y-0.5 hover:border-orange-400/60"
+                className="bg-card hover:bg-card/90 border-primary/30 hover:border-primary/60 flex transform flex-col justify-center rounded-[18px] border px-6 py-4 transition hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-4">
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-full ${
                       card.tone === "orange"
-                        ? "bg-orange-500/20 text-orange-500"
+                        ? "bg-primary/20 text-primary"
                         : card.tone === "green"
                           ? "bg-green-500/20 text-green-400"
                           : card.tone === "yellow"
@@ -152,14 +151,14 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Latest orders */}
-          <section className="bg-card overflow-hidden rounded-2xl border border-orange-500/20">
+          <section className="bg-card border-primary/20 overflow-hidden rounded-[18px] border">
             <header className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
               <h2 className="text-sm font-semibold md:text-base">
                 Siste bestillinger
               </h2>
               <button
                 type="button"
-                className="inline-flex items-center gap-1 rounded-md border border-orange-500/60 px-3 py-1.5 text-xs font-medium text-orange-200 hover:bg-orange-500/10"
+                className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium"
               >
                 <span>Se alle</span>
                 <span>›</span>
@@ -198,7 +197,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <span className="text-xs font-medium">
                     {order.status === "Bekreftet" ? (
-                      <span className="rounded-full bg-orange-500/20 px-2 py-1 text-orange-200">
+                      <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
                         {order.status}
                       </span>
                     ) : (
