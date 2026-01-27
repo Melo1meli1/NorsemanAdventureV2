@@ -1,0 +1,95 @@
+### Dokument: Retningslinjer for Issue-håndtering
+
+Dette dokumentet er gull verdt å ha i repoet ditt (f.eks. som `DOCS/PROCESS.md` eller `CONTRIBUTING.md`), og du kan kopiere deler av det rett inn i bachelorrapportens kapittel om "Metode og Prosess".
+
+Det oppsummerer alt vi har blitt enige om til nå.
+
+***
+
+# Retningslinjer for Issue-håndtering og Prosjektstyring
+
+## 1. Hensikt
+Hensikten med disse retningslinjene er å sikre struktur, sporbarhet og kvalitet i utviklingsprosessen. Siden prosjektet gjennomføres av én utvikler, fungerer systemet som både planleggingsverktøy og dokumentasjon for sensur. Målet er full sporbarhet fra *Kravdokumentasjon* til *Ferdig Kode*.
+
+## 2. Issue Typer
+Vi bruker GitHubs `Type`-felt og `Templates` for å skille mellom ulike arbeidsoppgaver:
+
+### 🔵 User Story (Feature)
+*   **Brukes til:** Funksjonelle krav som gir verdi for sluttbrukeren.
+*   **Kobling:** Skal *alltid* referere til en ID i kravdokumentet (f.eks. `US.01`, `Epic 2`).
+*   **Format:** "Som [rolle] ønsker jeg [handling] slik at [verdi]."
+*   **Akseptansekriterier:** Beskriver *oppførselen* til systemet (Hva brukeren kan gjøre), ikke koden.
+
+### 📝 Task (Dokumentasjon/Admin)
+*   **Brukes til:** Arbeid som ikke er kode, men nødvendig for leveransen.
+*   **Eksempler:** Skrive rapporter, møteforberedelser, lage diagrammer.
+*   **Akseptansekriterier:** Beskriver hva som skal være ferdigstilt/levert.
+
+### ⚙️ Technical Task (Implementation/Chore)
+*   **Brukes til:**
+    1.  **Sub-issues:** Nedbrytning av en stor User Story til konkrete kodesnutter (f.eks. "Lage database-tabell", "Sette opp API-route").
+    2.  **Chores:** Oppsett, vedlikehold og refaktorering (f.eks. "Sette opp Husky", "Oppdatere pakker").
+*   **Akseptansekriterier:** Spesifikke tekniske sjekkpunkter (f.eks. "Tabell x er opprettet", "Test y passerer").
+
+### 🐞 Bug Report
+*   **Brukes til:** Feil i koden som oppdages etter at en oppgave er markert som ferdig.
+*   **Krav:** Skal inneholde "Steps to reproduce".
+
+---
+
+## 3. Prioritering og Estimering
+
+For å sikre at MVP (Minimum Viable Product) leveres i tide, skal alle issues ha følgende metadata:
+
+### Prioritet (Priority)
+*   🔴 **Critical:** "Showstoppers" eller oppsett som blokkerer alt annet arbeid.
+*   🟣 **High:** Kjernefunksjonalitet (MVP) og obligatorisk dokumentasjon.
+*   🔵 **Medium:** Viktig funksjonalitet, men systemet fungerer uten.
+*   ⚪ **Low:** "Nice to have", styling-justeringer, ekstra features.
+
+### Størrelse (Size - T-shirt sizing)
+Brukes for å vurdere risiko og kompleksitet før start.
+*   **Small:** Triviell oppgave, lav risiko (< 2 timer).
+*   **Medium:** Standard oppgave, kjent løsning (2-5 timer).
+*   **Large:** Kompleks oppgave, krever research (5-10 timer).
+*   **X-Large:** For stor! 🚩 **Må** splittes opp i mindre sub-issues.
+
+### Estimat (Estimate vs Actual)
+*   **Estimate:** Tid (timer) man *tror* det tar. Settes *før* man starter. Endres ikke underveis.
+*   **Actual:** Tid (timer) man *faktisk* brukte. Fylles ut når oppgaven flyttes til "Done".
+
+---
+
+## 4. Arbeidsflyt (Workflow)
+
+### Steg 1: Backlog Refinement
+*   Nye User Stories opprettes i `Product Backlog` basert på kravdokumentet.
+*   User Stories som er for store ("Large/XL") brytes ned i `Sub-issues` (Technical Tasks).
+
+### Steg 2: Sprint Planlegging
+*   Issues flyttes fra `Product Backlog` til gjeldende `Milestone` (f.eks. "Sprint 2").
+*   Sjekk at en blanding av User Stories (Kode) og Tasks (Dokumentasjon) er inkludert for å opprettholde 50/50 fremdrift.
+
+### Steg 3: Gjennomføring
+1.  Flytt issue til **In Progress**.
+2.  Opprett en **Branch** koblet til issuet (via "Create a branch" i GitHub).
+    *   *Navneregler:* `feature/us-01-tittel` eller `task/skrive-rapport`.
+3.  Utfør arbeidet.
+4.  Kjør lokale sjekker (Husky/Linting).
+5.  Push kode og opprett **Pull Request**.
+
+### Steg 4: Lukking (Definition of Done)
+Et issue regnes som ferdig når:
+*   [ ] Alle akseptansekriterier er oppfylt/avkrysset.
+*   [ ] Koden er pushet til `main`.
+*   [ ] CI-pipeline (GitHub Actions) er grønn.
+*   [ ] `Actual` timer er fylt ut.
+*   [ ] Issuet lukkes.
+
+---
+
+## 5. Kvalitetssikring
+*   **Commit Messages:** Skal følge konvensjonell standard, f.eks. `feat: add login form` eller `docs: update readme`.
+*   **CI/CD:** Ingen kode skal merges til main hvis tester eller linting feiler.
+*   **Sporbarhet:** Alle commits og PR-er skal referere til Issue ID (f.eks. `Closes #22`).
+

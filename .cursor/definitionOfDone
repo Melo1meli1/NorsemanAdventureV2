@@ -1,0 +1,44 @@
+## Definition of Done (Applies to All User Stories)
+
+### Functional Completion
+- All acceptance criteria are fully implemented and verified.
+- Feature behaves as described in the user story on all supported devices and browsers.
+- Edge cases and validation rules are handled correctly.
+
+### Code Quality
+- Code follows project coding standards and conventions.
+- No critical or high-severity linting or static analysis issues remain.
+- No hardcoded secrets, credentials, or environment-specific values.
+
+### Testing
+- Relevant unit tests are implemented and passing.
+- Relevant integration tests are implemented and passing (where applicable).
+- Feature has been manually tested by the developer.
+- Regression testing confirms no existing functionality is broken.
+
+### Security & Data Handling
+- Input validation and sanitization are implemented where applicable.
+- Authentication and authorization rules are respected.
+- Sensitive data is stored and transmitted securely.
+- No sensitive data is exposed in logs or client-side code.
+
+### UX & Accessibility
+- UI follows the approved design and UX guidelines.
+- Error messages are clear, user-friendly, and actionable.
+- Interactive elements meet accessibility and usability standards.
+- Loading, empty, and error states are handled gracefully.
+
+### Performance & Reliability
+- Feature does not introduce noticeable performance degradation.
+- API calls and background processes handle failures gracefully.
+- No unnecessary network requests or re-renders.
+
+### Documentation & Traceability
+- Relevant documentation is updated (README, admin guide, or internal docs).
+- User story is linked to the correct Epic.
+- Commit messages reference the user story ID.
+
+### Deployment Readiness
+- Feature is deployable without manual intervention.
+- Feature works correctly in the target environment (staging/production).
+- No feature flags or temporary code paths remain unless explicitly approved.
