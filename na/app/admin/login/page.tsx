@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { redirect } from "next/navigation";
-import AdminLoginForm from "./AdminLoginForm.tsx";
+import AdminLoginForm from "./AdminLoginForm";
 
 export default async function AdminLoginPage() {
   const {
