@@ -1,7 +1,7 @@
 ## Definition of Done (Applies to All User Stories)
 
 ### Functional Completion
-- All acceptance criteria are fully implemented and verified.
+- All acceptance criteria are fully implemented and verified. For a userstory, all of its sub issues´ acceptance criteria needs to be implemented and verified. 
 - Feature behaves as described in the user story on all supported devices and browsers.
 - Edge cases and validation rules are handled correctly.
 
