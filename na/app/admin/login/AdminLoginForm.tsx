@@ -10,25 +10,51 @@ export default function AdminLoginForm() {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldError, setFieldError] = useState<"email" | "password" | null>(
-    null,
-  );
+  const [fieldError, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setFieldError(null);
+    setFieldErrors({});
 
     const formData = new FormData(e.currentTarget);
+    const email = (formData.get("email") as string | null)?.trim() ?? "";
+    const password = (formData.get("password") as string | null)?.trim() ?? "";
+
+    const newFieldErrors: { email?: string; password?: string } = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+      newFieldErrors.email = "Skriv inn e-postadressen din.";
+    } else if (!emailRegex.test(email)) {
+      newFieldErrors.email = "Skriv e-post i formatet navn@firma.no.";
+    }
+
+    if (!password) {
+      newFieldErrors.password = "Skriv inn passordet ditt.";
+    }
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setError(null); // to not show the global error also
+      return; // dont call logicAction
+    }
 
     startTransition(async () => {
       const result = await loginAction(formData);
 
       if (result?.error) {
         setError(result.error);
-        setFieldError(result.field);
+        if (result.field === "email") {
+          setFieldErrors({ email: result.error });
+        } else if (result.field === "password") {
+          setFieldErrors({ password: result.error });
+        }
       }
-      // Hvis suksess, vil redirect skje i Server Action
+      // Upon success, the redirect happens in actions
     });
   };
 
@@ -93,16 +119,19 @@ export default function AdminLoginForm() {
               autoComplete="email"
               placeholder="Skriv inn e-postadresse"
               required
-              aria-invalid={fieldError === "email"}
-              aria-describedby={
-                fieldError === "email" ? "email-error" : undefined
-              }
+              aria-invalid={!!fieldError.email}
+              aria-describedby={fieldError.email ? "email-error" : undefined}
               className={`focus-visible:ring-ring h-11 w-full rounded-lg border px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:outline-none ${
-                fieldError === "email"
+                fieldError.email
                   ? "border-red-500 bg-neutral-900/70"
                   : "border-neutral-700 bg-neutral-900/70"
               }`}
             />
+            {fieldError.email && (
+              <p id="email-error" className="text-xs text-red-400">
+                {fieldError.email}
+              </p>
+            )}
           </div>
 
           {/* Password field */}
@@ -121,12 +150,12 @@ export default function AdminLoginForm() {
                 autoComplete="current-password"
                 placeholder="Skriv inn passord"
                 required
-                aria-invalid={fieldError === "password"}
+                aria-invalid={!!fieldError.password}
                 aria-describedby={
-                  fieldError === "password" ? "password-error" : undefined
+                  fieldError.password ? "password-error" : undefined
                 }
                 className={`h-11 w-full rounded-lg border px-3 pr-10 text-sm text-neutral-50 placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 focus-visible:outline-none ${
-                  fieldError === "password"
+                  fieldError.password
                     ? "border-red-500 bg-neutral-900/70"
                     : "border-neutral-700 bg-neutral-900/70"
                 }`}

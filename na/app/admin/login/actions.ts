@@ -31,10 +31,10 @@ export async function loginAction(formData: FormData) {
   });
 
   if (error) {
-    let errorMessage = "Feil brukernavn eller passord.";
+    let errorMessage = "Feil e-post eller passord. Sjekk at begge er riktige.";
 
     if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Feil brukernavn eller passord.";
+      errorMessage = "Feil e-post eller passord. Sjekk at begge er riktige.";
     } else if (error.message.includes("Email not confirmed")) {
       errorMessage = "E-postadressen er ikke bekreftet.";
     }
