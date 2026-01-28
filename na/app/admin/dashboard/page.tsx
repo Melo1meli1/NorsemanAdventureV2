@@ -10,6 +10,9 @@ import {
   MapPin,
 } from "lucide-react";
 
+import { supabase } from "@/lib/supabaseClient";
+import { redirect } from "next/navigation";
+
 const navItems = [
   { label: "Turer", icon: Mountain },
   { label: "Nyheter", icon: Newspaper },
@@ -24,7 +27,17 @@ const kpiCards = [
   { label: "Aktive turer", value: "5", tone: "blue", Icon: MapPin },
 ];
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  // Check if user is authenticated
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  // Rest of the component if authenticated
   return (
     <main className="bg-pg-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
