@@ -1,13 +1,12 @@
 "use server";
 
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // Validation
   if (!email || !password) {
     return {
       error: "E-post og passord er påkrevd.",
@@ -15,7 +14,6 @@ export async function loginAction(formData: FormData) {
     };
   }
 
-  // Email format validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return {
@@ -24,7 +22,8 @@ export async function loginAction(formData: FormData) {
     };
   }
 
-  // Supabase authentication
+  const supabase = await createClient();
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -45,7 +44,6 @@ export async function loginAction(formData: FormData) {
     };
   }
 
-  // Success - redirect to dashboard
   if (data.user) {
     redirect("/admin/dashboard");
   }

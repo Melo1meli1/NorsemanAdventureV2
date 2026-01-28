@@ -4,14 +4,14 @@ import {
   Newspaper,
   ImageIcon,
   ClipboardList,
-  LogOut,
   BookOpen,
   Users,
   MapPin,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabaseClient";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase-server";
+import { LogoutButton } from "./LogoutButton";
 
 const navItems = [
   { label: "Turer", icon: Mountain },
@@ -28,7 +28,8 @@ const kpiCards = [
 ];
 
 export default async function AdminDashboardPage() {
-  // Check if user is authenticated
+  const supabase = await createClient();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -91,13 +92,7 @@ export default async function AdminDashboardPage() {
               <span className="text-xs text-neutral-400">Administrator</span>
             </div>
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80"
-          >
-            <LogOut className="h-5 w-5" aria-hidden="true" />
-            <span>LOGG UT</span>
-          </button>
+          <LogoutButton />
         </div>
       </aside>
 
@@ -118,13 +113,6 @@ export default async function AdminDashboardPage() {
               <h1 className="text-lg font-semibold md:text-xl">Oversikt</h1>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="bg-primary text-primary-foreground hover:bg-accent focus-visible:ring-ring inline-flex items-center justify-center rounded-md px-4 py-2 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none md:text-sm"
-          >
-            <span>SE NETTSIDE </span>
-          </button>
         </header>
 
         {/* Scrollable content */}
