@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -33,22 +34,21 @@ export function ConfirmDialog({
     customActions ??
     (onConfirm && (
       <div className="flex justify-end gap-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={onClose}
           disabled={isConfirming}
-          className="text-sm font-medium text-neutral-300 hover:text-white disabled:opacity-50"
         >
           {cancelLabel}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onConfirm()}
           disabled={isConfirming}
-          className="bg-primary text-primary-foreground hover:bg-accent rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-70"
         >
           {isConfirming ? "Venter…" : confirmLabel}
-        </button>
+        </Button>
       </div>
     ));
 

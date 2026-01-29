@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import type { Tour } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import TourForm from "./TourForm";
 
 type TourFormModalProps = {
@@ -43,14 +44,16 @@ export default function TourFormModal({
           >
             {mode === "edit" ? "Rediger tur" : "Opprett ny tur"}
           </h2>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label="Lukk"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-800/70 hover:text-neutral-200"
+            className="shrink-0 rounded-full text-neutral-400 hover:bg-neutral-800/70 hover:text-neutral-200"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Skjema – skroller under tittelen */}

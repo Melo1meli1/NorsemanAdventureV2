@@ -13,8 +13,13 @@ import {
 } from "@/lib/zod/tourValidation";
 import { createTour, updateTour } from "../actions/tours";
 import type { Tour } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const accentOrange = "#ef5b25";
+
+const inputClassName =
+  "h-11 rounded-lg border-neutral-700 bg-neutral-900/70 text-neutral-50 placeholder:text-neutral-500";
 
 type Mode = "create" | "edit";
 
@@ -190,12 +195,11 @@ export default function TourForm({
         <label htmlFor="title" className="text-sm font-medium text-neutral-200">
           Tittel *
         </label>
-        <input
+        <Input
           id="title"
           type="text"
           placeholder="F.eks. Nordkapp Ekspedisjon"
-          className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-          style={{ "--accent": accentOrange } as React.CSSProperties}
+          className={inputClassName}
           {...register("title")}
         />
         {errors.title && (
@@ -258,12 +262,11 @@ export default function TourForm({
           >
             Sted *
           </label>
-          <input
+          <Input
             id="sted"
             type="text"
             placeholder="F.eks. Lofoten, Nordkapp"
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
+            className={inputClassName}
             {...register("sted")}
           />
           {errors.sted && (
@@ -349,14 +352,13 @@ export default function TourForm({
           >
             Pris (NOK) *
           </label>
-          <input
+          <Input
             id="price"
             type="number"
             min={0}
             step={1}
             placeholder="0"
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
+            className={inputClassName}
             {...register("price", { valueAsNumber: true })}
           />
           {errors.price && (
@@ -370,12 +372,11 @@ export default function TourForm({
           >
             Maks deltakere *
           </label>
-          <input
+          <Input
             id="seats_available"
             type="number"
             min={0}
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
+            className={inputClassName}
             {...register("seats_available", { valueAsNumber: true })}
           />
           {errors.seats_available && (
@@ -395,11 +396,10 @@ export default function TourForm({
           >
             Startdato *
           </label>
-          <input
+          <Input
             id="start_date"
             type="date"
-            className="tour-date-input h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-base text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
+            className={`tour-date-input ${inputClassName} text-base`}
             {...register("start_date")}
           />
           {errors.start_date && (
@@ -413,11 +413,10 @@ export default function TourForm({
           >
             Sluttdato *
           </label>
-          <input
+          <Input
             id="end_date"
             type="date"
-            className="tour-date-input h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-base text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
+            className={`tour-date-input ${inputClassName} text-base`}
             {...register("end_date")}
           />
           {errors.end_date && (
@@ -439,12 +438,11 @@ export default function TourForm({
         >
           Høydepunkter (kommaseparert)
         </label>
-        <input
+        <Input
           id="hoydepunkter"
           type="text"
           placeholder="Nordkapp, Lofoten, Trollstigen"
-          className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-          style={{ "--accent": accentOrange } as React.CSSProperties}
+          className={inputClassName}
           {...register("hoydepunkter")}
         />
         {errors.hoydepunkter && (
@@ -475,24 +473,25 @@ export default function TourForm({
 
       {/* Knapper */}
       <div className="flex gap-3 pt-2">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          className="flex-1 font-semibold uppercase"
           onClick={onClose}
-          className="flex-1 rounded-lg border border-[#ef5b25] bg-transparent px-4 py-2.5 text-sm font-semibold text-white uppercase hover:bg-[#ef5b25]/10"
         >
           Avbryt
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={isSubmitting || !isValid}
-          className="flex-1 rounded-lg bg-[#ef5b25] px-4 py-2.5 text-sm font-semibold text-white uppercase hover:bg-[#ef5b25]/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 font-semibold uppercase"
         >
           {isSubmitting
             ? "Lagrer…"
             : isEdit
               ? "Lagre endringer"
               : "Opprett tur"}
-        </button>
+        </Button>
       </div>
     </form>
   );

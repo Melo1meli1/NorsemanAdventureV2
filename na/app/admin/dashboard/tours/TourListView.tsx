@@ -1,18 +1,11 @@
 "use client";
 import { deleteTour } from "../actions/tours";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  Calendar,
-  MapPin,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Calendar, MapPin, Pencil, Plus, Trash2, Users } from "lucide-react";
 import type { Tour } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import TourFormModal from "./TourFormModal";
 
@@ -31,7 +24,6 @@ function formatDate(iso: string | null): string {
 
 export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
@@ -56,18 +48,6 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
       unoptimized: false,
     };
   }
-
-  const filteredTours = useMemo(() => {
-    if (!search.trim()) return tours;
-    const q = search.trim().toLowerCase();
-    return tours.filter(
-      (t) =>
-        t.title.toLowerCase().includes(q) ||
-        (t.short_description?.toLowerCase().includes(q) ?? false) ||
-        (t.long_description?.toLowerCase().includes(q) ?? false) ||
-        (t.sted?.toLowerCase().includes(q) ?? false),
-    );
-  }, [tours, search]);
 
   function handleRequestDelete(tour: Tour) {
     setPendingDelete(tour);
@@ -114,42 +94,26 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header: Search + New Tour button */}
-      <div className="flex items-center justify-between">
-        <div className="bg-card focus-within:border-primary relative w-80 rounded-lg border-2 border-transparent transition-colors">
-          <Search
-            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-500"
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Søk etter turer..."
-            className="h-11 w-full rounded-lg bg-transparent pr-3 pl-10 text-sm text-neutral-200 outline-none placeholder:text-neutral-500"
-            aria-label="Søk etter turer"
-          />
-        </div>
-        <button
+      {/* Header: New Tour button */}
+      <div className="flex items-center justify-end">
+        <Button
           type="button"
           onClick={handleOpenNewTour}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 items-center gap-2 rounded-lg px-5 text-sm font-semibold uppercase transition"
+          className="h-11 gap-2 px-5 font-semibold uppercase"
         >
           <Plus className="h-4 w-4" />
           NY TUR
-        </button>
+        </Button>
       </div>
 
       {/* Tour list */}
       <ul className="flex flex-col gap-4">
-        {filteredTours.length === 0 ? (
+        {tours.length === 0 ? (
           <li className="rounded-lg border border-neutral-800 bg-[#161920] px-6 py-12 text-center text-sm text-neutral-400">
-            {search.trim()
-              ? "Ingen turer matcher søket."
-              : "Ingen turer ennå. Opprett en tur for å komme i gang."}
+            Ingen turer ennå. Opprett en tur for å komme i gang.
           </li>
         ) : (
-          filteredTours.map((tour, index) => {
+          tours.map((tour, index) => {
             const { src, unoptimized } = resolveImageSrc(tour.image_url, index);
             return (
               <li
@@ -191,22 +155,26 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
 
                 {/* Actions */}
                 <div className="flex shrink-0 gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
                     onClick={() => handleOpenEditTour(tour)}
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex h-11 w-11 items-center justify-center rounded-lg border bg-transparent transition-colors"
                     aria-label={`Rediger ${tour.title}`}
                   >
                     <Pencil className="h-5 w-5 text-current" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
                     onClick={() => handleRequestDelete(tour)}
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex h-11 w-11 items-center justify-center rounded-lg border bg-transparent transition-colors"
                     aria-label={`Slett ${tour.title}`}
                   >
                     <Trash2 className="h-5 w-5 text-current" />
-                  </button>
+                  </Button>
                 </div>
               </li>
             );
