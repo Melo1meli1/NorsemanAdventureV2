@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Home,
   Mountain,
@@ -12,8 +13,8 @@ import {
   MapPin,
 } from "lucide-react";
 import type { Tour } from "@/lib/types";
-import { LogoutButton } from "./LogoutButton";
-import { TourListView } from "./TourListView";
+import { LogoutButton } from "./utils/LogoutButton";
+import { TourListView } from "./tours/TourListView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -43,16 +44,20 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     <main className="bg-page-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
-        <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5">
-          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
-            <span className="text-primary-foreground text-sm font-semibold">
-              M
-            </span>
+        <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-4">
+          <div className="flex h-9 w-8 items-center justify-center rounded-full">
+            <Image
+              src="/logonew.png"
+              alt="Norseman Adventures logo"
+              width={40}
+              height={35}
+              className="h-10 w-10 rounded-full object-contain"
+            />
           </div>
           <span className="text-sm font-semibold tracking-wide">ADMIN</span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4 text-sm">
+        <nav className="flex-1 space-y-1 px-3 py-5 text-sm">
           {navItems.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -97,7 +102,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
       </aside>
 
       <section className="flex flex-1 flex-col">
-        <header className="bg-page-background flex items-center justify-between border-b border-neutral-800 px-4 py-4 md:px-8">
+        <header className="bg-page-background flex items-center justify-between border-b border-neutral-800 px-4 py-5 md:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"

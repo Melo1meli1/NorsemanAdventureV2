@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { getTours } from "../actions/tours";
-import { TourListView } from "../TourListView";
+import { TourListView } from "./TourListView";
 
 export default async function AdminTurerPage() {
   const supabase = await createClient();

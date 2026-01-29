@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { createTourSchema, updateTourSchema } from "@/lib/zod/tourValidation";
@@ -187,7 +188,9 @@ export async function updateTour(formData: FormData) {
 }
 
 export async function deleteTour(formData: FormData) {
+  console.log("Deleting tour with formData:", formData);
   const id = formData.get("id");
+  console.log("Deleting tour with ID:", id);
 
   if (typeof id !== "string" || id.length === 0) {
     return {
@@ -208,6 +211,7 @@ export async function deleteTour(formData: FormData) {
     };
   }
 
+  revalidatePath("/admin/dashboard/tours");
   return {
     success: true as const,
   };
