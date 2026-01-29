@@ -15,6 +15,7 @@ import {
 import type { Tour } from "@/lib/types";
 import { LogoutButton } from "./utils/LogoutButton";
 import { TourListView } from "./tours/TourListView";
+import { GalleryView } from "./gallery/GalleryView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -40,6 +41,14 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     "overview" | "tours" | "news" | "orders" | "gallery"
   >("overview");
 
+  const sectionTitle = {
+    overview: "Oversikt",
+    tours: "Turer",
+    news: "Nyheter",
+    orders: "Bestillinger",
+    gallery: "Galleri",
+  }[activeSection];
+
   return (
     <main className="bg-page-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
@@ -63,7 +72,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
               key={id}
               type="button"
               onClick={() => {
-                if (id === "overview" || id === "tours") {
+                if (id === "overview" || id === "tours" || id === "gallery") {
                   setActiveSection(id);
                 }
               }}
@@ -111,9 +120,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             >
               ☰
             </button>
-            <h1 className="text-lg font-semibold md:text-xl">
-              {activeSection === "overview" ? "Oversikt" : "Turer "}
-            </h1>
+            <h1 className="text-lg font-semibold md:text-xl">{sectionTitle}</h1>
           </div>
         </header>
 
@@ -233,13 +240,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             </div>
           )}
 
-          {activeSection === "gallery" && (
-            <div>
-              <p className="text-sm text-neutral-400">
-                Galleri-seksjon. GalleryList / GalleryView kan kobles inn her.
-              </p>
-            </div>
-          )}
+          {activeSection === "gallery" && <GalleryView tours={tours} />}
         </div>
       </section>
     </main>
