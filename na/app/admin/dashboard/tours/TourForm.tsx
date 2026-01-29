@@ -56,11 +56,12 @@ export default function TourForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
     setError,
     setValue,
     control,
   } = useForm<TourFormValues, object, CreateTourInput | UpdateTourInput>({
+    mode: "onChange",
     resolver: zodResolver(
       (isEdit ? updateTourSchema : createTourSchema) as typeof createTourSchema,
     ) as unknown as Resolver<
@@ -75,6 +76,7 @@ export default function TourForm({
             title: initialTour.title,
             short_description: initialTour.short_description ?? "",
             long_description: initialTour.long_description ?? "",
+            hoydepunkter: initialTour.hoydepunkter ?? "",
             sted: initialTour.sted ?? "",
             vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",
             sesong: initialTour.sesong ?? "",
@@ -83,7 +85,6 @@ export default function TourForm({
             start_date: toDateInputValue(initialTour.start_date),
             end_date: toDateInputValue(initialTour.end_date),
             seats_available: initialTour.seats_available,
-            image_url: initialTour.image_url ?? "",
             status: initialTour.status,
           }
         : {
@@ -98,11 +99,37 @@ export default function TourForm({
     defaultValue: "draft",
   });
 
+  const startDateStr = useWatch({
+    control,
+    name: "start_date",
+    defaultValue: "",
+  });
+  const endDateStr = useWatch({ control, name: "end_date", defaultValue: "" });
+
+  const durationText = (() => {
+    if (!startDateStr || !endDateStr) {
+      return "Velg start- og sluttdato";
+    }
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return "Velg start- og sluttdato";
+    }
+    if (end < start) {
+      return "Ugyldig varighet (sluttdato før startdato)";
+    }
+    const days = Math.round(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return days === 1 ? "1 dag" : `${days} dager`;
+  })();
+
   async function onSubmit(data: CreateTourInput | UpdateTourInput) {
     const formData = new FormData();
     formData.set("title", data.title ?? "");
     formData.set("short_description", data.short_description ?? "");
     formData.set("long_description", data.long_description ?? "");
+    formData.set("hoydepunkter", data.hoydepunkter ?? "");
     formData.set("sted", data.sted ?? "");
     formData.set("vanskelighetsgrad", data.vanskelighetsgrad ?? "");
     formData.set("sesong", data.sesong ?? "");
@@ -121,7 +148,7 @@ export default function TourForm({
         : String(data.end_date ?? ""),
     );
     formData.set("seats_available", String(data.seats_available ?? 0));
-    formData.set("image_url", data.image_url ?? "");
+    formData.set("image_url", isEdit ? (initialTour?.image_url ?? "") : "");
     formData.set("status", data.status ?? "draft");
 
     if (isEdit && "id" in data && data.id) {
@@ -182,7 +209,7 @@ export default function TourForm({
           htmlFor="short_description"
           className="text-sm font-medium text-neutral-200"
         >
-          Kort beskrivelse
+          Kort beskrivelse *
         </label>
         <textarea
           id="short_description"
@@ -229,7 +256,7 @@ export default function TourForm({
             htmlFor="sted"
             className="text-sm font-medium text-neutral-200"
           >
-            Sted
+            Sted *
           </label>
           <input
             id="sted"
@@ -371,7 +398,7 @@ export default function TourForm({
           <input
             id="start_date"
             type="date"
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            className="tour-date-input h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-base text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
             style={{ "--accent": accentOrange } as React.CSSProperties}
             {...register("start_date")}
           />
@@ -389,7 +416,7 @@ export default function TourForm({
           <input
             id="end_date"
             type="date"
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            className="tour-date-input h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-base text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
             style={{ "--accent": accentOrange } as React.CSSProperties}
             {...register("end_date")}
           />
@@ -399,29 +426,29 @@ export default function TourForm({
         </div>
       </div>
 
-      <p className="flex items-center gap-2 text-sm text-neutral-400">
+      <p className="flex items-center gap-2 text-base text-neutral-400">
         <span aria-hidden>ⓘ</span>
-        Varighet: Velg start- og sluttdato
+        Varighet: <span className="font-medium text-white">{durationText}</span>
       </p>
 
-      {/* Bilde-URL */}
+      {/* Høydepunkter (kommaseparert) */}
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="image_url"
+          htmlFor="hoydepunkter"
           className="text-sm font-medium text-neutral-200"
         >
-          Bilde-URL
+          Høydepunkter (kommaseparert)
         </label>
         <input
-          id="image_url"
-          type="url"
-          placeholder="https://..."
+          id="hoydepunkter"
+          type="text"
+          placeholder="Nordkapp, Lofoten, Trollstigen"
           className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
           style={{ "--accent": accentOrange } as React.CSSProperties}
-          {...register("image_url")}
+          {...register("hoydepunkter")}
         />
-        {errors.image_url && (
-          <p className="text-xs text-red-400">{errors.image_url.message}</p>
+        {errors.hoydepunkter && (
+          <p className="text-xs text-red-400">{errors.hoydepunkter.message}</p>
         )}
       </div>
 
@@ -457,7 +484,7 @@ export default function TourForm({
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isValid}
           className="flex-1 rounded-lg bg-[#ef5b25] px-4 py-2.5 text-sm font-semibold text-white uppercase hover:bg-[#ef5b25]/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting

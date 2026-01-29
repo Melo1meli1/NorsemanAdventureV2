@@ -38,6 +38,7 @@ function mapCreateInputToInsert(
     title: string;
     short_description: string | null | undefined;
     long_description: string | null | undefined;
+    hoydepunkter: string | null | undefined;
     sted: string | null | undefined;
     vanskelighetsgrad: TourInsert["vanskelighetsgrad"];
     sesong: TourInsert["sesong"];
@@ -54,6 +55,7 @@ function mapCreateInputToInsert(
     title: input.title,
     short_description: input.short_description ?? null,
     long_description: input.long_description ?? null,
+    hoydepunkter: input.hoydepunkter ?? null,
     sted: input.sted ?? null,
     vanskelighetsgrad: input.vanskelighetsgrad ?? null,
     sesong: input.sesong ?? null,
@@ -72,6 +74,7 @@ function mapUpdateInputToUpdate(
     title: string;
     short_description: string | null | undefined;
     long_description: string | null | undefined;
+    hoydepunkter: string | null | undefined;
     sted: string | null | undefined;
     vanskelighetsgrad: TourUpdate["vanskelighetsgrad"];
     sesong: TourUpdate["sesong"];
@@ -91,6 +94,8 @@ function mapUpdateInputToUpdate(
     update.short_description = input.short_description;
   if (input.long_description !== undefined)
     update.long_description = input.long_description;
+  if (input.hoydepunkter !== undefined)
+    update.hoydepunkter = input.hoydepunkter;
   if (input.sted !== undefined) update.sted = input.sted;
   if (input.vanskelighetsgrad !== undefined)
     update.vanskelighetsgrad = input.vanskelighetsgrad;
@@ -114,6 +119,7 @@ export async function createTour(formData: FormData) {
     title: formData.get("title"),
     short_description: formData.get("short_description") ?? "",
     long_description: formData.get("long_description") ?? "",
+    hoydepunkter: formData.get("hoydepunkter") ?? "",
     sted: formData.get("sted") ?? "",
     vanskelighetsgrad: formData.get("vanskelighetsgrad") ?? "",
     sesong: formData.get("sesong") ?? "",
@@ -139,6 +145,7 @@ export async function createTour(formData: FormData) {
 
   const insertPayload = mapCreateInputToInsert({
     end_date: parsed.data.end_date ?? null,
+    hoydepunkter: parsed.data.hoydepunkter ?? null,
     image_url: parsed.data.image_url ?? null,
     long_description: parsed.data.long_description ?? null,
     price: parsed.data.price,
@@ -174,6 +181,7 @@ export async function updateTour(formData: FormData) {
     title: formData.get("title") ?? undefined,
     short_description: formData.get("short_description") ?? undefined,
     long_description: formData.get("long_description") ?? undefined,
+    hoydepunkter: formData.get("hoydepunkter") ?? undefined,
     sted: formData.get("sted") ?? undefined,
     vanskelighetsgrad: formData.get("vanskelighetsgrad") ?? undefined,
     sesong: formData.get("sesong") ?? undefined,
