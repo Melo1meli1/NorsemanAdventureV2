@@ -1,18 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { createTourSchema, updateTourSchema } from "@/lib/zod/tourValidation";
 import type { TablesInsert, TablesUpdate } from "@/lib/database.types";
-
-export async function logoutAction() {
-  const supabase = await createClient();
-
-  await supabase.auth.signOut();
-
-  redirect("/admin/login");
-}
 
 type TourInsert = TablesInsert<"tours">;
 type TourUpdate = TablesUpdate<"tours">;

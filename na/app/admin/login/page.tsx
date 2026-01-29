@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/supabase-server";
 import AdminLoginForm from "./AdminLoginForm";
 
 export default async function AdminLoginPage() {
