@@ -1,3 +1,4 @@
+import { ChevronRight, Folder } from "lucide-react";
 import type { Tour } from "@/lib/types";
 
 type GalleryViewProps = {
@@ -17,7 +18,6 @@ export function GalleryView({ tours }: GalleryViewProps) {
     <section className="space-y-4">
       <header className="flex items-center justify-between">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-neutral-50">Gallerier</h2>
           <p className="text-sm text-neutral-400">
             Mapper opprettes automatisk for hver tur.
           </p>
@@ -28,20 +28,22 @@ export function GalleryView({ tours }: GalleryViewProps) {
         {tours.map((tour) => (
           <article
             key={tour.id}
-            className="bg-card border-primary/20 hover:border-primary/50 rounded-[18px] border px-5 py-4 transition"
+            className="bg-card border-primary/20 hover:border-primary/50 flex min-h-[88px] items-center rounded-[18px] border px-5 py-5 transition"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <h3 className="text-base font-semibold text-neutral-50">
+            <div className="flex w-full items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-700/80 bg-neutral-800/80 text-neutral-400">
+                <Folder className="h-5 w-5" aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <h3 className="truncate text-base font-semibold text-neutral-50">
                   {tour.title}
                 </h3>
-                <p className="text-sm text-neutral-400">
-                  {tour.location ?? "Ingen lokasjon registrert"}
-                </p>
+                <p className="text-sm text-neutral-400">0 bilder</p>
               </div>
-              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs text-neutral-300">
-                0 bilder
-              </span>
+              <ChevronRight
+                className="h-5 w-5 shrink-0 text-neutral-400"
+                aria-hidden
+              />
             </div>
           </article>
         ))}
