@@ -1,5 +1,6 @@
 "use client";
 
+import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ImageIcon, Plus, Trash2 } from "lucide-react";
@@ -28,6 +29,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     null,
   );
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
@@ -101,37 +103,89 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     }
 
     setIsUploading(true);
-    const uploads: Promise<UploadResult>[] = files.map((file: File) => {
-      const sanitized = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const filePath = `${tour.id}/${Date.now()}-${sanitized}`;
-      return supabase.storage.from("tours-gallery").upload(filePath, file, {
-        contentType: file.type,
-        upsert: true,
-      }) as Promise<UploadResult>;
-    });
+    setUploadProgress(null);
+    try {
+      const total = files.length;
+      const baseTime = Date.now();
+      const compressionOptions = {
+        maxWidthOrHeight: 1920,
+        maxSizeMB: 0.4,
+        initialQuality: 0.8,
+        useWebWorker: true,
+        fileType: "image/webp" as const,
+      };
 
-    const results = await Promise.all(uploads);
-    const failures = results.filter((r) => r.error);
+      const results: UploadResult[] = [];
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        setUploadProgress(
+          `Komprimerer og laster opp bilde ${index + 1} av ${total}…`,
+        );
+        let toUpload: File;
+        const baseName = file.name.replace(/\.[^.]+$/, "") || "image";
+        try {
+          const compressed = await imageCompression(file, compressionOptions);
+          toUpload =
+            compressed instanceof File
+              ? compressed
+              : new File([compressed], `${baseName}.webp`, {
+                  type: "image/webp",
+                });
+        } catch {
+          try {
+            const fallback = await imageCompression(file, {
+              maxWidthOrHeight: 1920,
+              maxSizeMB: 0.5,
+              initialQuality: 0.8,
+              useWebWorker: true,
+            });
+            toUpload =
+              fallback instanceof File
+                ? fallback
+                : new File([fallback], file.name, { type: file.type });
+          } catch (err) {
+            const msg =
+              err instanceof Error ? err.message : "Komprimering feilet";
+            results.push({ data: null, error: { message: msg } });
+            continue;
+          }
+        }
+        const ext = toUpload.name.endsWith(".webp")
+          ? ".webp"
+          : (file.name.match(/\.[^.]+$/)?.[0] ?? ".jpg");
+        const sanitized = (baseName + ext).replace(/[^a-zA-Z0-9._-]/g, "-");
+        const filePath = `${tour.id}/${baseTime}-${index}-${sanitized}`;
+        const result = (await supabase.storage
+          .from("tours-gallery")
+          .upload(filePath, toUpload, {
+            contentType: toUpload.type,
+            upsert: true,
+          })) as UploadResult;
+        results.push(result);
+      }
+      const failures = results.filter((r) => r.error);
 
-    const errorMessage = (err: { message?: string } | null): string =>
-      err?.message ?? "Ukjent feil";
+      const errorMessage = (err: { message?: string } | null): string =>
+        err?.message ?? "Ukjent feil";
 
-    if (failures.length > 0) {
-      toast({
-        variant: "destructive",
-        title: "Opplasting feilet",
-        description: `Kunne ikke laste opp ${failures.length} bilde(r). ${errorMessage(failures[0]?.error ?? null)}`,
-      });
-    } else {
-      toast({
-        title: "Bilder lastet opp",
-        description: `${files.length} bilde(r) lastet opp.`,
-      });
-      await loadImages();
+      if (failures.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Opplasting feilet",
+          description: `Kunne ikke laste opp ${failures.length} bilde(r). ${errorMessage(failures[0]?.error ?? null)}`,
+        });
+      } else {
+        toast({
+          title: "Bilder lastet opp",
+          description: `${files.length} bilde(r) lastet opp.`,
+        });
+        await loadImages();
+      }
+    } finally {
+      setUploadProgress(null);
+      setIsUploading(false);
+      event.target.value = "";
     }
-
-    setIsUploading(false);
-    event.target.value = "";
   };
 
   useEffect(() => {
@@ -165,6 +219,15 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
           <span>{isUploading ? "Laster opp..." : "Last opp bilder"}</span>
         </Button>
       </div>
+      {uploadProgress ? (
+        <p
+          className="text-sm text-neutral-400"
+          role="status"
+          aria-live="polite"
+        >
+          {uploadProgress}
+        </p>
+      ) : null}
 
       <Card className="bg-card border-primary/20 rounded-[18px] border">
         <CardContent className="space-y-8 px-6 pt-4 pb-8">
