@@ -124,10 +124,11 @@ export const updateTourSchema = baseTourSchema
       }),
   })
   .superRefine((data, ctx) => {
+    const endDate = data.end_date;
     if (
       data.start_date !== undefined &&
-      data.end_date !== undefined &&
-      data.end_date <= data.start_date
+      endDate != null &&
+      endDate <= data.start_date
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
