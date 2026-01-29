@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabase/supabaseClient";
 
 export default async function Home() {
   const { data } = await supabase.from("test").select("*").limit(1);

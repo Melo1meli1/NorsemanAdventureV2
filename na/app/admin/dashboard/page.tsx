@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/supabase-server";
 import { LogoutButton } from "./LogoutButton";
 
 const navItems = [
