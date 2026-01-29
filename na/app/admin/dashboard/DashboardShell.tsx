@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Home,
   Mountain,
@@ -16,6 +17,7 @@ import type { Tour } from "@/lib/types";
 import { LogoutButton } from "./utils/LogoutButton";
 import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
+import { GalleryDetailView } from "./gallery/GalleryDetailView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -37,9 +39,27 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({ tours = [] }: DashboardShellProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const validSections = [
+    "overview",
+    "tours",
+    "news",
+    "orders",
+    "gallery",
+  ] as const;
+  const sectionFromUrl = searchParams.get("section");
+  const resolvedSection = validSections.includes(
+    sectionFromUrl as (typeof validSections)[number],
+  )
+    ? (sectionFromUrl as (typeof validSections)[number])
+    : "overview";
   const [activeSection, setActiveSection] = useState<
     "overview" | "tours" | "news" | "orders" | "gallery"
-  >("overview");
+  >(() => resolvedSection);
+  const [selectedGalleryTour, setSelectedGalleryTour] = useState<Tour | null>(
+    null,
+  );
 
   const sectionTitle = {
     overview: "Oversikt",
@@ -48,6 +68,20 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     orders: "Bestillinger",
     gallery: "Galleri",
   }[activeSection];
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (activeSection === "overview") {
+      params.delete("section");
+    } else {
+      params.set("section", activeSection);
+    }
+    const nextParams = params.toString();
+    if (nextParams === searchParams.toString()) {
+      return;
+    }
+    router.replace(nextParams ? `?${nextParams}` : "");
+  }, [activeSection, searchParams, router]);
 
   return (
     <main className="bg-page-background flex min-h-screen text-neutral-50">
@@ -74,6 +108,9 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
               onClick={() => {
                 if (id === "overview" || id === "tours" || id === "gallery") {
                   setActiveSection(id);
+                  if (id !== "gallery") {
+                    setSelectedGalleryTour(null);
+                  }
                 }
               }}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-medium ${
@@ -240,7 +277,18 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             </div>
           )}
 
-          {activeSection === "gallery" && <GalleryView tours={tours} />}
+          {activeSection === "gallery" &&
+            (selectedGalleryTour ? (
+              <GalleryDetailView
+                tour={selectedGalleryTour}
+                onBack={() => setSelectedGalleryTour(null)}
+              />
+            ) : (
+              <GalleryView
+                tours={tours}
+                onSelectTour={(tour) => setSelectedGalleryTour(tour)}
+              />
+            ))}
         </div>
       </section>
     </main>
