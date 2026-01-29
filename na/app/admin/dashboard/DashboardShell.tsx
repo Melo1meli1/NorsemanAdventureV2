@@ -11,7 +11,9 @@ import {
   Users,
   MapPin,
 } from "lucide-react";
+import type { Tour } from "@/lib/types";
 import { LogoutButton } from "./LogoutButton";
+import { TourListView } from "./TourListView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -28,7 +30,11 @@ const kpiCards = [
   { label: "Aktive turer", value: "5", tone: "blue", Icon: MapPin },
 ];
 
-export function DashboardShell() {
+type DashboardShellProps = {
+  tours?: Tour[];
+};
+
+export function DashboardShell({ tours = [] }: DashboardShellProps) {
   const [activeSection, setActiveSection] = useState<
     "overview" | "tours" | "news" | "orders" | "gallery"
   >("overview");
@@ -203,13 +209,7 @@ export function DashboardShell() {
             </>
           )}
 
-          {activeSection === "tours" && (
-            <div>
-              <p className="text-sm text-neutral-400">
-                Turer-seksjon. TourList / ToursView kan kobles inn her.
-              </p>
-            </div>
-          )}
+          {activeSection === "tours" && <TourListView tours={tours} />}
 
           {activeSection === "news" && (
             <div>

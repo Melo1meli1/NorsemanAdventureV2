@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
+import { getTours } from "./actions/tours";
 import { DashboardShell } from "./DashboardShell";
 
 export default async function AdminDashboardPage() {
@@ -12,5 +13,8 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  return <DashboardShell />;
+  const result = await getTours();
+  const tours = result?.success && result.data ? result.data : [];
+
+  return <DashboardShell tours={tours} />;
 }
