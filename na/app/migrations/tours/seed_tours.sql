@@ -1,9 +1,14 @@
 -- Seed: 4 eksempel-turer for utvikling/testing
--- Kjør etter tours.sql og rls.sql (migrasjoner kjører som db-owner, så INSERT er tillatt)
+-- Kjør etter tours.sql, tours_add_enums_and_fields.sql og rls.sql (migrasjoner kjører som db-owner, så INSERT er tillatt)
 
 insert into public.tours (
   title,
-  description,
+  short_description,
+  long_description,
+  sted,
+  vanskelighetsgrad,
+  sesong,
+  terreng,
   price,
   start_date,
   end_date,
@@ -13,7 +18,12 @@ insert into public.tours (
 ) values
   (
     'Lofoten – midnattsol og fjell',
+    'En ukes tur i Lofoten med fokus på fotografering og fjellvandring.',
     'En ukes tur i Lofoten med fokus på fotografering, fjellvandring og opplevelse av midnattsol. Inkluderer overnatting i rorbu.',
+    'Lofoten',
+    'intermediær',
+    'sommer',
+    'blandet',
     8990.00,
     '2026-06-15 10:00:00+02',
     '2026-06-22 14:00:00+02',
@@ -23,7 +33,12 @@ insert into public.tours (
   ),
   (
     'Geiranger og Nærøyfjorden',
+    'Kombinasjonstur med båt på Geirangerfjorden og Nærøyfjorden.',
     'Kombinasjonstur med båt på Geirangerfjorden og Nærøyfjorden, med overnatting i fjellstuer og guidet vandring.',
+    'Geiranger / Nærøyfjorden',
+    'nybegynner',
+    'sommer',
+    'asfalt',
     7490.00,
     '2026-07-01 09:00:00+02',
     '2026-07-05 16:00:00+02',
@@ -33,7 +48,12 @@ insert into public.tours (
   ),
   (
     'Nordkapp og Finnmark',
+    'Reise til Nordkapp med Samiske opplevelser.',
     'Reise til Nordkapp med besøk i Honningsvåg, Samiske opplevelser og mulighet for midnattsol og nordlys avhengig av sesong.',
+    'Nordkapp / Finnmark',
+    'erfaren',
+    'sommer',
+    'blandet',
     12990.00,
     '2026-08-10 08:00:00+02',
     '2026-08-17 18:00:00+02',
@@ -43,7 +63,12 @@ insert into public.tours (
   ),
   (
     'Bergen og Vestlandsfjordene',
+    'Kort helgetur fra Bergen med båttur på fjordene.',
     'Kort helgetur fra Bergen med båttur på fjordene, Fløibanen og opplevelse av Bryggen og det historiske Bergen.',
+    'Bergen',
+    'nybegynner',
+    'sommer',
+    'asfalt',
     3990.00,
     '2026-09-12 11:00:00+02',
     '2026-09-14 15:00:00+02',
