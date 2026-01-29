@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Tour } from "@/lib/types";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
+import TourFormModal from "./TourFormModal";
 
 type TourListViewProps = {
   tours: Tour[];
@@ -32,6 +33,8 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const fallbackImages = [
     "/hero-motorcycle.jpg",
     "/tour-asphalt.jpg",
@@ -60,12 +63,37 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
     return tours.filter(
       (t) =>
         t.title.toLowerCase().includes(q) ||
-        (t.description?.toLowerCase().includes(q) ?? false),
+        (t.short_description?.toLowerCase().includes(q) ?? false) ||
+        (t.long_description?.toLowerCase().includes(q) ?? false) ||
+        (t.sted?.toLowerCase().includes(q) ?? false),
     );
   }, [tours, search]);
 
   function handleRequestDelete(tour: Tour) {
     setPendingDelete(tour);
+  }
+
+  function handleOpenNewTour() {
+    if (onNewTour) {
+      onNewTour();
+      return;
+    }
+    setEditingTour(null);
+    setIsFormOpen(true);
+  }
+
+  function handleOpenEditTour(tour: Tour) {
+    if (onEdit) {
+      onEdit(tour);
+      return;
+    }
+    setEditingTour(tour);
+    setIsFormOpen(true);
+  }
+
+  function handleCloseForm() {
+    setIsFormOpen(false);
+    setEditingTour(null);
   }
 
   async function handleConfirmDelete() {
@@ -104,7 +132,7 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
         </div>
         <button
           type="button"
-          onClick={onNewTour}
+          onClick={handleOpenNewTour}
           className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 items-center gap-2 rounded-lg px-5 text-sm font-semibold uppercase transition"
         >
           <Plus className="h-4 w-4" />
@@ -155,7 +183,8 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
                       0/{tour.seats_available}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" aria-hidden />–
+                      <MapPin className="h-4 w-4" aria-hidden />
+                      {tour.sted ?? "–"}
                     </span>
                   </div>
                 </div>
@@ -164,7 +193,7 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
                 <div className="flex shrink-0 gap-3">
                   <button
                     type="button"
-                    onClick={() => onEdit?.(tour)}
+                    onClick={() => handleOpenEditTour(tour)}
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex h-11 w-11 items-center justify-center rounded-lg border bg-transparent transition-colors"
                     aria-label={`Rediger ${tour.title}`}
                   >
@@ -195,6 +224,14 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
         }}
         confirmLabel="Slett"
         cancelLabel="Avbryt"
+      />
+
+      <TourFormModal
+        open={isFormOpen}
+        mode={editingTour ? "edit" : "create"}
+        initialTour={editingTour}
+        onClose={handleCloseForm}
+        onSuccess={() => router.refresh()}
       />
     </div>
   );

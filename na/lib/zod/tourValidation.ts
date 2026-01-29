@@ -2,6 +2,9 @@ import { z } from "zod";
 import { Constants } from "@/lib/database.types";
 
 const tourStatusEnum = z.enum(Constants.public.Enums.tour_status);
+const vanskelighetsgradEnum = z.enum(Constants.public.Enums.vanskelighetsgrad);
+const sesongEnum = z.enum(Constants.public.Enums.sesong);
+const terrengEnum = z.enum(Constants.public.Enums.terreng);
 
 const nullableString = z
   .string()
@@ -48,7 +51,24 @@ export const baseTourSchema = z.object({
     })
     .trim()
     .min(1, "Tittel er påkrevd."),
-  description: nullableString,
+  short_description: nullableString,
+  long_description: nullableString,
+  sted: nullableString,
+  vanskelighetsgrad: z
+    .union([vanskelighetsgradEnum, z.literal("")])
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .optional(),
+  sesong: z
+    .union([sesongEnum, z.literal("")])
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .optional(),
+  terreng: z
+    .union([terrengEnum, z.literal("")])
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .optional(),
   price: z.coerce
     .number({
       message: "Pris må være et tall.",

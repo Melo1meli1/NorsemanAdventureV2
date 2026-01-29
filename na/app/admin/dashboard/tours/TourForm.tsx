@@ -18,11 +18,18 @@ const accentOrange = "#ef5b25";
 
 type Mode = "create" | "edit";
 
-/** Form state uses string dates (HTML date inputs); zod coerces to Date on submit. */
-type TourFormValues = Omit<CreateTourInput, "start_date" | "end_date"> & {
+/** Form state uses string dates (HTML date inputs); zod coerces to Date on submit.
+ *  Enum fields use "" for empty select; zod transforms to null on submit. */
+type TourFormValues = Omit<
+  CreateTourInput,
+  "start_date" | "end_date" | "vanskelighetsgrad" | "sesong" | "terreng"
+> & {
   start_date: string;
   end_date: string;
   id?: string;
+  vanskelighetsgrad?: string;
+  sesong?: string;
+  terreng?: string;
 };
 
 type TourFormProps = {
@@ -66,7 +73,12 @@ export default function TourForm({
         ? {
             id: initialTour.id,
             title: initialTour.title,
-            description: initialTour.description ?? "",
+            short_description: initialTour.short_description ?? "",
+            long_description: initialTour.long_description ?? "",
+            sted: initialTour.sted ?? "",
+            vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",
+            sesong: initialTour.sesong ?? "",
+            terreng: initialTour.terreng ?? "",
             price: initialTour.price,
             start_date: toDateInputValue(initialTour.start_date),
             end_date: toDateInputValue(initialTour.end_date),
@@ -89,7 +101,12 @@ export default function TourForm({
   async function onSubmit(data: CreateTourInput | UpdateTourInput) {
     const formData = new FormData();
     formData.set("title", data.title ?? "");
-    formData.set("description", data.description ?? "");
+    formData.set("short_description", data.short_description ?? "");
+    formData.set("long_description", data.long_description ?? "");
+    formData.set("sted", data.sted ?? "");
+    formData.set("vanskelighetsgrad", data.vanskelighetsgrad ?? "");
+    formData.set("sesong", data.sesong ?? "");
+    formData.set("terreng", data.terreng ?? "");
     formData.set("price", String(data.price ?? 0));
     formData.set(
       "start_date",
@@ -162,22 +179,138 @@ export default function TourForm({
       {/* Kort beskrivelse */}
       <div className="flex flex-col gap-1.5">
         <label
-          htmlFor="description"
+          htmlFor="short_description"
           className="text-sm font-medium text-neutral-200"
         >
-          Kort beskrivelse *
+          Kort beskrivelse
         </label>
         <textarea
-          id="description"
-          rows={3}
+          id="short_description"
+          rows={2}
           placeholder="En kort og fengende beskrivelse av turen"
           className="w-full resize-y rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 py-2 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
           style={{ "--accent": accentOrange } as React.CSSProperties}
-          {...register("description")}
+          {...register("short_description")}
         />
-        {errors.description && (
-          <p className="text-xs text-red-400">{errors.description.message}</p>
+        {errors.short_description && (
+          <p className="text-xs text-red-400">
+            {errors.short_description.message}
+          </p>
         )}
+      </div>
+
+      {/* Lang beskrivelse */}
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="long_description"
+          className="text-sm font-medium text-neutral-200"
+        >
+          Lang beskrivelse
+        </label>
+        <textarea
+          id="long_description"
+          rows={5}
+          placeholder="Utfyllende beskrivelse av turen, program, inkludert osv."
+          className="w-full resize-y rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 py-2 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+          style={{ "--accent": accentOrange } as React.CSSProperties}
+          {...register("long_description")}
+        />
+        {errors.long_description && (
+          <p className="text-xs text-red-400">
+            {errors.long_description.message}
+          </p>
+        )}
+      </div>
+
+      {/* Sted, vanskelighetsgrad, sesong, terreng – 2x2 grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="sted"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Sted
+          </label>
+          <input
+            id="sted"
+            type="text"
+            placeholder="F.eks. Lofoten, Nordkapp"
+            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            style={{ "--accent": accentOrange } as React.CSSProperties}
+            {...register("sted")}
+          />
+          {errors.sted && (
+            <p className="text-xs text-red-400">{errors.sted.message}</p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="vanskelighetsgrad"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Vanskelighetsgrad
+          </label>
+          <select
+            id="vanskelighetsgrad"
+            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            style={{ "--accent": accentOrange } as React.CSSProperties}
+            {...register("vanskelighetsgrad")}
+          >
+            <option value="">Velg</option>
+            <option value="nybegynner">Nybegynner</option>
+            <option value="intermediær">Intermediær</option>
+            <option value="erfaren">Erfaren</option>
+            <option value="ekspert">Ekspert</option>
+          </select>
+          {errors.vanskelighetsgrad && (
+            <p className="text-xs text-red-400">
+              {errors.vanskelighetsgrad.message}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="sesong"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Sesong
+          </label>
+          <select
+            id="sesong"
+            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            style={{ "--accent": accentOrange } as React.CSSProperties}
+            {...register("sesong")}
+          >
+            <option value="">Velg</option>
+            <option value="sommer">Sommer</option>
+            <option value="vinter">Vinter</option>
+          </select>
+          {errors.sesong && (
+            <p className="text-xs text-red-400">{errors.sesong.message}</p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="terreng"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Terreng
+          </label>
+          <select
+            id="terreng"
+            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
+            style={{ "--accent": accentOrange } as React.CSSProperties}
+            {...register("terreng")}
+          >
+            <option value="">Velg</option>
+            <option value="asfalt">Asfalt</option>
+            <option value="grus">Grus</option>
+            <option value="blandet">Blandet</option>
+          </select>
+          {errors.terreng && (
+            <p className="text-xs text-red-400">{errors.terreng.message}</p>
+          )}
+        </div>
       </div>
 
       {/* Pris + Plasser */}

@@ -36,7 +36,12 @@ function extractFirstErrorMessage(error: unknown): string {
 function mapCreateInputToInsert(
   input: Required<{
     title: string;
-    description: string | null | undefined;
+    short_description: string | null | undefined;
+    long_description: string | null | undefined;
+    sted: string | null | undefined;
+    vanskelighetsgrad: TourInsert["vanskelighetsgrad"];
+    sesong: TourInsert["sesong"];
+    terreng: TourInsert["terreng"];
     price: number;
     start_date: Date;
     end_date: Date | null | undefined;
@@ -47,7 +52,12 @@ function mapCreateInputToInsert(
 ): TourInsert {
   return {
     title: input.title,
-    description: input.description ?? null,
+    short_description: input.short_description ?? null,
+    long_description: input.long_description ?? null,
+    sted: input.sted ?? null,
+    vanskelighetsgrad: input.vanskelighetsgrad ?? null,
+    sesong: input.sesong ?? null,
+    terreng: input.terreng ?? null,
     price: input.price,
     start_date: input.start_date.toISOString(),
     end_date: input.end_date ? input.end_date.toISOString() : null,
@@ -60,7 +70,12 @@ function mapCreateInputToInsert(
 function mapUpdateInputToUpdate(
   input: Partial<{
     title: string;
-    description: string | null | undefined;
+    short_description: string | null | undefined;
+    long_description: string | null | undefined;
+    sted: string | null | undefined;
+    vanskelighetsgrad: TourUpdate["vanskelighetsgrad"];
+    sesong: TourUpdate["sesong"];
+    terreng: TourUpdate["terreng"];
     price: number;
     start_date: Date;
     end_date: Date | null | undefined;
@@ -72,7 +87,15 @@ function mapUpdateInputToUpdate(
   const update: TourUpdate = {};
 
   if (input.title !== undefined) update.title = input.title;
-  if (input.description !== undefined) update.description = input.description;
+  if (input.short_description !== undefined)
+    update.short_description = input.short_description;
+  if (input.long_description !== undefined)
+    update.long_description = input.long_description;
+  if (input.sted !== undefined) update.sted = input.sted;
+  if (input.vanskelighetsgrad !== undefined)
+    update.vanskelighetsgrad = input.vanskelighetsgrad;
+  if (input.sesong !== undefined) update.sesong = input.sesong;
+  if (input.terreng !== undefined) update.terreng = input.terreng;
   if (input.price !== undefined) update.price = input.price;
   if (input.start_date !== undefined)
     update.start_date = input.start_date.toISOString();
@@ -89,7 +112,12 @@ function mapUpdateInputToUpdate(
 export async function createTour(formData: FormData) {
   const rawData = {
     title: formData.get("title"),
-    description: formData.get("description") ?? "",
+    short_description: formData.get("short_description") ?? "",
+    long_description: formData.get("long_description") ?? "",
+    sted: formData.get("sted") ?? "",
+    vanskelighetsgrad: formData.get("vanskelighetsgrad") ?? "",
+    sesong: formData.get("sesong") ?? "",
+    terreng: formData.get("terreng") ?? "",
     price: formData.get("price"),
     start_date: formData.get("start_date"),
     end_date: formData.get("end_date"),
@@ -110,14 +138,19 @@ export async function createTour(formData: FormData) {
   const supabase = await createClient();
 
   const insertPayload = mapCreateInputToInsert({
-    description: parsed.data.description ?? null,
     end_date: parsed.data.end_date ?? null,
     image_url: parsed.data.image_url ?? null,
+    long_description: parsed.data.long_description ?? null,
     price: parsed.data.price,
     seats_available: parsed.data.seats_available,
+    sesong: parsed.data.sesong ?? null,
+    short_description: parsed.data.short_description ?? null,
     start_date: parsed.data.start_date,
+    sted: parsed.data.sted ?? null,
     status: parsed.data.status,
+    terreng: parsed.data.terreng ?? null,
     title: parsed.data.title,
+    vanskelighetsgrad: parsed.data.vanskelighetsgrad ?? null,
   });
 
   const { error } = await supabase.from("tours").insert(insertPayload);
@@ -139,7 +172,12 @@ export async function updateTour(formData: FormData) {
   const rawData = {
     id: formData.get("id"),
     title: formData.get("title") ?? undefined,
-    description: formData.get("description") ?? undefined,
+    short_description: formData.get("short_description") ?? undefined,
+    long_description: formData.get("long_description") ?? undefined,
+    sted: formData.get("sted") ?? undefined,
+    vanskelighetsgrad: formData.get("vanskelighetsgrad") ?? undefined,
+    sesong: formData.get("sesong") ?? undefined,
+    terreng: formData.get("terreng") ?? undefined,
     price: formData.get("price") ?? undefined,
     start_date: formData.get("start_date") ?? undefined,
     end_date: formData.get("end_date") ?? undefined,
