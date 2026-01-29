@@ -109,8 +109,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
       const baseTime = Date.now();
       const compressionOptions = {
         maxWidthOrHeight: 1920,
-        maxSizeMB: 0.4,
-        initialQuality: 0.8,
+        maxSizeMB: 1.0,
+        initialQuality: 0.92,
         useWebWorker: true,
         fileType: "image/webp" as const,
       };
@@ -135,8 +135,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
           try {
             const fallback = await imageCompression(file, {
               maxWidthOrHeight: 1920,
-              maxSizeMB: 0.5,
-              initialQuality: 0.8,
+              maxSizeMB: 1.0,
+              initialQuality: 0.92,
               useWebWorker: true,
             });
             toUpload =
@@ -262,7 +262,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               </Button>
             </div>
           ) : (
-            <div className="h-112 min-h-0 overflow-x-hidden overflow-y-auto">
+            <div className="h-48 min-h-0 overflow-x-hidden overflow-y-auto md:h-80 lg:h-56">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {images.map((image, index) => (
                   <div
