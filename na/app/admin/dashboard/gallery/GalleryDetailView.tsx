@@ -34,6 +34,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     [],
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [deletingImageName, setDeletingImageName] = useState<string | null>(
     null,
@@ -43,7 +44,46 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
-  const loadImages = useCallback(async () => {
+  const loadPage = useCallback(
+    async (page: number) => {
+      setIsLoadingImages(true);
+      const offset = (page - 1) * IMAGES_PER_PAGE;
+      const { data, error } = await supabase.storage
+        .from("tours-gallery")
+        .list(`${tour.id}/`, {
+          limit: IMAGES_PER_PAGE,
+          offset,
+          sortBy: { column: "name", order: "asc" },
+        });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Kunne ikke hente bilder",
+          description: error.message,
+        });
+        setIsLoadingImages(false);
+        return 0;
+      }
+
+      const files = (data ?? []).filter(
+        (file: FileObject) => file.name && !file.name.endsWith("/"),
+      );
+      const mapped = files.map((file: FileObject) => {
+        const { data: publicData } = supabase.storage
+          .from("tours-gallery")
+          .getPublicUrl(`${tour.id}/${file.name}`);
+        return { name: file.name, url: publicData.publicUrl };
+      });
+
+      setImages(mapped);
+      setIsLoadingImages(false);
+      return mapped.length;
+    },
+    [supabase, toast, tour.id],
+  );
+
+  const loadInitial = useCallback(async () => {
     setIsLoadingImages(true);
     const { data, error } = await supabase.storage
       .from("tours-gallery")
@@ -62,32 +102,36 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
       return;
     }
 
-    const mapped = (data ?? [])
-      .filter((file: FileObject) => file.name && !file.name.endsWith("/"))
+    const files = (data ?? []).filter(
+      (file: FileObject) => file.name && !file.name.endsWith("/"),
+    );
+    const count = files.length;
+    setTotalCount(count);
+    setCurrentPage(1);
+    const firstPage = files
+      .slice(0, IMAGES_PER_PAGE)
       .map((file: FileObject) => {
         const { data: publicData } = supabase.storage
           .from("tours-gallery")
           .getPublicUrl(`${tour.id}/${file.name}`);
         return { name: file.name, url: publicData.publicUrl };
       });
-
-    setImages(mapped);
-    setCurrentPage((p) =>
-      Math.min(p, Math.ceil(mapped.length / IMAGES_PER_PAGE) || 1),
-    );
+    setImages(firstPage);
     setIsLoadingImages(false);
   }, [supabase, toast, tour.id]);
 
-  const totalPages = Math.ceil(images.length / IMAGES_PER_PAGE) || 1;
-  const paginatedImages = useMemo(
-    () =>
-      images.slice(
-        (currentPage - 1) * IMAGES_PER_PAGE,
-        currentPage * IMAGES_PER_PAGE,
-      ),
-    [images, currentPage],
+  const totalPages = Math.ceil(totalCount / IMAGES_PER_PAGE) || 1;
+  const hasNextPage = currentPage < totalPages;
+
+  const goToPage = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      loadPage(page);
+    },
+    [loadPage],
   );
-  const showPagination = images.length > IMAGES_PER_PAGE;
+
+  const showPagination = totalPages > 1;
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
@@ -108,7 +152,11 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
       });
     } else {
       toast({ title: "Bilde slettet" });
-      await loadImages();
+      setTotalCount((c) => Math.max(0, c - 1));
+      const count = await loadPage(currentPage);
+      if (count === 0 && currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
     }
     setDeletingImageName(null);
     setImageToDelete(null);
@@ -203,7 +251,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
           title: "Bilder lastet opp",
           description: `${files.length} bilde(r) lastet opp.`,
         });
-        await loadImages();
+        await loadInitial();
       }
     } finally {
       setUploadProgress(null);
@@ -213,12 +261,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadImages();
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [loadImages]);
+    loadInitial();
+  }, [loadInitial]);
 
   return (
     <section className="space-y-6">
@@ -289,7 +333,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
             <>
               <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-120">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                  {paginatedImages.map((image, index) => {
+                  {images.map((image, index) => {
                     const globalIndex =
                       (currentPage - 1) * IMAGES_PER_PAGE + index + 1;
                     return (
@@ -336,7 +380,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                     variant="outline"
                     size="sm"
                     className="border-neutral-600 text-neutral-200"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
                     aria-label="Forrige side"
                   >
@@ -356,10 +400,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                     variant="outline"
                     size="sm"
                     className="border-neutral-600 text-neutral-200"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage >= totalPages}
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={!hasNextPage}
                     aria-label="Neste side"
                   >
                     <span className="sr-only sm:not-sr-only sm:mr-1">
