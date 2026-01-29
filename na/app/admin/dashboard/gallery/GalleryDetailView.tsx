@@ -52,7 +52,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
             <Button
               type="button"
               variant="outline"
-              className="border-primary/40 text-primary hover:bg-primary/10 mt-5"
+              className="border-primary/40 text-primary hover:bg-primary/10 mt-13 h-10"
             >
               Velg filer
             </Button>
