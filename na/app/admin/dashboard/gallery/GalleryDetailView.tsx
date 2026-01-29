@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ImageIcon, Plus } from "lucide-react";
+import { ArrowLeft, ImageIcon, Plus, Trash2 } from "lucide-react";
 import type { FileObject } from "@supabase/storage-js";
 import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
+import { ConfirmDialog } from "../utils/ConfirmDialog";
 
 type GalleryDetailViewProps = {
   tour: Tour;
@@ -23,6 +24,10 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     [],
   );
   const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [deletingImageName, setDeletingImageName] = useState<string | null>(
+    null,
+  );
+  const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
@@ -60,6 +65,31 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleDeleteImage = async (imageName: string) => {
+    setDeletingImageName(imageName);
+    const path = `${tour.id}/${imageName}`;
+    const { error } = await supabase.storage
+      .from("tours-gallery")
+      .remove([path]);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Kunne ikke slette bildet",
+        description: error.message,
+      });
+    } else {
+      toast({ title: "Bilde slettet" });
+      await loadImages();
+    }
+    setDeletingImageName(null);
+    setImageToDelete(null);
+  };
+
+  const onConfirmDelete = () => {
+    if (imageToDelete) handleDeleteImage(imageToDelete);
   };
 
   const handleFilesSelected = async (
@@ -169,7 +199,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               </Button>
             </div>
           ) : (
-            <div className="h-[28rem] min-h-0 overflow-x-hidden overflow-y-auto">
+            <div className="h-112 min-h-0 overflow-x-hidden overflow-y-auto">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {images.map((image, index) => (
                   <div
@@ -184,9 +214,24 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="object-cover"
                       />
-                      <span className="absolute right-2 bottom-2 rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
-                        #{index + 1}
-                      </span>
+                      <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
+                        <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
+                          #{index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setImageToDelete(image.name);
+                          }}
+                          disabled={deletingImageName === image.name}
+                          aria-label={`Slett ${image.name}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -205,6 +250,16 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
         multiple
         className="hidden"
         onChange={handleFilesSelected}
+      />
+      <ConfirmDialog
+        open={imageToDelete !== null}
+        title="Slett bilde?"
+        description="Er du sikker på at du vil slette dette bildet? Handlingen kan ikke angres."
+        onClose={() => setImageToDelete(null)}
+        onConfirm={onConfirmDelete}
+        confirmLabel="Slett"
+        cancelLabel="Avbryt"
+        isConfirming={deletingImageName === imageToDelete}
       />
     </section>
   );
