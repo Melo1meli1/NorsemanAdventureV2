@@ -1,14 +1,14 @@
 -- tours-gallery bucket: public bucket for tour images.
--- Required MIME types: image/jpeg, image/png (configured below and verified in README).
+-- Allowed MIME types: image/jpeg, image/png, image/webp (WebP used after client-side compression).
 -- If INSERT into storage.buckets fails (e.g. schema read-only), create the bucket in Supabase Dashboard:
---   Name: tours-gallery, Public: on, Allowed MIME types: image/jpeg, image/png
+--   Name: tours-gallery, Public: on, Allowed MIME types: image/jpeg, image/png, image/webp
 
 insert into storage.buckets (id, name, public, allowed_mime_types)
 values (
   'tours-gallery',
   'tours-gallery',
   true,
-  array['image/jpeg', 'image/png']::text[]
+  array['image/jpeg', 'image/png', 'image/webp']::text[]
 )
 on conflict (id) do update set
   public = excluded.public,
@@ -16,7 +16,7 @@ on conflict (id) do update set
 
 -- Verify MIME types (run in SQL Editor after migration):
 --   select allowed_mime_types from storage.buckets where id = 'tours-gallery';
--- Expected: {image/jpeg,image/png}
+-- Expected: {image/jpeg,image/png,image/webp}
 
 -- RLS: public read, authenticated (admin) write
 
