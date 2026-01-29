@@ -12,7 +12,7 @@ const nullableString = z
 
 const startDateSchema = z.coerce
   .date({
-    error: "Ugyldig startdato.",
+    message: "Ugyldig startdato.",
   })
   .refine((date) => !Number.isNaN(date.getTime()), {
     message: "Ugyldig startdato.",
@@ -22,7 +22,7 @@ const endDateSchema = z
   .union([
     z.coerce
       .date({
-        error: "Ugyldig sluttdato.",
+        message: "Ugyldig sluttdato.",
       })
       .refine((date) => !Number.isNaN(date.getTime()), {
         message: "Ugyldig sluttdato.",
@@ -44,21 +44,21 @@ const endDateSchema = z
 export const baseTourSchema = z.object({
   title: z
     .string({
-      error: "Tittel er påkrevd.",
+      message: "Tittel er påkrevd.",
     })
     .trim()
     .min(1, "Tittel er påkrevd."),
   description: nullableString,
   price: z.coerce
     .number({
-      error: "Pris må være et tall.",
+      message: "Pris må være et tall.",
     })
     .positive("Pris må være større enn 0."),
   start_date: startDateSchema,
   end_date: endDateSchema,
   seats_available: z.coerce
     .number({
-      error: "Antall plasser må være et tall.",
+      message: "Antall plasser må være et tall.",
     })
     .int("Antall plasser må være et heltall.")
     .min(0, "Antall plasser kan ikke være negativt."),
@@ -81,7 +81,7 @@ export const updateTourSchema = baseTourSchema
   .extend({
     id: z
       .string({
-        error: "ID er påkrevd.",
+        message: "ID er påkrevd.",
       })
       .uuid({
         message: "Ugyldig tur-id.",

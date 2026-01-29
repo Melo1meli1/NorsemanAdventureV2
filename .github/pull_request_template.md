@@ -1,6 +1,6 @@
 ## Connection to issue
 
-Closes #24
+Closes #
 
 ## Brief comment on work done (i.e comment on estimate vs actual time spent)
 
