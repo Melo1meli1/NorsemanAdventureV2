@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.93.1"
+    "@hookform/resolvers": "^5.2.2",
+    "@supabase/supabase-js": "^2.93.1",
+    "react-hook-form": "^7.71.1"
   },
   "devDependencies": {
     "eslint": "^9",

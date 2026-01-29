@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* Base design tokens (HSL components) */
 :root {
@@ -41,6 +44,21 @@
   --rust: 18 75% 38%;
   --forest: 160 30% 25%;
   --slate-dark: 220 20% 6%;
+
+  /* shadcn chart/sidebar (using existing theme) */
+  --chart-1: 22 82% 51%;
+  --chart-2: 160 30% 25%;
+  --chart-3: 220 15% 18%;
+  --chart-4: 18 75% 38%;
+  --chart-5: 220 10% 55%;
+  --sidebar: 220 19% 12%;
+  --sidebar-foreground: 40 30% 95%;
+  --sidebar-primary: 22 82% 51%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 15% 18%;
+  --sidebar-accent-foreground: 40 30% 90%;
+  --sidebar-border: 220 15% 20%;
+  --sidebar-ring: 22 82% 51%;
 
   /* Gradients */
   --gradient-hero: linear-gradient(
@@ -118,8 +136,30 @@
   --color-ring: hsl(var(--ring));
   --color-page-background: hsl(var(--page-background));
 
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 /* Base typography */
@@ -152,4 +192,26 @@ body {
 
 .hero-overlay {
   background: var(--gradient-hero);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Date input styling (admin tour form) – mørk theme, lesbar tekst, synlig kalender-ikon */
+.tour-date-input::-webkit-datetime-edit {
+  color: hsl(40 30% 95%);
+}
+.tour-date-input::-webkit-datetime-edit-fields-wrapper {
+  color: hsl(40 30% 95%);
+}
+.tour-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
 }

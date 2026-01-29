@@ -59,7 +59,7 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <main className="bg-pg-background flex min-h-screen items-center justify-center px-4">
+    <main className="bg-page-background flex min-h-screen items-center justify-center px-4">
       <section
         aria-labelledby="admin-login-title"
         className="bg-card flex w-full max-w-md flex-col gap-6 rounded-2xl border border-neutral-800 px-8 py-10 shadow-xl shadow-black/40"
