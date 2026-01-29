@@ -40,7 +40,7 @@ export default async function AdminDashboardPage() {
 
   // Rest of the component if authenticated
   return (
-    <main className="bg-pg-background flex min-h-screen text-neutral-50">
+    <main className="bg-page-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
         {/* Logo and title */}
@@ -99,7 +99,7 @@ export default async function AdminDashboardPage() {
       {/* Main content area */}
       <section className="flex flex-1 flex-col">
         {/* Top bar */}
-        <header className="bg-pg-background flex items-center justify-between border-b border-neutral-800 px-4 py-4 md:px-8">
+        <header className="bg-page-background flex items-center justify-between border-b border-neutral-800 px-4 py-4 md:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
