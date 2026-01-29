@@ -3,7 +3,14 @@
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ImageIcon, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ImageIcon,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import type { FileObject } from "@supabase/storage-js";
 import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +18,8 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
+
+const IMAGES_PER_PAGE = 12;
 
 type GalleryDetailViewProps = {
   tour: Tour;
@@ -24,6 +33,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   const [images, setImages] = useState<Array<{ name: string; url: string }>>(
     [],
   );
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [deletingImageName, setDeletingImageName] = useState<string | null>(
     null,
@@ -38,7 +48,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     const { data, error } = await supabase.storage
       .from("tours-gallery")
       .list(`${tour.id}/`, {
-        limit: 200,
+        limit: 1000,
         sortBy: { column: "name", order: "asc" },
       });
 
@@ -62,8 +72,22 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
       });
 
     setImages(mapped);
+    setCurrentPage((p) =>
+      Math.min(p, Math.ceil(mapped.length / IMAGES_PER_PAGE) || 1),
+    );
     setIsLoadingImages(false);
   }, [supabase, toast, tour.id]);
+
+  const totalPages = Math.ceil(images.length / IMAGES_PER_PAGE) || 1;
+  const paginatedImages = useMemo(
+    () =>
+      images.slice(
+        (currentPage - 1) * IMAGES_PER_PAGE,
+        currentPage * IMAGES_PER_PAGE,
+      ),
+    [images, currentPage],
+  );
+  const showPagination = images.length > IMAGES_PER_PAGE;
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
@@ -262,44 +286,90 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               </Button>
             </div>
           ) : (
-            <div className="h-48 min-h-0 overflow-x-hidden overflow-y-auto md:h-80 lg:h-56">
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                {images.map((image, index) => (
-                  <div
-                    key={image.name}
-                    className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
-                  >
-                    <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
-                      <Image
-                        src={image.url}
-                        alt={image.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="object-cover"
-                      />
-                      <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
-                        <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
-                          #{index + 1}
-                        </span>
-                        <Button
-                          type="button"
-                          size="icon-sm"
-                          className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImageToDelete(image.name);
-                          }}
-                          disabled={deletingImageName === image.name}
-                          aria-label={`Slett ${image.name}`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                        </Button>
+            <>
+              <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-120">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  {paginatedImages.map((image, index) => {
+                    const globalIndex =
+                      (currentPage - 1) * IMAGES_PER_PAGE + index + 1;
+                    return (
+                      <div
+                        key={image.name}
+                        className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
+                      >
+                        <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
+                          <Image
+                            src={image.url}
+                            alt={image.name}
+                            fill
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover"
+                          />
+                          <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
+                            <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
+                              #{globalIndex}
+                            </span>
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImageToDelete(image.name);
+                              }}
+                              disabled={deletingImageName === image.name}
+                              aria-label={`Slett ${image.name}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+              {showPagination ? (
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-600 text-neutral-200"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    aria-label="Forrige side"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden />
+                    <span className="sr-only sm:not-sr-only sm:ml-1">
+                      Forrige
+                    </span>
+                  </Button>
+                  <span
+                    className="px-3 text-sm text-neutral-300"
+                    aria-live="polite"
+                  >
+                    Side {currentPage} av {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-600 text-neutral-200"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage >= totalPages}
+                    aria-label="Neste side"
+                  >
+                    <span className="sr-only sm:not-sr-only sm:mr-1">
+                      Neste
+                    </span>
+                    <ChevronRight className="h-4 w-4" aria-hidden />
+                  </Button>
+                </div>
+              ) : null}
+            </>
           )}
           {isLoadingImages ? (
             <p className="text-xs text-neutral-400">Laster bilder...</p>
