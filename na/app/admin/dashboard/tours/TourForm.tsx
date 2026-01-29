@@ -6,11 +6,12 @@ import {
   createTourSchema,
   type CreateTourInput,
 } from "@/lib/zod/tourValidation";
+
 import {
   updateTourSchema,
   type UpdateTourInput,
 } from "@/lib/zod/tourValidation";
-import { createTour, updateTour } from "./actions/tours";
+import { createTour, updateTour } from "../actions/tours";
 import type { Tour } from "@/lib/types";
 
 const accentOrange = "#ef5b25";

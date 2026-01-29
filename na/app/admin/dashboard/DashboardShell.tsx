@@ -29,9 +29,9 @@ const kpiCards = [
 ];
 
 export function DashboardShell() {
-  const [activeSection, setActiveSection] = useState<"overview" | "tours">(
-    "overview",
-  );
+  const [activeSection, setActiveSection] = useState<
+    "overview" | "tours" | "news" | "orders" | "gallery"
+  >("overview");
 
   return (
     <main className="bg-page-background flex min-h-screen text-neutral-50">
@@ -101,7 +101,7 @@ export function DashboardShell() {
               ☰
             </button>
             <h1 className="text-lg font-semibold md:text-xl">
-              {activeSection === "overview" ? "Oversikt" : "Turer"}
+              {activeSection === "overview" ? "Oversikt" : "Turer "}
             </h1>
           </div>
         </header>
@@ -207,6 +207,31 @@ export function DashboardShell() {
             <div>
               <p className="text-sm text-neutral-400">
                 Turer-seksjon. TourList / ToursView kan kobles inn her.
+              </p>
+            </div>
+          )}
+
+          {activeSection === "news" && (
+            <div>
+              <p className="text-sm text-neutral-400">
+                Nyheter-seksjon. NewsList / NewsView kan kobles inn her.
+              </p>
+            </div>
+          )}
+
+          {activeSection === "orders" && (
+            <div>
+              <p className="text-sm text-neutral-400">
+                Bestillinger-seksjon. OrdersList / OrdersView kan kobles inn
+                her.
+              </p>
+            </div>
+          )}
+
+          {activeSection === "gallery" && (
+            <div>
+              <p className="text-sm text-neutral-400">
+                Galleri-seksjon. GalleryList / GalleryView kan kobles inn her.
               </p>
             </div>
           )}
