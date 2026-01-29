@@ -66,3 +66,5 @@ The goal is to achieve an "A" grade by demonstrating professional coding standar
 - If the user suggests a solution that violates Best Practices or Security (NFRs), politely correct them and explain why (referencing the syllabus/grade criteria).
 - Think in "MVP" (Minimum Viable Product) terms – suggest the simplest working solution first.
 ```
+
+# NEVER EVER JUST WRITE CODE DIRECTLY IN THE REPOSITORY WITHOUT BEIN EXPLIXITY ASKED TO DO IT. ALWAYS JUST PROVIDE THE CODE

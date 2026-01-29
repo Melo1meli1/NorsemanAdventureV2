@@ -8,6 +8,19 @@ import type { TablesInsert, TablesUpdate } from "@/lib/database.types";
 type TourInsert = TablesInsert<"tours">;
 type TourUpdate = TablesUpdate<"tours">;
 
+export async function getTours() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tours")
+    .select("*")
+    .order("start_date", { ascending: true });
+
+  if (error) {
+    return { success: false as const, error: error.message, data: null };
+  }
+  return { success: true as const, data, error: null };
+}
+
 function extractFirstErrorMessage(error: unknown): string {
   if (error instanceof ZodError && error.issues.length > 0) {
     const firstIssue = error.issues[0];
