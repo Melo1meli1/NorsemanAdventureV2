@@ -9,7 +9,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS: { id: string; label: string; icon: LucideIcon }[] = [
+export type BookingStepId =
+  | "handlekurv"
+  | "informasjon"
+  | "betaling"
+  | "bekreftelse";
+
+const STEPS: { id: BookingStepId; label: string; icon: LucideIcon }[] = [
   { id: "handlekurv", label: "Handlekurv", icon: ShoppingCart },
   { id: "informasjon", label: "Informasjon", icon: UserCircle },
   { id: "betaling", label: "Betaling", icon: CreditCard },
@@ -20,7 +26,7 @@ export function BookingProgressBar({
   currentStep = "handlekurv",
   className,
 }: {
-  currentStep?: "handlekurv" | "informasjon" | "betaling" | "bekreftelse";
+  currentStep?: BookingStepId;
   className?: string;
 }) {
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep);

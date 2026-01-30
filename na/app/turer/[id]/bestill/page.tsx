@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { BookingProgressBar } from "@/components/tours/BookingProgressBar";
+import { BookingStepNavigator } from "@/components/tours/BookingStepNavigator";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -20,8 +20,11 @@ export default async function TourBookPage({ params }: Props) {
 
   return (
     <main className="bg-background min-h-screen">
-      <div className="flex flex-col items-center pt-12 sm:pt-16">
-        <BookingProgressBar className="w-full max-w-md" />
+      <div className="flex flex-col items-center pt-16 sm:pt-16">
+        <BookingStepNavigator
+          tourId={id}
+          progressBarClassName="w-full max-w-md"
+        />
       </div>
     </main>
   );
