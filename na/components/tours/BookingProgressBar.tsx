@@ -46,7 +46,7 @@ export function BookingProgressBar({
             {/* Boble: ikon + tittel inni samme oval */}
             <div
               className={cn(
-                "flex items-center gap-2 rounded-full border-2 px-4 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5",
+                "flex items-center gap-2 rounded-full border-2 px-2 py-1 sm:gap-2.5 sm:px-5 sm:py-2.5",
                 isActive
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-muted-foreground/30 bg-muted text-muted-foreground",
