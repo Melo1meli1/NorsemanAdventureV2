@@ -114,8 +114,8 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      {/* Content: two columns — more breathing room on large screens */}
-      <div className="mx-auto max-w-6xl px-8 py-8 sm:px-10 md:px-14 md:py-12 lg:max-w-7xl lg:px-20 xl:max-w-7xl xl:px-24 xl:py-16 2xl:px-32">
+      {/* Content: two columns — wider on large screens, less side space */}
+      <div className="mx-auto max-w-6xl px-8 py-8 sm:px-10 md:px-14 md:py-12 lg:max-w-7xl lg:px-16 xl:max-w-[1400px] xl:px-20 xl:py-16 2xl:max-w-[1600px] 2xl:px-24">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 lg:gap-12 xl:gap-16">
           {/* Left: Om turen + Høydepunkter + icon blocks */}
           <article className="space-y-8 lg:col-span-2 lg:space-y-10 xl:space-y-12">
