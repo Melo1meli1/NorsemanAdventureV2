@@ -233,6 +233,38 @@ export async function updateTour(formData: FormData) {
   };
 }
 
+/**
+ * Set the tour's cover/thumbnail image (image_url) to a gallery image URL.
+ * Used from admin gallery: "Gjør hovedbilde" sets this image as the one shown on the homepage.
+ */
+export async function setTourCoverImage(
+  tourId: string,
+  imageUrl: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  if (!tourId || !imageUrl) {
+    return { success: false, error: "Mangler tur-id eller bilde-URL." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tours")
+    .update({ image_url: imageUrl })
+    .eq("id", tourId);
+
+  if (error) {
+    return {
+      success: false,
+      error:
+        "Kunne ikke sette hovedbilde. Vennligst prøv igjen eller kontakt administrator.",
+    };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/turer");
+  revalidatePath("/admin/dashboard");
+  return { success: true };
+}
+
 export async function deleteTour(formData: FormData) {
   console.log("Deleting tour with formData:", formData);
   const id = formData.get("id");
