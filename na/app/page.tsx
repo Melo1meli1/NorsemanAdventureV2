@@ -1,12 +1,18 @@
-import { supabase } from "../lib/supabase/supabaseClient";
+import { createClient } from "@/lib/supabase/supabase-server";
+import { UpcomingToursSection } from "@/components/tours/UpcomingToursSection";
 
 export default async function Home() {
-  const { data } = await supabase.from("test").select("*").limit(1);
+  const supabase = await createClient();
+  const { data: tours } = await supabase
+    .from("tours")
+    .select("*")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(3);
 
   return (
-    <main className="p-8">
-      <h1 className="text-xl font-bold">Supabase connected</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+    <main className="bg-background min-h-screen">
+      <UpcomingToursSection tours={tours ?? []} />
     </main>
   );
 }
