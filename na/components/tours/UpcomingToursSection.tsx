@@ -25,7 +25,7 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {tours.map((tour) => (
-                <TourCard key={tour.id} tour={tour} />
+                <TourCard key={tour.id} tour={tour} fromPage="home" />
               ))}
             </div>
             <div className="mt-12 flex justify-center">

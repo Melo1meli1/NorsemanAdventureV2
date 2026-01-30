@@ -24,10 +24,19 @@ import {
 } from "@/lib/tourUtils";
 import { cn } from "@/lib/utils";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+};
 
-export default async function TourDetailPage({ params }: Props) {
+export default async function TourDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = from === "home" ? "/" : "/turer";
+  const backLabel =
+    from === "home"
+      ? "Tilbake til forsiden"
+      : "Tilbake til oversikt over turer";
   const supabase = await createClient();
   const { data: tour, error } = await supabase
     .from("tours")
@@ -71,9 +80,9 @@ export default async function TourDetailPage({ params }: Props) {
             size="sm"
             asChild
             className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg border-2 bg-black/50 backdrop-blur-sm"
-            aria-label="Tilbake til oversikt over turer"
+            aria-label={backLabel}
           >
-            <Link href="/turer">← Tilbake</Link>
+            <Link href={backHref}>← Tilbake</Link>
           </Button>
         </div>
         <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 p-4 sm:p-6 md:p-8">

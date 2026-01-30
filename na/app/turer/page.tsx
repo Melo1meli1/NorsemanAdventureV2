@@ -23,7 +23,7 @@ export default async function TurerPage() {
         {tours && tours.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {tours.map((tour) => (
-              <TourCard key={tour.id} tour={tour} />
+              <TourCard key={tour.id} tour={tour} fromPage="turer" />
             ))}
           </div>
         ) : (
