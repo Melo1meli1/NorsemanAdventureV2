@@ -40,6 +40,24 @@ export function getVanskelighetsgradLabel(
   return vanskelighetsgrad ? VANSKELIGHETSGRAD_LABEL[vanskelighetsgrad] : null;
 }
 
+const SESONG_LABEL: Record<NonNullable<Tour["sesong"]>, string> = {
+  sommer: "Sommertur",
+  vinter: "Vintertur",
+};
+
+export function getSesongLabel(sesong: Tour["sesong"]): string | null {
+  return sesong ? SESONG_LABEL[sesong] : null;
+}
+
+/** Hoydepunkter lagres som tekst (f.eks. newline-separert). Returnerer liste for visning. */
+export function parseHoydepunkter(hoydepunkter: string | null): string[] {
+  if (!hoydepunkter || !hoydepunkter.trim()) return [];
+  return hoydepunkter
+    .split(/[\r\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 /** Placeholder-bilde når tour ikke har image_url */
 export function getTourImageUrl(
   tour: Pick<Tour, "image_url" | "terreng">,
