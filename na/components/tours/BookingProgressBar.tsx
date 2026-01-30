@@ -39,19 +39,23 @@ export function BookingProgressBar({
       {STEPS.map((step, index) => {
         const Icon = step.icon;
         const isLast = index === STEPS.length - 1;
-        const isActive = index <= currentIndex;
+        const isCompleted = index < currentIndex;
+        const isCurrent = index === currentIndex;
 
         return (
           <div key={step.id} className="flex items-center">
-            {/* Boble: ikon + tittel inni samme oval */}
+            {/* Boble: fullført = transparent oransj + oransj tekst; nåværende = helt oransj + hvit tekst */}
             <div
               className={cn(
                 "flex items-center gap-2 rounded-full border-2 px-2 py-1 sm:gap-2.5 sm:px-5 sm:py-2.5",
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/30 bg-muted text-muted-foreground",
+                isCurrent &&
+                  "border-primary bg-primary text-primary-foreground",
+                isCompleted && "border-primary bg-primary/25 text-primary",
+                !isCurrent &&
+                  !isCompleted &&
+                  "border-muted-foreground/30 bg-muted text-muted-foreground",
               )}
-              aria-current={index === currentIndex ? "step" : undefined}
+              aria-current={isCurrent ? "step" : undefined}
             >
               <Icon className="size-5 shrink-0 sm:size-5" aria-hidden />
               <span className="text-sm font-medium sm:text-base">
