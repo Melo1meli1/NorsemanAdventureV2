@@ -24,6 +24,7 @@ export type Database = {
           hoydepunkter: string | null;
           price: number;
           seats_available: number;
+          total_seats: number;
           sesong: Database["public"]["Enums"]["sesong"] | null;
           short_description: string | null;
           start_date: string;
@@ -45,6 +46,7 @@ export type Database = {
           hoydepunkter?: string | null;
           price: number;
           seats_available: number;
+          total_seats: number;
           sesong?: Database["public"]["Enums"]["sesong"] | null;
           short_description?: string | null;
           start_date: string;
@@ -66,6 +68,7 @@ export type Database = {
           hoydepunkter?: string | null;
           price?: number;
           seats_available?: number;
+          total_seats?: number;
           sesong?: Database["public"]["Enums"]["sesong"] | null;
           short_description?: string | null;
           start_date?: string;

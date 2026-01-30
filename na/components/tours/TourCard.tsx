@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 type TourCardProps = {
   tour: Tour;
   className?: string;
+  /** Set "home" when card is on homepage so "Tilbake" on detail page goes to /. Set "turer" when on /turer so Tilbake goes to /turer. */
+  fromPage?: "home" | "turer";
 };
 
 function CalendarIcon({ className }: { className?: string }) {
@@ -79,7 +81,9 @@ function UsersIcon({ className }: { className?: string }) {
   );
 }
 
-export function TourCard({ tour, className }: TourCardProps) {
+export function TourCard({ tour, className, fromPage }: TourCardProps) {
+  const detailHref =
+    fromPage === "home" ? `/turer/${tour.id}?from=home` : `/turer/${tour.id}`;
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
@@ -158,7 +162,12 @@ export function TourCard({ tour, className }: TourCardProps) {
           )}
           <div className="flex items-center gap-2">
             <UsersIcon />
-            <span>{tour.seats_available} plasser ledig</span>
+            <span>
+              {tour.seats_available} av{" "}
+              {(tour as { total_seats?: number }).total_seats ??
+                tour.seats_available}{" "}
+              plasser
+            </span>
           </div>
           <p className="text-primary text-lg font-bold tracking-tight">
             {formatPrice(tour.price)}
@@ -166,7 +175,7 @@ export function TourCard({ tour, className }: TourCardProps) {
         </div>
 
         <Link
-          href={`/turer/${tour.id}`}
+          href={detailHref}
           className="border-primary text-foreground hover:bg-primary/10 mt-auto inline-flex w-fit items-center rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
         >
           LES MER →

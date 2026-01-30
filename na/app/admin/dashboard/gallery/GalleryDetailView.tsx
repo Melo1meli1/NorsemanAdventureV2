@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ImageIcon,
   Plus,
+  Star,
   Trash2,
 } from "lucide-react";
 import type { FileObject } from "@supabase/storage-js";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
+import { setTourCoverImage } from "../actions/tours";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 
 const IMAGES_PER_PAGE = 12;
@@ -41,6 +43,12 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   );
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
+    tour.image_url ?? null,
+  );
+  const [settingCoverImageName, setSettingCoverImageName] = useState<
+    string | null
+  >(null);
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
@@ -164,6 +172,25 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
 
   const onConfirmDelete = () => {
     if (imageToDelete) handleDeleteImage(imageToDelete);
+  };
+
+  const handleSetCoverImage = async (imageUrl: string, imageName: string) => {
+    setSettingCoverImageName(imageName);
+    const result = await setTourCoverImage(tour.id, imageUrl);
+    if (result.success) {
+      setCoverImageUrl(imageUrl);
+      toast({
+        title: "Hovedbilde oppdatert",
+        description: "Dette bildet vises nå på forsiden for denne turen.",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Kunne ikke sette hovedbilde",
+        description: result.error,
+      });
+    }
+    setSettingCoverImageName(null);
   };
 
   const handleFilesSelected = async (
@@ -349,7 +376,28 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             className="object-cover"
                           />
-                          <div className="absolute right-2 bottom-2 flex items-center gap-1.5">
+                          <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
+                            {coverImageUrl === image.url ? (
+                              <span className="bg-primary/90 text-primary-foreground rounded-md px-2 py-0.5 text-xs font-medium">
+                                Hovedbilde
+                              </span>
+                            ) : (
+                              <Button
+                                type="button"
+                                size="icon-sm"
+                                variant="secondary"
+                                className="h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSetCoverImage(image.url, image.name);
+                                }}
+                                disabled={settingCoverImageName === image.name}
+                                aria-label={`Gjør ${image.name} til hovedbilde`}
+                                title="Gjør til hovedbilde (vises på forsiden)"
+                              >
+                                <Star className="h-3.5 w-3.5" aria-hidden />
+                              </Button>
+                            )}
                             <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
                               #{globalIndex}
                             </span>

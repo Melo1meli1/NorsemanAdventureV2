@@ -90,11 +90,15 @@ export default function TourForm({
             start_date: toDateInputValue(initialTour.start_date),
             end_date: toDateInputValue(initialTour.end_date),
             seats_available: initialTour.seats_available,
+            total_seats:
+              (initialTour as { total_seats?: number }).total_seats ??
+              initialTour.seats_available,
             status: initialTour.status,
           }
         : {
             status: "draft",
             seats_available: 10,
+            total_seats: 10,
           },
   });
 
@@ -153,6 +157,7 @@ export default function TourForm({
         : String(data.end_date ?? ""),
     );
     formData.set("seats_available", String(data.seats_available ?? 0));
+    formData.set("total_seats", String(data.total_seats ?? 0));
     formData.set("image_url", isEdit ? (initialTour?.image_url ?? "") : "");
     formData.set("status", data.status ?? "draft");
 
@@ -367,10 +372,28 @@ export default function TourForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label
+            htmlFor="total_seats"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Totalt antall plasser *
+          </label>
+          <Input
+            id="total_seats"
+            type="number"
+            min={1}
+            className={inputClassName}
+            {...register("total_seats", { valueAsNumber: true })}
+          />
+          {errors.total_seats && (
+            <p className="text-xs text-red-400">{errors.total_seats.message}</p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label
             htmlFor="seats_available"
             className="text-sm font-medium text-neutral-200"
           >
-            Maks deltakere *
+            Ledige plasser *
           </label>
           <Input
             id="seats_available"

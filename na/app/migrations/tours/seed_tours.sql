@@ -1,5 +1,5 @@
 -- Seed: 4 eksempel-turer for utvikling/testing
--- Kjør etter tours.sql, tours_add_enums_and_fields.sql og rls.sql (migrasjoner kjører som db-owner, så INSERT er tillatt)
+-- Kjør etter tours.sql, tours_add_enums_and_fields.sql, tours_add_total_seats.sql og rls.sql (migrasjoner kjører som db-owner, så INSERT er tillatt)
 
 insert into public.tours (
   title,
@@ -13,6 +13,7 @@ insert into public.tours (
   start_date,
   end_date,
   seats_available,
+  total_seats,
   image_url,
   status
 ) values
@@ -27,6 +28,7 @@ insert into public.tours (
     8990.00,
     '2026-06-15 10:00:00+02',
     '2026-06-22 14:00:00+02',
+    12,
     12,
     null,
     'published'
@@ -43,6 +45,7 @@ insert into public.tours (
     '2026-07-01 09:00:00+02',
     '2026-07-05 16:00:00+02',
     16,
+    16,
     null,
     'published'
   ),
@@ -58,6 +61,7 @@ insert into public.tours (
     '2026-08-10 08:00:00+02',
     '2026-08-17 18:00:00+02',
     8,
+    8,
     null,
     'draft'
   ),
@@ -72,6 +76,7 @@ insert into public.tours (
     3990.00,
     '2026-09-12 11:00:00+02',
     '2026-09-14 15:00:00+02',
+    20,
     20,
     null,
     'published'

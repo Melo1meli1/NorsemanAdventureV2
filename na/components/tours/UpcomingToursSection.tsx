@@ -10,7 +10,7 @@ type UpcomingToursSectionProps = {
 export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
   return (
     <section className="bg-background w-full py-16 md:py-24">
-      <div className="mx-auto max-w-xl px-6">
+      <div className="mx-auto max-w-7xl px-6">
         <header className="mb-12 text-center">
           <h2 className="text-primary mb-3 text-3xl font-bold tracking-tight md:text-4xl">
             KOMMENDE TURER
@@ -25,7 +25,7 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {tours.map((tour) => (
-                <TourCard key={tour.id} tour={tour} />
+                <TourCard key={tour.id} tour={tour} fromPage="home" />
               ))}
             </div>
             <div className="mt-12 flex justify-center">

@@ -13,7 +13,7 @@ export default async function TurerPage() {
 
   return (
     <main className="bg-background min-h-screen py-12">
-      <div className="mx-auto max-w-xl px-6">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 md:px-10">
         <div className="mb-8 flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/">← Tilbake</Link>
@@ -23,7 +23,7 @@ export default async function TurerPage() {
         {tours && tours.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {tours.map((tour) => (
-              <TourCard key={tour.id} tour={tour} />
+              <TourCard key={tour.id} tour={tour} fromPage="turer" />
             ))}
           </div>
         ) : (

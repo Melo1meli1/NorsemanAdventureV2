@@ -144,7 +144,9 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Users className="h-4 w-4" aria-hidden />
-                      0/{tour.seats_available}
+                      {(tour as { total_seats?: number }).total_seats != null
+                        ? `${(tour as { total_seats: number }).total_seats - tour.seats_available}/${(tour as { total_seats: number }).total_seats}`
+                        : `0/${tour.seats_available}`}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <MapPin className="h-4 w-4" aria-hidden />
