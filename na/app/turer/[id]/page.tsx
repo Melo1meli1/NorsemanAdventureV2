@@ -114,11 +114,11 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      {/* Content: two columns */}
-      <div className="mx-auto max-w-5xl px-6 py-8 sm:px-8 md:px-10 md:py-12 lg:px-12">
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
+      {/* Content: two columns — more breathing room on large screens */}
+      <div className="mx-auto max-w-6xl px-8 py-8 sm:px-10 md:px-14 md:py-12 lg:max-w-7xl lg:px-20 xl:max-w-7xl xl:px-24 xl:py-16 2xl:px-32">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 lg:gap-12 xl:gap-16">
           {/* Left: Om turen + Høydepunkter + icon blocks */}
-          <article className="space-y-8 lg:col-span-2">
+          <article className="space-y-8 lg:col-span-2 lg:space-y-10 xl:space-y-12">
             <section aria-labelledby="om-turen-heading">
               <h2
                 id="om-turen-heading"

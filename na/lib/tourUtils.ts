@@ -33,10 +33,10 @@ const VANSKELIGHETSGRAD_LABEL: Record<
   NonNullable<Tour["vanskelighetsgrad"]>,
   string
 > = {
-  nybegynner: "nybegynner",
-  intermediær: "intermediær",
-  erfaren: "erfaren",
-  ekspert: "ekspert",
+  nybegynner: "Nybegynner",
+  intermediær: "Intermediær",
+  erfaren: "Erfaren",
+  ekspert: "Ekspert",
 };
 
 export function getTerrengLabel(terreng: Tour["terreng"]): string | null {
