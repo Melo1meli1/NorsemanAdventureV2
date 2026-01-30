@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import { Button } from "@/components/ui/button";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
 import {
-  formatPrice,
+  formatStartDate,
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
@@ -65,18 +65,18 @@ export default async function TourDetailPage({ params }: Props) {
             aria-hidden
           />
         </div>
-        <div className="absolute top-0 left-0 flex w-full flex-col gap-4 p-4 sm:p-6 md:p-8">
-          <div>
-            <Button
-              variant="secondary"
-              size="sm"
-              asChild
-              className="text-foreground rounded-lg bg-black/50 backdrop-blur-sm hover:bg-black/70"
-              aria-label="Tilbake til oversikt over turer"
-            >
-              <Link href="/turer">← Tilbake</Link>
-            </Button>
-          </div>
+        <div className="absolute top-0 left-0 p-4 sm:p-6 md:p-8">
+          <Button
+            variant="secondary"
+            size="sm"
+            asChild
+            className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg border-2 bg-black/50 backdrop-blur-sm"
+            aria-label="Tilbake til oversikt over turer"
+          >
+            <Link href="/turer">← Tilbake</Link>
+          </Button>
+        </div>
+        <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 p-4 sm:p-6 md:p-8">
           <div className="flex flex-wrap gap-2">
             {sesongLabel && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
@@ -106,8 +106,8 @@ export default async function TourDetailPage({ params }: Props) {
       </header>
 
       {/* Content: two columns */}
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="mx-auto max-w-5xl px-6 py-8 sm:px-8 md:px-10 md:py-12 lg:px-12">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
           {/* Left: Om turen + Høydepunkter + icon blocks */}
           <article className="space-y-8 lg:col-span-2">
             <section aria-labelledby="om-turen-heading">
@@ -162,26 +162,24 @@ export default async function TourDetailPage({ params }: Props) {
               aria-label="Turinformasjon"
             >
               <InfoBlock
-                icon={<Calendar className="size-5" aria-hidden />}
+                icon={<Calendar className="text-primary size-5" aria-hidden />}
                 label="Varighet"
                 value={`${days} dager`}
               />
-              {tour.sted ? (
-                <InfoBlock
-                  icon={<MapPin className="size-5" aria-hidden />}
-                  label="Sted"
-                  value={tour.sted}
-                />
-              ) : null}
               <InfoBlock
-                icon={<Users className="size-5" aria-hidden />}
-                label="Ledige plasser"
-                value={String(tour.seats_available)}
+                icon={<MapPin className="text-primary size-5" aria-hidden />}
+                label="Destinasjon"
+                value={tour.sted ?? "Ikke angitt"}
               />
               <InfoBlock
-                icon={<Clock className="size-5" aria-hidden />}
-                label="Pris"
-                value={formatPrice(tour.price)}
+                icon={<Users className="text-primary size-5" aria-hidden />}
+                label="Gruppestørrelse"
+                value={`Maks ${tour.seats_available}`}
+              />
+              <InfoBlock
+                icon={<Clock className="text-primary size-5" aria-hidden />}
+                label="Startdato"
+                value={formatStartDate(tour.start_date)}
               />
             </section>
           </article>
@@ -213,12 +211,10 @@ function InfoBlock({
   return (
     <div
       className={cn(
-        "border-border bg-card flex flex-col gap-2 rounded-lg border p-4",
+        "border-primary bg-card flex flex-col gap-2 rounded-lg border-2 p-4",
       )}
     >
-      <span className="text-muted-foreground" aria-hidden>
-        {icon}
-      </span>
+      <span aria-hidden>{icon}</span>
       <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {label}
       </span>

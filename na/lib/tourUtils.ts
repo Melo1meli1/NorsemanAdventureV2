@@ -5,6 +5,15 @@ export function formatPrice(price: number): string {
   return `kr ${Math.round(price).toLocaleString("nb-NO")}`;
 }
 
+/** Startdato formatert for visning (dd.MM.åååå) */
+export function formatStartDate(dateString: string): string {
+  const d = new Date(dateString);
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 /** Antall dager mellom start_date og end_date */
 export function getTourDays(
   tour: Pick<Tour, "start_date" | "end_date">,

@@ -13,7 +13,7 @@ export default async function TurerPage() {
 
   return (
     <main className="bg-background min-h-screen py-12">
-      <div className="mx-auto max-w-xl px-6">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 md:px-10">
         <div className="mb-8 flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/">← Tilbake</Link>
