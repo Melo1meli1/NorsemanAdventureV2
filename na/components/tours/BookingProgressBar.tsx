@@ -52,11 +52,11 @@ export function BookingProgressBar({
                 {step.label}
               </span>
             </div>
-            {/* Linje til neste (unntatt etter siste) */}
+            {/* Linje til neste: samme farge som boblene, gap så den ikke treffer kantene */}
             {!isLast && (
               <div
                 className={cn(
-                  "h-0.5 w-4 shrink-0 sm:w-8",
+                  "mx-2 h-0.5 w-6 shrink-0 sm:mx-3 sm:w-10",
                   index < currentIndex ? "bg-primary" : "bg-muted",
                 )}
                 aria-hidden
