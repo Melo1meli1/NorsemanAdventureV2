@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Minus, Plus, UsersRound } from "lucide-react";
+import { CreditCard, Minus, Plus, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/tourUtils";
@@ -215,6 +215,39 @@ export function BookingMainContent({
               />
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === "betaling") {
+    return (
+      <div
+        className={cn(
+          "border-border bg-card flex min-h-[200px] flex-1 flex-col rounded-xl border p-6 shadow-sm",
+          className,
+        )}
+        aria-label="Betaling"
+      >
+        <h2 className="text-foreground mb-1 flex items-center gap-2 text-lg font-bold">
+          <CreditCard className="size-5 shrink-0" aria-hidden />
+          Betaling
+        </h2>
+        <p className="text-muted-foreground mb-6 text-sm">
+          Du betaler sikkert med LetsReg. Betalingsløsningen kobles inn her.
+        </p>
+        {/* Mock: plassholder der LetsReg-widget kommer */}
+        <div className="border-border bg-muted/30 flex min-h-[180px] flex-col items-center justify-center rounded-lg border border-dashed p-8">
+          <CreditCard
+            className="text-muted-foreground mb-3 size-10"
+            aria-hidden
+          />
+          <p className="text-muted-foreground mb-4 text-center text-sm">
+            LetsReg betalingsmodul kommer her
+          </p>
+          <Button disabled size="lg" className="pointer-events-none">
+            Betal med LetsReg
+          </Button>
         </div>
       </div>
     );
