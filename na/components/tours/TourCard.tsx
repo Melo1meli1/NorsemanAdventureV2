@@ -162,7 +162,12 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
           )}
           <div className="flex items-center gap-2">
             <UsersIcon />
-            <span>{tour.seats_available} plasser ledig</span>
+            <span>
+              {tour.seats_available} av{" "}
+              {(tour as { total_seats?: number }).total_seats ??
+                tour.seats_available}{" "}
+              plasser
+            </span>
           </div>
           <p className="text-primary text-lg font-bold tracking-tight">
             {formatPrice(tour.price)}

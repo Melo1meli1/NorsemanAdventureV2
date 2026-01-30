@@ -183,7 +183,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               <InfoBlock
                 icon={<Users className="text-primary size-5" aria-hidden />}
                 label="Gruppestørrelse"
-                value={`Maks ${tour.seats_available}`}
+                value={`Maks ${tour.total_seats ?? tour.seats_available}`}
               />
               <InfoBlock
                 icon={<Clock className="text-primary size-5" aria-hidden />}
@@ -199,6 +199,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               <BookSpotCard
                 price={tour.price}
                 seatsAvailable={tour.seats_available}
+                totalSeats={tour.total_seats ?? tour.seats_available}
               />
             </div>
           </div>

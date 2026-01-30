@@ -86,10 +86,16 @@ export const baseTourSchema = z.object({
   end_date: endDateSchema,
   seats_available: z.coerce
     .number({
-      message: "Maks deltakere er påkrevd.",
+      message: "Ledige plasser er påkrevd.",
     })
-    .int("Maks deltakere må være et heltall.")
-    .min(1, "Maks deltakere må være minst 1."),
+    .int("Ledige plasser må være et heltall.")
+    .min(0, "Ledige plasser kan ikke være negativ."),
+  total_seats: z.coerce
+    .number({
+      message: "Totalt antall plasser er påkrevd.",
+    })
+    .int("Totalt antall plasser må være et heltall.")
+    .min(1, "Totalt antall plasser må være minst 1."),
   image_url: nullableString,
   status: tourStatusEnum.default("draft"),
 });
@@ -98,6 +104,10 @@ export const createTourSchema = baseTourSchema
   .refine((data) => data.end_date != null, {
     message: "Sluttdato er påkrevd.",
     path: ["end_date"],
+  })
+  .refine((data) => data.seats_available <= data.total_seats, {
+    message: "Ledige plasser kan ikke være flere enn totalt antall plasser.",
+    path: ["seats_available"],
   })
   .superRefine((data, ctx) => {
     if (data.end_date != null && data.end_date <= data.start_date) {
@@ -131,6 +141,18 @@ export const updateTourSchema = baseTourSchema
         code: z.ZodIssueCode.custom,
         path: ["end_date"],
         message: "Sluttdato må være etter startdato.",
+      });
+    }
+    if (
+      data.seats_available !== undefined &&
+      data.total_seats !== undefined &&
+      data.seats_available > data.total_seats
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["seats_available"],
+        message:
+          "Ledige plasser kan ikke være flere enn totalt antall plasser.",
       });
     }
   });

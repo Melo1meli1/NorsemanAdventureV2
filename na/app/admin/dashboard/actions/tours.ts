@@ -47,6 +47,7 @@ function mapCreateInputToInsert(
     start_date: Date;
     end_date: Date | null | undefined;
     seats_available: number;
+    total_seats: number;
     image_url: string | null | undefined;
     status: TourInsert["status"];
   }>,
@@ -64,6 +65,7 @@ function mapCreateInputToInsert(
     start_date: input.start_date.toISOString(),
     end_date: input.end_date ? input.end_date.toISOString() : null,
     seats_available: input.seats_available,
+    total_seats: input.total_seats,
     image_url: input.image_url ?? null,
     status: input.status,
   };
@@ -83,6 +85,7 @@ function mapUpdateInputToUpdate(
     start_date: Date;
     end_date: Date | null | undefined;
     seats_available: number;
+    total_seats: number;
     image_url: string | null | undefined;
     status: TourUpdate["status"];
   }>,
@@ -108,6 +111,7 @@ function mapUpdateInputToUpdate(
     update.end_date = input.end_date ? input.end_date.toISOString() : null;
   if (input.seats_available !== undefined)
     update.seats_available = input.seats_available;
+  if (input.total_seats !== undefined) update.total_seats = input.total_seats;
   if (input.image_url !== undefined) update.image_url = input.image_url;
   if (input.status !== undefined) update.status = input.status;
 
@@ -128,6 +132,7 @@ export async function createTour(formData: FormData) {
     start_date: formData.get("start_date"),
     end_date: formData.get("end_date"),
     seats_available: formData.get("seats_available"),
+    total_seats: formData.get("total_seats"),
     image_url: formData.get("image_url"),
     status: formData.get("status") ?? undefined,
   };
@@ -150,6 +155,7 @@ export async function createTour(formData: FormData) {
     long_description: parsed.data.long_description ?? null,
     price: parsed.data.price,
     seats_available: parsed.data.seats_available,
+    total_seats: parsed.data.total_seats,
     sesong: parsed.data.sesong ?? null,
     short_description: parsed.data.short_description ?? null,
     start_date: parsed.data.start_date,
@@ -190,6 +196,7 @@ export async function updateTour(formData: FormData) {
     start_date: formData.get("start_date") ?? undefined,
     end_date: formData.get("end_date") ?? undefined,
     seats_available: formData.get("seats_available") ?? undefined,
+    total_seats: formData.get("total_seats") ?? undefined,
     image_url: formData.get("image_url") ?? undefined,
     status: formData.get("status") ?? undefined,
   };

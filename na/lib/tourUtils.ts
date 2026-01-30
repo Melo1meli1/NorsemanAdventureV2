@@ -33,8 +33,8 @@ const VANSKELIGHETSGRAD_LABEL: Record<
   NonNullable<Tour["vanskelighetsgrad"]>,
   string
 > = {
-  nybegynner: "enkel",
-  intermediær: "middels",
+  nybegynner: "nybegynner",
+  intermediær: "intermediær",
   erfaren: "erfaren",
   ekspert: "ekspert",
 };

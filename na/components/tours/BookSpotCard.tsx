@@ -8,14 +8,18 @@ import { cn } from "@/lib/utils";
 type BookSpotCardProps = {
   price: number;
   seatsAvailable: number;
+  totalSeats: number;
   className?: string;
 };
 
 export function BookSpotCard({
   price,
   seatsAvailable,
+  totalSeats,
   className,
 }: BookSpotCardProps) {
+  const signedUp = totalSeats - seatsAvailable;
+
   return (
     <aside
       className={cn(
@@ -34,7 +38,15 @@ export function BookSpotCard({
 
       <p className="text-muted-foreground mb-6 text-sm">
         <span className="text-foreground font-medium">Ledige plasser:</span>{" "}
-        {seatsAvailable} plasser
+        <span className="font-semibold text-green-500">
+          {seatsAvailable} av {totalSeats}
+        </span>
+        {signedUp > 0 && (
+          <span className="text-muted-foreground mt-1 block">
+            {signedUp}{" "}
+            {signedUp === 1 ? "har meldt seg på" : "har meldt seg på"}
+          </span>
+        )}
       </p>
 
       <div className="flex flex-col gap-3">
