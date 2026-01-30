@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Mail, Minus, Phone, Plus, UsersRound } from "lucide-react";
+import { Minus, Plus, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/tourUtils";
@@ -151,10 +151,6 @@ export function BookingMainContent({
             Telefonnummer <span className="text-destructive">*</span>
           </label>
           <div className="relative">
-            <Phone
-              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-              aria-hidden
-            />
             <Input
               id="booking-telefon"
               type="tel"
@@ -172,10 +168,6 @@ export function BookingMainContent({
             E-post <span className="text-destructive">*</span>
           </label>
           <div className="relative">
-            <Mail
-              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-              aria-hidden
-            />
             <Input
               id="booking-epost"
               type="email"
@@ -186,40 +178,42 @@ export function BookingMainContent({
           </div>
         </div>
 
-        <h3 className="text-foreground mt-8 mb-4 flex items-center gap-2 text-base font-bold sm:mt-10">
-          <UsersRound className="size-4 shrink-0" aria-hidden />
-          Kontaktperson ved nødstilfeller
-        </h3>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="booking-nod-navn"
-              className="text-foreground text-sm font-medium"
-            >
-              Navn <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="booking-nod-navn"
-              type="text"
-              placeholder="Kari Nordmann"
-              autoComplete="name"
-              className="h-10"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="booking-nod-telefon"
-              className="text-foreground text-sm font-medium"
-            >
-              Telefon <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="booking-nod-telefon"
-              type="tel"
-              placeholder="+47 987 65 432"
-              autoComplete="tel"
-              className="h-10"
-            />
+        <div className="mt-5 flex flex-col gap-2 sm:mt-6">
+          <h3 className="text-foreground mt-8 mb-4 flex items-center gap-2 text-base font-bold sm:mt-10">
+            <UsersRound className="size-4 shrink-0" aria-hidden />
+            Kontaktperson ved nødstilfeller
+          </h3>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="booking-nod-navn"
+                className="text-foreground text-sm font-medium"
+              >
+                Navn <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="booking-nod-navn"
+                type="text"
+                placeholder="Kari Nordmann"
+                autoComplete="name"
+                className="h-10"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="booking-nod-telefon"
+                className="text-foreground text-sm font-medium"
+              >
+                Telefon <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="booking-nod-telefon"
+                type="tel"
+                placeholder="+47 987 65 432"
+                autoComplete="tel"
+                className="h-10"
+              />
+            </div>
           </div>
         </div>
       </div>
