@@ -4,11 +4,13 @@ import { ShoppingCart, Mail } from "lucide-react";
 import { formatPrice } from "@/lib/tourUtils";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type BookSpotCardProps = {
   price: number;
   seatsAvailable: number;
   totalSeats: number;
+  tourId?: string;
   className?: string;
 };
 
@@ -16,6 +18,7 @@ export function BookSpotCard({
   price,
   seatsAvailable,
   totalSeats,
+  tourId,
   className,
 }: BookSpotCardProps) {
   const signedUp = totalSeats - seatsAvailable;
@@ -50,14 +53,28 @@ export function BookSpotCard({
       </p>
 
       <div className="flex flex-col gap-3">
-        <Button
-          size="lg"
-          className="w-full gap-2 font-semibold tracking-wide uppercase"
-          aria-label="Bestill nå"
-        >
-          <ShoppingCart className="size-5" aria-hidden />
-          Bestill nå
-        </Button>
+        {tourId ? (
+          <Button
+            size="lg"
+            className="w-full gap-2 font-semibold tracking-wide uppercase"
+            aria-label="Bestill nå"
+            asChild
+          >
+            <Link href={`/turer/${tourId}/bestill`}>
+              <ShoppingCart className="size-5" aria-hidden />
+              Bestill nå
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full gap-2 font-semibold tracking-wide uppercase"
+            aria-label="Bestill nå"
+          >
+            <ShoppingCart className="size-5" aria-hidden />
+            Bestill nå
+          </Button>
+        )}
         <Button
           size="lg"
           variant="outline"

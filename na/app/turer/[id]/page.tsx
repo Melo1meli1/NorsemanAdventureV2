@@ -79,7 +79,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             variant="secondary"
             size="sm"
             asChild
-            className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg border-2 bg-black/50 backdrop-blur-sm"
+            className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg bg-black/50 backdrop-blur-sm"
             aria-label={backLabel}
           >
             <Link href={backHref}>← Tilbake</Link>
@@ -200,6 +200,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                 price={tour.price}
                 seatsAvailable={tour.seats_available}
                 totalSeats={tour.total_seats ?? tour.seats_available}
+                tourId={id}
               />
             </div>
           </div>

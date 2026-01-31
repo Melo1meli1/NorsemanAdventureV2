@@ -12,3 +12,12 @@ export type TourUpdate = Database["public"]["Tables"]["tours"]["Update"];
 
 // Enum for status
 export type TourStatus = Database["public"]["Enums"]["tour_status"];
+
+/** Én tur i bestillings-handlekurven (brukes i BookingMainContent og OrderSummary) */
+export type BookingCartItem = {
+  tourId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+};
