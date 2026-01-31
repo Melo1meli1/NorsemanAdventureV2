@@ -115,9 +115,15 @@ export function BookingStepNavigator({
               size="lg"
               onClick={goNext}
               disabled={isLastStep}
-              aria-label={isLastStep ? "Siste steg" : "Neste steg"}
+              aria-label={
+                currentStep === "betaling"
+                  ? "Betal"
+                  : isLastStep
+                    ? "Siste steg"
+                    : "Neste steg"
+              }
             >
-              Neste
+              {currentStep === "betaling" ? "Betal" : "Neste"}
               <ArrowRight className="size-5" aria-hidden />
             </Button>
           </div>

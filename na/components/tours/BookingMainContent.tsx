@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { CreditCard, Minus, Plus, UsersRound } from "lucide-react";
+import Link from "next/link";
+import { Check, CreditCard, Minus, Plus, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/tourUtils";
@@ -249,6 +250,34 @@ export function BookingMainContent({
             Betal med LetsReg
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (currentStep === "bekreftelse") {
+    return (
+      <div
+        className={cn(
+          "border-border bg-card flex min-h-[200px] flex-1 flex-col items-center rounded-xl border p-8 shadow-sm sm:p-10",
+          className,
+        )}
+        aria-label="Bestilling fullført"
+      >
+        <div
+          className="mb-6 flex size-16 shrink-0 items-center justify-center rounded-full bg-green-700 sm:size-20"
+          aria-hidden
+        >
+          <Check className="size-8 text-white sm:size-10" strokeWidth={3} />
+        </div>
+        <h2 className="text-foreground mb-2 text-center text-xl font-bold sm:text-2xl">
+          Takk for din bestilling!
+        </h2>
+        <p className="text-muted-foreground mb-8 max-w-sm text-center text-sm sm:mb-10">
+          En bekreftelse har blitt sendt til din e-post.
+        </p>
+        <Button size="lg" className="w-full sm:w-auto" asChild>
+          <Link href="/turer">Se flere turer</Link>
+        </Button>
       </div>
     );
   }
