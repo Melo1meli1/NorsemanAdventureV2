@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BookingCartItem } from "@/lib/types";
 import { BookingMainContent } from "./BookingMainContent";
 import { BookingProgressBar, type BookingStepId } from "./BookingProgressBar";
+import {
+  type ParticipantBookingFormRef,
+} from "./ParticipantBookingForm";
 import { OrderSummary } from "./OrderSummary";
+import type { BookingFormValues } from "@/lib/zod/bookingValidation";
 import { cn } from "@/lib/utils";
 
 const STEP_ORDER: BookingStepId[] = [
@@ -33,9 +37,15 @@ export function BookingStepNavigator({
   const [currentStep, setCurrentStep] = useState<BookingStepId>("handlekurv");
   const [cartItems, setCartItems] =
     useState<BookingCartItem[]>(initialCartItems);
+  const informasjonFormRef = useRef<ParticipantBookingFormRef | null>(null);
   const currentIndex = STEP_ORDER.indexOf(currentStep);
   const isFirstStep = currentIndex === 0;
   const isLastStep = currentIndex === STEP_ORDER.length - 1;
+
+  const participantCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   const goBack = () => {
     if (isFirstStep) return;
@@ -44,8 +54,16 @@ export function BookingStepNavigator({
 
   const goNext = () => {
     if (isLastStep) return;
+    if (currentStep === "informasjon") {
+      informasjonFormRef.current?.triggerSubmit();
+      return;
+    }
     setCurrentStep(STEP_ORDER[currentIndex + 1]);
   };
+
+  const onInformasjonValid = useCallback((_data: BookingFormValues) => {
+    setCurrentStep("betaling");
+  }, []);
 
   const onQuantityChange = useCallback((tourId: string, delta: number) => {
     setCartItems((prev) =>
@@ -81,6 +99,9 @@ export function BookingStepNavigator({
             currentStep={currentStep}
             cartItems={cartItems}
             onQuantityChange={onQuantityChange}
+            participantCount={participantCount}
+            informasjonFormRef={informasjonFormRef}
+            onInformasjonValid={onInformasjonValid}
             className="min-w-0"
           />
           <div className="flex items-center justify-between gap-4">
