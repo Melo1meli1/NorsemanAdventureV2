@@ -69,16 +69,21 @@ export const ParticipantBookingForm = forwardRef<
     >
       <h2 className="text-foreground text-lg font-bold">Deltakerinformasjon</h2>
       <p className="text-muted-foreground text-sm">
-        Fyll ut navn, e-post, telefonnummer og kontaktperson ved nødstilfeller
-        for hver deltaker.
+        {fields.length === 1
+          ? "Fyll ut navn, e-post, telefonnummer og kontaktperson ved nødstilfeller."
+          : "Fyll ut navn, e-post, telefonnummer og kontaktperson ved nødstilfeller for hver deltaker."}
       </p>
 
       <div className="flex flex-col gap-6">
         {fields.map((field, index) => (
           <Card key={field.id} className="border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Deltaker {index + 1}</CardTitle>
-            </CardHeader>
+            {fields.length > 1 && (
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">
+                  Deltaker {index + 1}
+                </CardTitle>
+              </CardHeader>
+            )}
             <CardContent className="flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
                 <div className="flex flex-col gap-2">
