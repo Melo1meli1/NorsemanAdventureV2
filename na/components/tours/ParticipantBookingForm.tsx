@@ -1,9 +1,21 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  useWatch,
+  type UseFormRegister,
+  type FieldErrors,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   bookingFormSchema,
@@ -20,6 +32,142 @@ type ParticipantBookingFormProps = {
   onValid?: (data: BookingFormValues) => void;
   className?: string;
 };
+
+type ParticipantFieldsProps = {
+  index: number;
+  register: UseFormRegister<BookingFormValues>;
+  errors: FieldErrors<BookingFormValues>;
+};
+
+function ParticipantFields({
+  index,
+  register,
+  errors,
+}: ParticipantFieldsProps) {
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor={`participants.${index}.name`}
+            className="text-foreground text-sm font-medium"
+          >
+            Navn <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id={`participants.${index}.name`}
+            type="text"
+            placeholder="Fullt navn"
+            autoComplete="name"
+            className="h-10"
+            {...register(`participants.${index}.name`)}
+            aria-invalid={Boolean(errors.participants?.[index]?.name)}
+          />
+          {errors.participants?.[index]?.name && (
+            <p className="text-destructive text-sm">
+              {errors.participants[index]?.name?.message}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor={`participants.${index}.telefon`}
+            className="text-foreground text-sm font-medium"
+          >
+            Telefonnummer <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id={`participants.${index}.telefon`}
+            type="tel"
+            placeholder="+47 123 45 678"
+            autoComplete="tel"
+            className="h-10"
+            {...register(`participants.${index}.telefon`)}
+            aria-invalid={Boolean(errors.participants?.[index]?.telefon)}
+          />
+          {errors.participants?.[index]?.telefon && (
+            <p className="text-destructive text-sm">
+              {errors.participants[index]?.telefon?.message}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor={`participants.${index}.email`}
+          className="text-foreground text-sm font-medium"
+        >
+          E-post <span className="text-destructive">*</span>
+        </label>
+        <Input
+          id={`participants.${index}.email`}
+          type="email"
+          placeholder="epost@eksempel.no"
+          autoComplete="email"
+          className="h-10"
+          {...register(`participants.${index}.email`)}
+          aria-invalid={Boolean(errors.participants?.[index]?.email)}
+        />
+        {errors.participants?.[index]?.email && (
+          <p className="text-destructive text-sm">
+            {errors.participants[index]?.email?.message}
+          </p>
+        )}
+      </div>
+      <div className="border-border mt-4 border-t pt-4">
+        <h3 className="text-foreground mb-3 text-sm font-semibold">
+          Kontaktperson ved nødstilfeller
+        </h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor={`participants.${index}.sos_navn`}
+              className="text-foreground text-sm font-medium"
+            >
+              Navn <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id={`participants.${index}.sos_navn`}
+              type="text"
+              placeholder="Kari Nordmann"
+              autoComplete="name"
+              className="h-10"
+              {...register(`participants.${index}.sos_navn`)}
+              aria-invalid={Boolean(errors.participants?.[index]?.sos_navn)}
+            />
+            {errors.participants?.[index]?.sos_navn && (
+              <p className="text-destructive text-sm">
+                {errors.participants[index]?.sos_navn?.message}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor={`participants.${index}.sos_telefon`}
+              className="text-foreground text-sm font-medium"
+            >
+              Telefon <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id={`participants.${index}.sos_telefon`}
+              type="tel"
+              placeholder="+47 987 65 432"
+              autoComplete="tel"
+              className="h-10"
+              {...register(`participants.${index}.sos_telefon`)}
+              aria-invalid={Boolean(errors.participants?.[index]?.sos_telefon)}
+            />
+            {errors.participants?.[index]?.sos_telefon && (
+              <p className="text-destructive text-sm">
+                {errors.participants[index]?.sos_telefon?.message}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 export const ParticipantBookingForm = forwardRef<
   ParticipantBookingFormRef,
@@ -53,6 +201,8 @@ export const ParticipantBookingForm = forwardRef<
     name: "participants",
   });
 
+  const watchedParticipants = useWatch({ control, name: "participants" });
+
   useImperativeHandle(ref, () => ({
     triggerSubmit: () => {
       submitRef.current?.requestSubmit();
@@ -80,144 +230,47 @@ export const ParticipantBookingForm = forwardRef<
           fields.length > 1 && "max-h-[60vh] overflow-y-auto pr-2",
         )}
       >
-        {fields.map((field, index) => (
-          <Card key={field.id} className="border-border">
-            {fields.length > 1 && (
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base">
-                  Deltaker {index + 1}
-                </CardTitle>
-              </CardHeader>
-            )}
+        {fields.length === 1 ? (
+          <Card key={fields[0].id} className="border-border">
             <CardContent className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor={`participants.${index}.name`}
-                    className="text-foreground text-sm font-medium"
-                  >
-                    Navn <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    id={`participants.${index}.name`}
-                    type="text"
-                    placeholder="Fullt navn"
-                    autoComplete="name"
-                    className="h-10"
-                    {...register(`participants.${index}.name`)}
-                    aria-invalid={Boolean(errors.participants?.[index]?.name)}
-                  />
-                  {errors.participants?.[index]?.name && (
-                    <p className="text-destructive text-sm">
-                      {errors.participants[index]?.name?.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor={`participants.${index}.telefon`}
-                    className="text-foreground text-sm font-medium"
-                  >
-                    Telefonnummer <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    id={`participants.${index}.telefon`}
-                    type="tel"
-                    placeholder="+47 123 45 678"
-                    autoComplete="tel"
-                    className="h-10"
-                    {...register(`participants.${index}.telefon`)}
-                    aria-invalid={Boolean(
-                      errors.participants?.[index]?.telefon,
-                    )}
-                  />
-                  {errors.participants?.[index]?.telefon && (
-                    <p className="text-destructive text-sm">
-                      {errors.participants[index]?.telefon?.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor={`participants.${index}.email`}
-                  className="text-foreground text-sm font-medium"
-                >
-                  E-post <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id={`participants.${index}.email`}
-                  type="email"
-                  placeholder="epost@eksempel.no"
-                  autoComplete="email"
-                  className="h-10"
-                  {...register(`participants.${index}.email`)}
-                  aria-invalid={Boolean(errors.participants?.[index]?.email)}
-                />
-                {errors.participants?.[index]?.email && (
-                  <p className="text-destructive text-sm">
-                    {errors.participants[index]?.email?.message}
-                  </p>
-                )}
-              </div>
-              <div className="border-border mt-4 border-t pt-4">
-                <h3 className="text-foreground mb-3 text-sm font-semibold">
-                  Kontaktperson ved nødstilfeller
-                </h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor={`participants.${index}.sos_navn`}
-                      className="text-foreground text-sm font-medium"
-                    >
-                      Navn <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      id={`participants.${index}.sos_navn`}
-                      type="text"
-                      placeholder="Kari Nordmann"
-                      autoComplete="name"
-                      className="h-10"
-                      {...register(`participants.${index}.sos_navn`)}
-                      aria-invalid={Boolean(
-                        errors.participants?.[index]?.sos_navn,
-                      )}
-                    />
-                    {errors.participants?.[index]?.sos_navn && (
-                      <p className="text-destructive text-sm">
-                        {errors.participants[index]?.sos_navn?.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label
-                      htmlFor={`participants.${index}.sos_telefon`}
-                      className="text-foreground text-sm font-medium"
-                    >
-                      Telefon <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      id={`participants.${index}.sos_telefon`}
-                      type="tel"
-                      placeholder="+47 987 65 432"
-                      autoComplete="tel"
-                      className="h-10"
-                      {...register(`participants.${index}.sos_telefon`)}
-                      aria-invalid={Boolean(
-                        errors.participants?.[index]?.sos_telefon,
-                      )}
-                    />
-                    {errors.participants?.[index]?.sos_telefon && (
-                      <p className="text-destructive text-sm">
-                        {errors.participants[index]?.sos_telefon?.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <ParticipantFields
+                index={0}
+                register={register}
+                errors={errors}
+              />
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          <Accordion
+            type="multiple"
+            defaultValue={["deltaker-0"]}
+            className="border-border w-full rounded-xl border"
+          >
+            {fields.map((field, index) => {
+              const displayName =
+                watchedParticipants?.[index]?.name?.trim() ||
+                `Deltaker ${index + 1}`;
+              return (
+                <AccordionItem key={field.id} value={`deltaker-${index}`}>
+                  <AccordionTrigger className="px-6 hover:no-underline">
+                    {displayName}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <Card className="border-0 shadow-none">
+                      <CardContent className="flex flex-col gap-4 px-6 pt-2">
+                        <ParticipantFields
+                          index={index}
+                          register={register}
+                          errors={errors}
+                        />
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        )}
       </div>
 
       {/* Hidden submit used when parent triggers submit via ref */}
