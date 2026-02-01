@@ -74,7 +74,12 @@ export const ParticipantBookingForm = forwardRef<
           : "Fyll ut navn, e-post, telefonnummer og kontaktperson ved nødstilfeller for hver deltaker."}
       </p>
 
-      <div className="flex flex-col gap-6">
+      <div
+        className={cn(
+          "flex flex-col gap-6",
+          fields.length > 1 && "max-h-[60vh] overflow-y-auto pr-2",
+        )}
+      >
         {fields.map((field, index) => (
           <Card key={field.id} className="border-border">
             {fields.length > 1 && (
