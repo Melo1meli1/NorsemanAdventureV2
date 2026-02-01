@@ -5,6 +5,26 @@ import { Constants } from "@/lib/database.types";
 const bookingTypeEnum = z.enum(Constants.public.Enums.booking_type);
 const bookingStatusEnum = z.enum(Constants.public.Enums.booking_status);
 
+// --- Telefonnummer: kun siffer og vanlige tegn (+ - mellomrom parentes), minst 8 siffer ---
+const PHONE_MIN_DIGITS = 8;
+const phoneRegex = /^[\d\s+\-()]+$/;
+
+function countDigits(str: string): number {
+  return (str.match(/\d/g) ?? []).length;
+}
+
+const phoneSchema = z
+  .string({ message: "Telefonnummer er påkrevd." })
+  .trim()
+  .min(1, "Telefonnummer er påkrevd.")
+  .refine((val) => phoneRegex.test(val), {
+    message:
+      "Telefonnummer kan bare inneholde tall, +, -, mellomrom og parenteser.",
+  })
+  .refine((val) => countDigits(val) >= PHONE_MIN_DIGITS, {
+    message: "Telefonnummer må ha minst 8 siffer.",
+  });
+
 // --- Participant (deltaker) – gruppebestilling, offentlig flyt ---
 // Vanlig deltaker: navn (fullt navn), e-post, telefonnummer.
 // Kontaktperson ved nødstilfeller (SOS): navn og telefon.
@@ -18,18 +38,12 @@ export const ParticipantSchema = z.object({
     .trim()
     .min(1, "E-post er påkrevd.")
     .email("Ugyldig e-postadresse."),
-  telefon: z
-    .string({ message: "Telefonnummer er påkrevd." })
-    .trim()
-    .min(1, "Telefonnummer er påkrevd."),
+  telefon: phoneSchema,
   sos_navn: z
     .string({ message: "Navn på nødkontakt er påkrevd." })
     .trim()
     .min(1, "Navn på nødkontakt er påkrevd."),
-  sos_telefon: z
-    .string({ message: "Telefon til nødkontakt er påkrevd." })
-    .trim()
-    .min(1, "Telefon til nødkontakt er påkrevd."),
+  sos_telefon: phoneSchema,
 });
 
 // --- Booking form (offentlig) – kun deltakere; rest settes av server ---
@@ -65,7 +79,18 @@ export const bookingRecordSchema = z.object({
     .min(0, "Beløp kan ikke være negativt."),
   type: bookingTypeEnum.default("tur"),
   tour_id: z.string().uuid("Ugyldig tur-id.").optional().nullable(),
-  telefon: optionalString.nullable(),
+  telefon: optionalString
+    .nullable()
+    .refine(
+      (val) =>
+        !val ||
+        val === "" ||
+        (phoneRegex.test(val) && countDigits(val) >= PHONE_MIN_DIGITS),
+      {
+        message:
+          "Ugyldig telefonnummer. Minst 8 siffer, kun tall og + - ( ) tillatt.",
+      },
+    ),
   notater: optionalString.nullable(),
 });
 
