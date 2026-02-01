@@ -137,21 +137,27 @@ export type Database = {
           booking_id: string;
           name: string;
           email: string;
-          sos: string;
+          telefon: string;
+          sos_navn: string;
+          sos_telefon: string;
         };
         Insert: {
           id?: string;
           booking_id: string;
           name: string;
           email: string;
-          sos: string;
+          telefon: string;
+          sos_navn: string;
+          sos_telefon: string;
         };
         Update: {
           id?: string;
           booking_id?: string;
           name?: string;
           email?: string;
-          sos?: string;
+          telefon?: string;
+          sos_navn?: string;
+          sos_telefon?: string;
         };
         Relationships: [
           {
