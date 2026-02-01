@@ -6,6 +6,8 @@ const bookingTypeEnum = z.enum(Constants.public.Enums.booking_type);
 const bookingStatusEnum = z.enum(Constants.public.Enums.booking_status);
 
 // --- Participant (deltaker) – gruppebestilling, offentlig flyt ---
+// Vanlig deltaker: navn (fullt navn), e-post, telefonnummer.
+// Kontaktperson ved nødstilfeller (SOS): navn og telefon.
 export const ParticipantSchema = z.object({
   name: z
     .string({ message: "Navn er påkrevd." })
@@ -16,10 +18,18 @@ export const ParticipantSchema = z.object({
     .trim()
     .min(1, "E-post er påkrevd.")
     .email("Ugyldig e-postadresse."),
-  sos: z
-    .string({ message: "SOS / nødkontakt er påkrevd." })
+  telefon: z
+    .string({ message: "Telefonnummer er påkrevd." })
     .trim()
-    .min(1, "SOS / nødkontakt er påkrevd."),
+    .min(1, "Telefonnummer er påkrevd."),
+  sos_navn: z
+    .string({ message: "Navn på nødkontakt er påkrevd." })
+    .trim()
+    .min(1, "Navn på nødkontakt er påkrevd."),
+  sos_telefon: z
+    .string({ message: "Telefon til nødkontakt er påkrevd." })
+    .trim()
+    .min(1, "Telefon til nødkontakt er påkrevd."),
 });
 
 // --- Booking form (offentlig) – kun deltakere; rest settes av server ---
