@@ -7,7 +7,7 @@ import {
   type AdminBookingFormValues,
   type BookingFormValues,
 } from "@/lib/zod/bookingValidation";
-import type { Database } from "@/lib/database.types";
+import type { BookingStatus, BookingType } from "@/lib/types";
 
 /**
  * Server Actions for booking (offentlig + admin).
@@ -15,9 +15,6 @@ import type { Database } from "@/lib/database.types";
  * hvis participants-insert feiler, slettes booking-raden. For atomisk transaksjon,
  * bruk en RPC i Supabase som gjør begge inserts i pl/pgsql.
  */
-
-type BookingStatus = Database["public"]["Enums"]["booking_status"];
-type BookingType = Database["public"]["Enums"]["booking_type"];
 
 export type CreateBookingFromPublicInput = {
   tourId: string;
