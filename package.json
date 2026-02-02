@@ -11,7 +11,7 @@
     "husky": "^9",
     "lint-staged": "^16",
     "prettier": "^3",
-    "prettier-plugin-tailwindcss": "^0.6",
+    "prettier-plugin-tailwindcss": "^0.7",
     "typescript-eslint": "^8"
   },
   "lint-staged": {
