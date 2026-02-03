@@ -18,6 +18,7 @@ import { LogoutButton } from "./utils/LogoutButton";
 import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
 import { GalleryDetailView } from "./gallery/GalleryDetailView";
+import { OrdersView } from "./orders/OrdersView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -25,7 +26,7 @@ const navItems = [
   { id: "news", label: "Nyheter", icon: Newspaper },
   { id: "orders", label: "Bestillinger", icon: ClipboardList },
   { id: "gallery", label: "Galleri", icon: ImageIcon },
-];
+] as const;
 
 const kpiCards = [
   { label: "Totale bestillinger", value: "8", tone: "orange", Icon: BookOpen },
@@ -106,11 +107,9 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
               key={id}
               type="button"
               onClick={() => {
-                if (id === "overview" || id === "tours" || id === "gallery") {
-                  setActiveSection(id);
-                  if (id !== "gallery") {
-                    setSelectedGalleryTour(null);
-                  }
+                setActiveSection(id);
+                if (id !== "gallery") {
+                  setSelectedGalleryTour(null);
                 }
               }}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-medium ${
@@ -268,14 +267,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             </div>
           )}
 
-          {activeSection === "orders" && (
-            <div>
-              <p className="text-sm text-neutral-400">
-                Bestillinger-seksjon. OrdersList / OrdersView kan kobles inn
-                her.
-              </p>
-            </div>
-          )}
+          {activeSection === "orders" && <OrdersView />}
 
           {activeSection === "gallery" &&
             (selectedGalleryTour ? (
