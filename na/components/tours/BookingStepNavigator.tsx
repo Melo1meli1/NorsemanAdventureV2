@@ -11,7 +11,7 @@ import { type ParticipantBookingFormRef } from "./ParticipantBookingForm";
 import { OrderSummary } from "./OrderSummary";
 import type { BookingFormValues } from "@/lib/zod/bookingValidation";
 import { cn } from "@/lib/utils";
-import { createBookingFromPublic } from "@/app/turer/[id]/bestill/actions";
+import { createBookingFromPublic } from "@/app/public/tours/[id]/bestill/actions";
 import { useToast } from "@/hooks/use-toast";
 
 const STEP_ORDER: BookingStepId[] = [
