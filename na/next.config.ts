@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      { source: "/turer", destination: "/public/tours" },
+      { source: "/turer/:path*", destination: "/public/tours/:path*" },
+    ];
+  },
   images: {
     remotePatterns: [
       {
