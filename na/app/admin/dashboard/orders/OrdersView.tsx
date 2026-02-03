@@ -4,12 +4,18 @@ import { useMemo, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
+import {
+  buildCsv,
+  downloadCsv,
+  escapeCsvField,
+  sanitizeFilename,
+} from "@/lib/csvUtils";
 import { deleteBooking } from "../actions/bookings";
 import { Button } from "@/components/ui/button";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 
-/** Mock-rad for tabellen (felter som i schema; turTittel + tur-meta for gruppert visning). */
+/** Mock-rad for tabellen (felter som i schema; turTittel + tur-meta for gruppert visning). SOS vises ikke i panelet, men med i CSV. */
 type OrderRow = {
   id: string;
   navn: string;
@@ -24,6 +30,9 @@ type OrderRow = {
   tourDato?: string;
   tourTotalPlasser?: number;
   tourLedigePlasser?: number;
+  /** Nødkontakt – kun i CSV-eksport, ikke vist i admin-tabellen. */
+  sos_navn?: string | null;
+  sos_telefon?: string | null;
 };
 
 function formatBelop(n: number): string {
@@ -31,6 +40,33 @@ function formatBelop(n: number): string {
     style: "currency",
     currency: "NOK",
   }).format(n);
+}
+
+/** Bygg CSV-streng for en liste bestillinger (tabellkolonner + dato + SOS-kontakt). */
+function buildBookingsCSV(orders: OrderRow[]): string {
+  const header = [
+    "Navn",
+    "E-post",
+    "Telefon",
+    "Deltakere",
+    "Beløp",
+    "Status",
+    "Dato",
+    "Nødkontakt navn",
+    "Nødkontakt telefon",
+  ];
+  const rows = orders.map((order) => [
+    escapeCsvField(order.navn),
+    escapeCsvField(order.epost),
+    escapeCsvField(order.telefon ?? ""),
+    String(order.antallDeltakere),
+    escapeCsvField(formatBelop(order.belop)),
+    escapeCsvField(BOOKING_STATUS_LABELS[order.status]),
+    escapeCsvField(order.dato),
+    escapeCsvField(order.sos_navn ?? ""),
+    escapeCsvField(order.sos_telefon ?? ""),
+  ]);
+  return buildCsv(header, rows);
 }
 
 const MOCK_ORDERS: OrderRow[] = [
@@ -48,6 +84,8 @@ const MOCK_ORDERS: OrderRow[] = [
     tourDato: "2025-06-15",
     tourTotalPlasser: 12,
     tourLedigePlasser: 9,
+    sos_navn: "Ingrid Nordmann",
+    sos_telefon: "12345678",
   },
   {
     id: "2",
@@ -63,6 +101,8 @@ const MOCK_ORDERS: OrderRow[] = [
     tourDato: "2025-06-15",
     tourTotalPlasser: 12,
     tourLedigePlasser: 9,
+    sos_navn: "Lars Hansen",
+    sos_telefon: "+47 876 54 321",
   },
   {
     id: "3",
@@ -78,6 +118,8 @@ const MOCK_ORDERS: OrderRow[] = [
     tourDato: "2025-07-10",
     tourTotalPlasser: 8,
     tourLedigePlasser: 7,
+    sos_navn: "Maria Olsen",
+    sos_telefon: "11223344",
   },
   {
     id: "4",
@@ -93,6 +135,8 @@ const MOCK_ORDERS: OrderRow[] = [
     tourDato: "2025-06-15",
     tourTotalPlasser: 12,
     tourLedigePlasser: 9,
+    sos_navn: null,
+    sos_telefon: null,
   },
 ];
 
@@ -195,6 +239,11 @@ export function OrdersView() {
                       size="lg"
                       variant="outline"
                       className="border-primary text-primary hover:bg-primary/10 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+                      onClick={() => {
+                        const csv = buildBookingsCSV(groupOrders);
+                        const filename = `bestillinger-${sanitizeFilename(turTittel)}-${new Date().toISOString().slice(0, 10)}.csv`;
+                        downloadCsv(csv, filename);
+                      }}
                     >
                       <Download className="h-4 w-4" aria-hidden />
                       <span>Last ned CSV</span>
