@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
 import { deleteBooking } from "../actions/bookings";
+import { Button } from "@/components/ui/button";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 
@@ -178,14 +179,27 @@ export function OrdersView() {
                 className="bg-card overflow-hidden rounded-[18px] border border-neutral-800"
               >
                 <div className="border-b border-neutral-800 px-5 py-4">
-                  <h2 className="text-lg font-semibold text-neutral-50">
-                    {turTittel}
-                  </h2>
-                  <p className="mt-1 text-sm text-neutral-400">
-                    {tourDato} · {groupOrders.length} bestilling
-                    {groupOrders.length !== 1 ? "er" : ""} · {booked}/{total}{" "}
-                    plasser
-                  </p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-semibold text-neutral-50">
+                        {turTittel}
+                      </h2>
+                      <p className="mt-1 text-sm text-neutral-400">
+                        {tourDato} · {groupOrders.length} bestilling
+                        {groupOrders.length !== 1 ? "er" : ""} · {booked}/
+                        {total} plasser
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="lg"
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary/10 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+                    >
+                      <Download className="h-4 w-4" aria-hidden />
+                      <span>Last ned CSV</span>
+                    </Button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[600px] text-left text-sm">
