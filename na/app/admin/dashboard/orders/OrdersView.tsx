@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import {
   BOOKING_STATUS_LABELS,
   BOOKING_TYPE_LABELS,
 } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
+import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 
 /** Mock-rad for tabellen (felter som i schema; turTittel for visning). */
 type OrderRow = {
@@ -97,10 +99,13 @@ const COLUMNS: { key: keyof OrderRow | "handlinger"; label: string }[] = [
 ];
 
 export function OrdersView() {
+  const [filter, setFilter] = useState<OrdersFilterValue>("all");
   const orders = MOCK_ORDERS;
 
   return (
-    <section>
+    <section className="space-y-4">
+      <OrdersFilterTabs value={filter} onChange={setFilter} />
+
       <div className="bg-card overflow-hidden rounded-[18px] border border-neutral-800">
         <div className="border-b border-neutral-800 px-5 py-4">
           <h2 className="text-lg font-semibold text-neutral-50">
