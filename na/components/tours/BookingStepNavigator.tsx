@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BookingCartItem } from "@/lib/types";
 import { BookingMainContent } from "./BookingMainContent";
 import { BookingProgressBar, type BookingStepId } from "./BookingProgressBar";
+import { type ParticipantBookingFormRef } from "./ParticipantBookingForm";
 import { OrderSummary } from "./OrderSummary";
+import type { BookingFormValues } from "@/lib/zod/bookingValidation";
 import { cn } from "@/lib/utils";
+import { createBookingFromPublic } from "@/app/turer/[id]/bestill/actions";
+import { useToast } from "@/hooks/use-toast";
 
 const STEP_ORDER: BookingStepId[] = [
   "handlekurv",
@@ -33,9 +37,22 @@ export function BookingStepNavigator({
   const [currentStep, setCurrentStep] = useState<BookingStepId>("handlekurv");
   const [cartItems, setCartItems] =
     useState<BookingCartItem[]>(initialCartItems);
+  const [isSubmittingInformasjon, setIsSubmittingInformasjon] = useState(false);
+  const informasjonFormRef = useRef<ParticipantBookingFormRef | null>(null);
+  const { toast } = useToast();
   const currentIndex = STEP_ORDER.indexOf(currentStep);
   const isFirstStep = currentIndex === 0;
   const isLastStep = currentIndex === STEP_ORDER.length - 1;
+
+  const participantCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+
+  const belop = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
 
   const goBack = () => {
     if (isFirstStep) return;
@@ -44,8 +61,37 @@ export function BookingStepNavigator({
 
   const goNext = () => {
     if (isLastStep) return;
+    if (currentStep === "informasjon") {
+      informasjonFormRef.current?.triggerSubmit();
+      return;
+    }
     setCurrentStep(STEP_ORDER[currentIndex + 1]);
   };
+
+  const onInformasjonValid = useCallback(
+    async (data: BookingFormValues) => {
+      setIsSubmittingInformasjon(true);
+      try {
+        const result = await createBookingFromPublic({
+          tourId,
+          participants: data.participants,
+          belop,
+        });
+        if (result.success) {
+          setCurrentStep("betaling");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Kunne ikke lagre bestilling",
+            description: result.error,
+          });
+        }
+      } finally {
+        setIsSubmittingInformasjon(false);
+      }
+    },
+    [tourId, belop, toast],
+  );
 
   const onQuantityChange = useCallback((tourId: string, delta: number) => {
     setCartItems((prev) =>
@@ -81,6 +127,9 @@ export function BookingStepNavigator({
             currentStep={currentStep}
             cartItems={cartItems}
             onQuantityChange={onQuantityChange}
+            participantCount={participantCount}
+            informasjonFormRef={informasjonFormRef}
+            onInformasjonValid={onInformasjonValid}
             className="min-w-0"
           />
           <div className="flex items-center justify-between gap-4">
@@ -114,7 +163,7 @@ export function BookingStepNavigator({
               type="button"
               size="lg"
               onClick={goNext}
-              disabled={isLastStep}
+              disabled={isLastStep || isSubmittingInformasjon}
               aria-label={
                 currentStep === "betaling"
                   ? "Betal"

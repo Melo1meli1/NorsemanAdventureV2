@@ -2,18 +2,28 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Check, CreditCard, Minus, Plus, UsersRound } from "lucide-react";
+import { Check, CreditCard, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/tourUtils";
 import type { BookingCartItem } from "@/lib/types";
 import type { BookingStepId } from "./BookingProgressBar";
 import { cn } from "@/lib/utils";
+import {
+  ParticipantBookingForm,
+  type ParticipantBookingFormRef,
+} from "./ParticipantBookingForm";
+import type { BookingFormValues } from "@/lib/zod/bookingValidation";
 
 type BookingMainContentProps = {
   currentStep: BookingStepId;
   cartItems: BookingCartItem[];
   onQuantityChange: (tourId: string, delta: number) => void;
+  /** Antall deltakere (sum av quantity i cart). Brukes på informasjon-steget. */
+  participantCount?: number;
+  /** Ref til deltaker-skjemaet; brukes for å trigge submit fra «Neste». */
+  informasjonFormRef?: React.RefObject<ParticipantBookingFormRef | null>;
+  /** Kalles når deltaker-skjemaet er gyldig og bruker trykker Neste. */
+  onInformasjonValid?: (data: BookingFormValues) => void;
   className?: string;
 };
 
@@ -21,6 +31,9 @@ export function BookingMainContent({
   currentStep,
   cartItems,
   onQuantityChange,
+  participantCount = 0,
+  informasjonFormRef,
+  onInformasjonValid,
   className,
 }: BookingMainContentProps) {
   if (currentStep === "handlekurv") {
@@ -101,122 +114,21 @@ export function BookingMainContent({
   }
 
   if (currentStep === "informasjon") {
+    const count = Math.max(1, participantCount);
     return (
       <div
         className={cn(
           "border-border bg-card flex min-h-[200px] flex-1 flex-col rounded-xl border p-6 shadow-sm",
           className,
         )}
-        aria-label="Deltaker- og kontaktinformasjon"
       >
-        <h2 className="text-foreground mb-6 text-lg font-bold">
-          Deltakerinformasjon
-        </h2>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="booking-fornavn"
-              className="text-foreground text-sm font-medium"
-            >
-              Fornavn <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="booking-fornavn"
-              type="text"
-              placeholder="Ola"
-              autoComplete="given-name"
-              className="h-10"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="booking-etternavn"
-              className="text-foreground text-sm font-medium"
-            >
-              Etternavn <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="booking-etternavn"
-              type="text"
-              placeholder="Nordmann"
-              autoComplete="family-name"
-              className="h-10"
-            />
-          </div>
-        </div>
-        <div className="mt-5 flex flex-col gap-2 sm:mt-6">
-          <label
-            htmlFor="booking-telefon"
-            className="text-foreground text-sm font-medium"
-          >
-            Telefonnummer <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <Input
-              id="booking-telefon"
-              type="tel"
-              placeholder="+47 123 45 678"
-              autoComplete="tel"
-              className="h-10 pl-10"
-            />
-          </div>
-        </div>
-        <div className="mt-5 flex flex-col gap-2 sm:mt-6">
-          <label
-            htmlFor="booking-epost"
-            className="text-foreground text-sm font-medium"
-          >
-            E-post <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <Input
-              id="booking-epost"
-              type="email"
-              placeholder="ola@eksempel.no"
-              autoComplete="email"
-              className="h-10 pl-10"
-            />
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-col gap-2 sm:mt-6">
-          <h3 className="text-foreground mt-8 mb-4 flex items-center gap-2 text-base font-bold sm:mt-10">
-            <UsersRound className="size-4 shrink-0" aria-hidden />
-            Kontaktperson ved nødstilfeller
-          </h3>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="booking-nod-navn"
-                className="text-foreground text-sm font-medium"
-              >
-                Navn <span className="text-destructive">*</span>
-              </label>
-              <Input
-                id="booking-nod-navn"
-                type="text"
-                placeholder="Kari Nordmann"
-                autoComplete="name"
-                className="h-10"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="booking-nod-telefon"
-                className="text-foreground text-sm font-medium"
-              >
-                Telefon <span className="text-destructive">*</span>
-              </label>
-              <Input
-                id="booking-nod-telefon"
-                type="tel"
-                placeholder="+47 987 65 432"
-                autoComplete="tel"
-                className="h-10"
-              />
-            </div>
-          </div>
-        </div>
+        <ParticipantBookingForm
+          key={count}
+          ref={informasjonFormRef ?? undefined}
+          participantCount={count}
+          onValid={onInformasjonValid}
+          className="min-w-0"
+        />
       </div>
     );
   }

@@ -7,8 +7,6 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1";
   };
@@ -83,6 +81,94 @@ export type Database = {
         };
         Relationships: [];
       };
+      bookings: {
+        Row: {
+          id: string;
+          navn: string;
+          epost: string;
+          dato: string;
+          status: Database["public"]["Enums"]["booking_status"];
+          belop: number;
+          type: Database["public"]["Enums"]["booking_type"];
+          tour_id: string | null;
+          telefon: string | null;
+          notater: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          navn: string;
+          epost: string;
+          dato: string;
+          status: Database["public"]["Enums"]["booking_status"];
+          belop: number;
+          type?: Database["public"]["Enums"]["booking_type"];
+          tour_id?: string | null;
+          telefon?: string | null;
+          notater?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          navn?: string;
+          epost?: string;
+          dato?: string;
+          status?: Database["public"]["Enums"]["booking_status"];
+          belop?: number;
+          type?: Database["public"]["Enums"]["booking_type"];
+          tour_id?: string | null;
+          telefon?: string | null;
+          notater?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookings_tour_id_fkey";
+            columns: ["tour_id"];
+            isOneToOne: false;
+            referencedRelation: "tours";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      participants: {
+        Row: {
+          id: string;
+          booking_id: string;
+          name: string;
+          email: string;
+          telefon: string;
+          sos_navn: string;
+          sos_telefon: string;
+        };
+        Insert: {
+          id?: string;
+          booking_id: string;
+          name: string;
+          email: string;
+          telefon: string;
+          sos_navn: string;
+          sos_telefon: string;
+        };
+        Update: {
+          id?: string;
+          booking_id?: string;
+          name?: string;
+          email?: string;
+          telefon?: string;
+          sos_navn?: string;
+          sos_telefon?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "participants_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -95,6 +181,13 @@ export type Database = {
       terreng: "asfalt" | "grus" | "blandet";
       tour_status: "draft" | "published";
       vanskelighetsgrad: "nybegynner" | "intermediær" | "erfaren" | "ekspert";
+      booking_type: "tur";
+      booking_status:
+        | "betalt"
+        | "ikke_betalt"
+        | "venteliste"
+        | "kansellert"
+        | "delvis_betalt";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -103,15 +196,12 @@ export type Database = {
 };
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<
-  keyof Database,
-  "public"
->];
+type DefaultSchema = DatabaseWithoutInternals["public"]["Tables"] &
+  DatabaseWithoutInternals["public"]["Views"];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof DefaultSchema
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
@@ -128,10 +218,8 @@ export type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema
+    ? DefaultSchema[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R;
       }
       ? R
@@ -140,7 +228,7 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
@@ -155,8 +243,8 @@ export type TablesInsert<
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema
+    ? DefaultSchema[DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I;
       }
       ? I
@@ -165,7 +253,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
@@ -180,8 +268,8 @@ export type TablesUpdate<
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema
+    ? DefaultSchema[DefaultSchemaTableNameOrOptions] extends {
         Update: infer U;
       }
       ? U
@@ -190,7 +278,7 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof Database["public"]["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
@@ -201,13 +289,13 @@ export type Enums<
   schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : DefaultSchemaEnumNameOrOptions extends keyof Database["public"]["Enums"]
+    ? Database["public"]["Enums"][DefaultSchemaEnumNameOrOptions]
     : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof Database["public"]["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
@@ -218,8 +306,8 @@ export type CompositeTypes<
   schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : PublicCompositeTypeNameOrOptions extends keyof Database["public"]["CompositeTypes"]
+    ? Database["public"]["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never;
 
 export const Constants = {
@@ -229,6 +317,14 @@ export const Constants = {
       terreng: ["asfalt", "grus", "blandet"],
       tour_status: ["draft", "published"],
       vanskelighetsgrad: ["nybegynner", "intermediær", "erfaren", "ekspert"],
+      booking_type: ["tur"],
+      booking_status: [
+        "betalt",
+        "ikke_betalt",
+        "venteliste",
+        "kansellert",
+        "delvis_betalt",
+      ],
     },
   },
 } as const;
