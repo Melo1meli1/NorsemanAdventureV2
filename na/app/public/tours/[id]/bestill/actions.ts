@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
 import {
   adminBookingFormSchema,
@@ -106,7 +107,20 @@ export async function createBookingFromPublic(
     };
   }
 
-  return { success: true, bookingId: booking.id };
+  const letsregBaseUrl = process.env.LETSREG_BASE_URL;
+
+  if (!letsregBaseUrl) {
+    return {
+      success: false,
+      error:
+        "LETSREG_BASE_URL er ikke satt. Kontakt administrator for å aktivere betaling.",
+    };
+  }
+
+  const paymentUrl = `${letsregBaseUrl}?ref=${booking.id}`;
+
+  // Server-side redirect til betalings-/simulatorside.
+  redirect(paymentUrl);
 }
 
 // --- Admin: manuell bestilling ---
