@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import MockPaymentProvider from "@/app/admin/dashboard/utils/MockPaymentProvider";
 
 export default function PaymentSimulatorPage() {
-  return <MockPaymentProvider />;
+  return (
+    <Suspense>
+      <MockPaymentProvider />
+    </Suspense>
+  );
 }

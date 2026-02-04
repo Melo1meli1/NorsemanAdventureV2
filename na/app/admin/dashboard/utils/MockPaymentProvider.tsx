@@ -23,7 +23,7 @@ export default function MockPaymentProvider() {
 
     if (res.ok) {
       // Send brukeren tilbake til  "Success"-side
-      window.location.href = `/orders/success?bookingId=${refId}`;
+      window.location.href = `na/admin/dashboard/orders/success?bookingId=${refId}`;
     } else {
       setStatus("Webhook failed!");
     }
