@@ -13,6 +13,10 @@ function countDigits(str: string): number {
   return (str.match(/\d/g) ?? []).length;
 }
 
+function hasAtLeastTwoWords(str: string): boolean {
+  return str.trim().split(/\s+/).filter(Boolean).length >= 2;
+}
+
 const phoneSchema = z
   .string({ message: "Telefonnummer er påkrevd." })
   .trim()
@@ -25,6 +29,10 @@ const phoneSchema = z
     message: "Telefonnummer må ha minst 8 siffer.",
   });
 
+function normalizePhone(str: string): string {
+  return (str.match(/\d/g) ?? []).join("");
+}
+
 // --- Participant (deltaker) – gruppebestilling, offentlig flyt ---
 // Vanlig deltaker: navn (fullt navn), e-post, telefonnummer.
 // Kontaktperson ved nødstilfeller (SOS): navn og telefon.
@@ -32,7 +40,10 @@ export const ParticipantSchema = z.object({
   name: z
     .string({ message: "Navn er påkrevd." })
     .trim()
-    .min(1, "Navn er påkrevd."),
+    .min(1, "Navn er påkrevd.")
+    .refine(hasAtLeastTwoWords, {
+      message: "Skriv fullt navn (fornavn og etternavn).",
+    }),
   email: z
     .string({ message: "E-post er påkrevd." })
     .trim()
@@ -42,16 +53,51 @@ export const ParticipantSchema = z.object({
   sos_navn: z
     .string({ message: "Navn på nødkontakt er påkrevd." })
     .trim()
-    .min(1, "Navn på nødkontakt er påkrevd."),
+    .min(1, "Navn på nødkontakt er påkrevd.")
+    .refine(hasAtLeastTwoWords, {
+      message: "Skriv fullt navn (fornavn og etternavn).",
+    }),
   sos_telefon: phoneSchema,
 });
 
 // --- Booking form (offentlig) – kun deltakere; rest settes av server ---
-export const bookingFormSchema = z.object({
-  participants: z
-    .array(ParticipantSchema)
-    .min(1, "Minst én deltaker må oppgis."),
-});
+export const bookingFormSchema = z
+  .object({
+    participants: z
+      .array(ParticipantSchema)
+      .min(1, "Minst én deltaker må oppgis."),
+  })
+  .superRefine((data, ctx) => {
+    const participants = data.participants;
+
+    participants.forEach((participant, i) => {
+      const sosName = participant.sos_navn.trim().toLowerCase();
+      const sosPhone = normalizePhone(participant.sos_telefon);
+
+      const isSosSameAsAnyParticipant = participants.some((other) => {
+        const otherName = other.name.trim().toLowerCase();
+        const otherPhone = normalizePhone(other.telefon);
+
+        // Ikke tillat at nødkontakt er samme som noen deltaker (inkl. seg selv)
+        return sosName === otherName && sosPhone === otherPhone;
+      });
+
+      if (isSosSameAsAnyParticipant) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Nødkontakt kan ikke være en av deltakerne. Oppgi en annen person.",
+          path: ["participants", i, "sos_navn"],
+        });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Nødkontakt kan ikke være en av deltakerne. Oppgi en annen person.",
+          path: ["participants", i, "sos_telefon"],
+        });
+      }
+    });
+  });
 
 // --- Booking record (admin / server) – navn, epost, dato, status, beløp, type, hva de bestilte ---
 const optionalString = z

@@ -77,9 +77,7 @@ export function BookingStepNavigator({
           participants: data.participants,
           belop,
         });
-        if (result.success) {
-          setCurrentStep("betaling");
-        } else {
+        if (!result.success) {
           toast({
             variant: "destructive",
             title: "Kunne ikke lagre bestilling",
