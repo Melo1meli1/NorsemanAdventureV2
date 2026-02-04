@@ -13,6 +13,10 @@ function countDigits(str: string): number {
   return (str.match(/\d/g) ?? []).length;
 }
 
+function hasAtLeastTwoWords(str: string): boolean {
+  return str.trim().split(/\s+/).filter(Boolean).length >= 2;
+}
+
 const phoneSchema = z
   .string({ message: "Telefonnummer er påkrevd." })
   .trim()
@@ -36,7 +40,10 @@ export const ParticipantSchema = z.object({
   name: z
     .string({ message: "Navn er påkrevd." })
     .trim()
-    .min(1, "Navn er påkrevd."),
+    .min(1, "Navn er påkrevd.")
+    .refine(hasAtLeastTwoWords, {
+      message: "Skriv fullt navn (fornavn og etternavn).",
+    }),
   email: z
     .string({ message: "E-post er påkrevd." })
     .trim()
@@ -46,7 +53,10 @@ export const ParticipantSchema = z.object({
   sos_navn: z
     .string({ message: "Navn på nødkontakt er påkrevd." })
     .trim()
-    .min(1, "Navn på nødkontakt er påkrevd."),
+    .min(1, "Navn på nødkontakt er påkrevd.")
+    .refine(hasAtLeastTwoWords, {
+      message: "Skriv fullt navn (fornavn og etternavn).",
+    }),
   sos_telefon: phoneSchema,
 });
 
