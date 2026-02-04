@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:clean": "rm -rf .next .next/cache 2>/dev/null; next dev --turbo",
-    "dev:polling": "WATCHPACK_POLLING=true WATCHPACK_POLLING_INTERVAL=1000 next dev --turbo",
-    "dev:webpack": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev --turbo",
+    "dev:clean": "rm -rf .next .next/cache 2>/dev/null; next dev --webpack",
+    "dev:polling": "WATCHPACK_POLLING=true WATCHPACK_POLLING_INTERVAL=1000 next dev --webpack",
+    "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
