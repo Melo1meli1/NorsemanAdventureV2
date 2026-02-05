@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/tourUtils";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
+import { WaitlistForm } from "./WaitlistForm";
 import Link from "next/link";
 
 type BookSpotCardProps = {
@@ -159,18 +160,7 @@ export function BookSpotCard({
             </Link>
           </Button>
         )}
-        {isSoldOut && (
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full gap-2 border-yellow-500 font-semibold tracking-wide text-yellow-300 uppercase hover:bg-yellow-500/10"
-            aria-label="Sett meg på venteliste"
-            // TODO: Koble til faktisk venteliste-flyt
-            asChild
-          >
-            <Link href="#kontakt">Sett meg på venteliste</Link>
-          </Button>
-        )}
+        {isSoldOut && tourId && <WaitlistForm tourId={tourId} />}
         {!isSoldOut && (
           <Button
             size="lg"
