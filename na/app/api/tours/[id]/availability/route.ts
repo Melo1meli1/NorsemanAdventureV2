@@ -3,11 +3,11 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
 
 type RouteContext = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function GET(_request: Request, context: RouteContext) {
-  const { id } = context.params;
+  const { id } = await context.params;
 
   const supabase = await createClient();
   const availability = await getRemainingSeatsForTour(supabase, id);

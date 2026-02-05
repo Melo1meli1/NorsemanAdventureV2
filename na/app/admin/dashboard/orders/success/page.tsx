@@ -3,13 +3,14 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type SuccessPageProps = {
-  searchParams?: {
-    bookingId?: string;
-  };
+  searchParams?: Promise<{ bookingId?: string }>;
 };
 
-export default function BookingSuccessPage({ searchParams }: SuccessPageProps) {
-  const bookingId = searchParams?.bookingId;
+export default async function BookingSuccessPage({
+  searchParams,
+}: SuccessPageProps) {
+  const resolved = await searchParams;
+  const bookingId = resolved?.bookingId;
 
   return (
     <main className="bg-background min-h-screen">

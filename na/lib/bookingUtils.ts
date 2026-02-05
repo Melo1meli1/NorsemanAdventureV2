@@ -67,7 +67,7 @@ export async function getRemainingSeatsForTour(
     };
   }
 
-  const bookingIds = confirmedBookings.map((b) => b.id);
+  const bookingIds = confirmedBookings.map((b: { id: string }) => b.id);
 
   const { count: participantsCount, error: participantsError } = await supabase
     .from("participants")
