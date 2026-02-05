@@ -24,6 +24,7 @@ const STEP_ORDER: BookingStepId[] = [
 type BookingStepNavigatorProps = {
   tourId: string;
   initialCartItems: BookingCartItem[];
+  maxAvailableSeats?: number;
   progressBarClassName?: string;
   className?: string;
 };
@@ -31,6 +32,7 @@ type BookingStepNavigatorProps = {
 export function BookingStepNavigator({
   tourId,
   initialCartItems,
+  maxAvailableSeats,
   progressBarClassName,
   className,
 }: BookingStepNavigatorProps) {
@@ -91,17 +93,36 @@ export function BookingStepNavigator({
     [tourId, belop, toast],
   );
 
-  const onQuantityChange = useCallback((tourId: string, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.tourId === tourId
-            ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-            : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  }, []);
+  const onQuantityChange = useCallback(
+    (tourId: string, delta: number) => {
+      setCartItems((prev) => {
+        if (delta > 0 && maxAvailableSeats != null) {
+          const currentTotal = prev.reduce(
+            (sum, item) => sum + item.quantity,
+            0,
+          );
+
+          if (currentTotal >= maxAvailableSeats) {
+            toast({
+              variant: "destructive",
+              title: "Ikke nok ledige plasser",
+              description: `Det er bare ${maxAvailableSeats} plasser igjen på turen.`,
+            });
+            return prev;
+          }
+        }
+
+        return prev
+          .map((item) =>
+            item.tourId === tourId
+              ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+              : item,
+          )
+          .filter((item) => item.quantity > 0);
+      });
+    },
+    [maxAvailableSeats, toast],
+  );
 
   const orderSummaryItems = cartItems.map((item) => ({
     title: item.title,

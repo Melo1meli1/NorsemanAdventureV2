@@ -35,6 +35,7 @@ export default async function TourBookPage({ params }: Props) {
         <BookingStepNavigator
           tourId={id}
           initialCartItems={initialCartItems}
+          maxAvailableSeats={tour.seats_available}
           progressBarClassName="w-full max-w-md"
         />
       </div>

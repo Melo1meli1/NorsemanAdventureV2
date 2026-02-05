@@ -1,13 +1,5 @@
-import type { Database } from "@/lib/database.types";
-
-// Minimal shape we need from a Supabase client.
-type SupabaseClientLike = {
-  from: <T extends keyof Database["public"]["Tables"]>(
-    table: T,
-  ) => ReturnType<
-    import("@supabase/supabase-js").SupabaseClient<Database>["from"]
-  >;
-};
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Tables } from "@/lib/database.types";
 
 export type RemainingSeatsResult =
   | {
@@ -26,12 +18,12 @@ export type RemainingSeatsResult =
  * from the tour's total capacity.
  */
 export async function getRemainingSeatsForTour(
-  supabase: SupabaseClientLike,
+  supabase: SupabaseClient<Database>,
   tourId: string,
 ): Promise<RemainingSeatsResult> {
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, total_seats")
+    .select("id, seats_available, total_seats")
     .eq("id", tourId)
     .single();
 
@@ -59,11 +51,16 @@ export async function getRemainingSeatsForTour(
 
   if (!confirmedBookings || confirmedBookings.length === 0) {
     const totalSeats = tour.total_seats;
+    const remainingSeats =
+      typeof (tour as { seats_available?: number }).seats_available === "number"
+        ? (tour as { seats_available: number }).seats_available
+        : totalSeats;
+
     return {
       success: true,
       totalSeats,
       confirmedSeats: 0,
-      remainingSeats: totalSeats,
+      remainingSeats,
     };
   }
 
@@ -94,4 +91,55 @@ export async function getRemainingSeatsForTour(
     confirmedSeats,
     remainingSeats,
   };
+}
+
+export type WaitlistBooking = Tables<"bookings">;
+
+export type WaitlistResult =
+  | { success: true; bookings: WaitlistBooking[] }
+  | { success: false; error: string };
+
+/**
+ * Hent ventelisten for en tur, sortert etter created_at (eldst først).
+ */
+export async function getWaitlistForTour(
+  supabase: SupabaseClient<Database>,
+  tourId: string,
+): Promise<WaitlistResult> {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("tour_id", tourId)
+    .eq("status", "venteliste")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching waitlist for tour", error);
+    return {
+      success: false,
+      error: "Kunne ikke hente venteliste. Prøv igjen senere.",
+    };
+  }
+
+  return { success: true, bookings: data ?? [] };
+}
+
+export type FirstWaitlistEntryResult =
+  | { success: true; booking: WaitlistBooking | null }
+  | { success: false; error: string };
+
+/**
+ * Hent første i venteliste-køen for en tur (eldst created_at).
+ */
+export async function getFirstWaitlistEntryForTour(
+  supabase: SupabaseClient<Database>,
+  tourId: string,
+): Promise<FirstWaitlistEntryResult> {
+  const waitlist = await getWaitlistForTour(supabase, tourId);
+  if (!waitlist.success) {
+    return waitlist;
+  }
+
+  const [first] = waitlist.bookings;
+  return { success: true, booking: first ?? null };
 }

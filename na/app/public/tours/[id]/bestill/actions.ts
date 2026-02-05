@@ -5,8 +5,10 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import {
   adminBookingFormSchema,
   bookingFormSchema,
+  waitlistSchema,
   type AdminBookingFormValues,
   type BookingFormValues,
+  type WaitlistInput,
 } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
 import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
@@ -75,7 +77,7 @@ export async function createBookingFromPublic(
       error:
         remainingSeats <= 0
           ? "Denne turen er dessverre utsolgt. Du kan sette deg på venteliste."
-          : `Det er bare ${remainingSeats} plasser igjen. Reduser antall deltakere og prøv igjen.`,
+          : `Det er bare ${remainingSeats} plasser igjen.`,
     };
   }
 
@@ -146,6 +148,63 @@ export async function createBookingFromPublic(
 
   // Server-side redirect til betalings-/simulatorside.
   redirect(paymentUrl);
+}
+
+// --- Venteliste (offentlig) ---
+
+export type JoinWaitlistInput = WaitlistInput;
+
+export type JoinWaitlistResult =
+  | { success: true }
+  | { success: false; error: string };
+
+/**
+ * Registrer én person på venteliste for en tur.
+ * Lagrer kun bookingen (status venteliste, beløp 0, type tur).
+ */
+export async function joinWaitlistFromPublic(
+  input: JoinWaitlistInput,
+): Promise<JoinWaitlistResult> {
+  const parsed = waitlistSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error:
+        parsed.error.flatten().formErrors[0] ??
+        "Ugyldig skjemadata for venteliste.",
+    };
+  }
+
+  const { tourId, name, email } = parsed.data;
+
+  const supabase = await createClient();
+
+  const dato = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const status: BookingStatus = "venteliste";
+  const type: BookingType = "tur";
+
+  const { error: bookingError } = await supabase.from("bookings").insert({
+    navn: name.trim(),
+    epost: email.trim(),
+    dato,
+    status,
+    belop: 0,
+    type,
+    tour_id: tourId,
+    telefon: null,
+    notater: "Venteliste (offentlig registrering)",
+  });
+
+  if (bookingError) {
+    return {
+      success: false,
+      error:
+        bookingError.message ??
+        "Kunne ikke registrere deg på venteliste. Prøv igjen senere.",
+    };
+  }
+
+  return { success: true };
 }
 
 // --- Admin: manuell bestilling ---

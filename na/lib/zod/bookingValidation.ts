@@ -151,6 +151,22 @@ export type BookingFormValues = z.infer<typeof bookingFormSchema>;
 export type BookingRecordInput = z.infer<typeof bookingRecordSchema>;
 export type AdminBookingFormValues = z.infer<typeof adminBookingFormSchema>;
 
+// --- Venteliste (offentlig) – én person, én plass ---
+export const waitlistSchema = z.object({
+  tourId: z.string().uuid("Ugyldig tur-id."),
+  name: z
+    .string({ message: "Navn er påkrevd." })
+    .trim()
+    .min(1, "Navn er påkrevd."),
+  email: z
+    .string({ message: "E-post er påkrevd." })
+    .trim()
+    .min(1, "E-post er påkrevd.")
+    .email("Ugyldig e-postadresse."),
+});
+
+export type WaitlistInput = z.infer<typeof waitlistSchema>;
+
 // Display-navn for status (UI: Betalt, Ikke betalt, osv.)
 export const BOOKING_STATUS_LABELS: Record<
   z.infer<typeof bookingStatusEnum>,
