@@ -91,18 +91,22 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     <main className="bg-page-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
-        <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-4">
-          <div className="flex h-9 w-8 items-center justify-center rounded-full">
+        <Link
+          href="/"
+          className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5 text-neutral-50"
+          aria-label="Gå til nettsiden"
+        >
+          <div className="flex h-10 w-8 items-center justify-center rounded-full">
             <Image
               src="/logonew.png"
-              alt="Norseman Adventures logo"
+              alt=""
               width={40}
               height={35}
               className="h-10 w-10 rounded-full object-contain"
             />
           </div>
           <span className="text-sm font-semibold tracking-wide">ADMIN</span>
-        </div>
+        </Link>
 
         <nav className="flex-1 space-y-1 px-3 py-5 text-sm">
           {navItems.map(({ id, label, icon: Icon }) => (
@@ -165,7 +169,12 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
           />
           <aside className="bg-card absolute top-0 bottom-0 left-0 z-50 flex w-64 flex-col border-r border-neutral-800 shadow-xl">
             <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-4">
-              <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center gap-3 text-neutral-50"
+                aria-label="Gå til nettsiden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 <div className="flex h-9 w-8 items-center justify-center rounded-full">
                   <Image
                     src="/logonew.png"
@@ -178,7 +187,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
                 <span className="text-sm font-semibold tracking-wide">
                   ADMIN
                 </span>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
@@ -263,7 +272,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
           </div>
           <Link
             href="/"
-            className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+            className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors"
           >
             SE NETTSIDE
           </Link>
