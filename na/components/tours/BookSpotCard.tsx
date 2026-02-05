@@ -133,7 +133,7 @@ export function BookSpotCard({
             </span>
           ) : (
             <span className="inline-flex rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold tracking-wide text-black uppercase">
-              {seatsAvailable} plasser igjen
+              {seatsAvailable} plass(er) igjen
             </span>
           )}
         </p>

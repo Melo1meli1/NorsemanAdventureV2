@@ -1,13 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-
-// Minimal shape we need from a Supabase client.
-type SupabaseClientLike = {
-  from: <T extends keyof Database["public"]["Tables"]>(
-    table: T,
-  ) => ReturnType<
-    import("@supabase/supabase-js").SupabaseClient<Database>["from"]
-  >;
-};
 
 export type RemainingSeatsResult =
   | {
@@ -26,7 +18,7 @@ export type RemainingSeatsResult =
  * from the tour's total capacity.
  */
 export async function getRemainingSeatsForTour(
-  supabase: SupabaseClientLike,
+  supabase: SupabaseClient<Database>,
   tourId: string,
 ): Promise<RemainingSeatsResult> {
   const { data: tour, error: tourError } = await supabase
