@@ -30,6 +30,7 @@ The goal is to achieve an "A" grade by demonstrating professional coding standar
 - Use `lucide-react` for icons.
 - Ensure strict responsiveness (Mobile First approach) as per US.18.
 - Do not ever use 'as any' always use the right type.
+- Ensure a great filestructure. 
 
 ## Supabase
 - Use `@supabase/ssr` for cookie-based auth in Next.js.

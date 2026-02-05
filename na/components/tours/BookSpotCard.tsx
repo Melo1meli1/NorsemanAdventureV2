@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/tourUtils";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
-import { WaitlistForm } from "./WaitlistForm";
+import { WaitlistDialog } from "./WaitlistDialog";
 import Link from "next/link";
 
 type BookSpotCardProps = {
@@ -160,7 +160,7 @@ export function BookSpotCard({
             </Link>
           </Button>
         )}
-        {isSoldOut && tourId && <WaitlistForm tourId={tourId} />}
+        {isSoldOut && tourId && <WaitlistDialog tourId={tourId} />}
         {!isSoldOut && (
           <Button
             size="lg"
