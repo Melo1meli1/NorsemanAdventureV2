@@ -191,6 +191,56 @@ function OrderTableRow({ order }: { order: OrderRow }) {
   );
 }
 
+/** Kortvisning for én bestilling – brukes kun på mobil (< md). */
+function OrderCard({ order }: { order: OrderRow }) {
+  return (
+    <article className="flex flex-col gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-neutral-50">{order.navn}</p>
+          <p className="truncate text-sm text-neutral-400">{order.epost}</p>
+        </div>
+        <StatusBadge status={order.status} />
+      </div>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-neutral-400">
+        <div>
+          <span className="sr-only">Telefon</span>
+          <span>{order.telefon ?? "–"}</span>
+        </div>
+        <div>
+          <span className="sr-only">Deltakere</span>
+          <span>{order.antallDeltakere}</span>
+        </div>
+        <div>
+          <span className="sr-only">Beløp</span>
+          <span>{formatBelop(order.belop)}</span>
+        </div>
+        <div>
+          <span className="sr-only">Dato</span>
+          <span>{order.dato}</span>
+        </div>
+      </dl>
+      <p className="text-sm text-neutral-400">{order.turTittel}</p>
+      <form
+        action={async (formData) => {
+          await deleteBooking(formData);
+        }}
+        className="mt-1"
+      >
+        <input type="hidden" name="id" value={order.id} />
+        <button
+          type="submit"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-400 hover:bg-red-500/20 hover:text-red-400"
+          aria-label={`Slett bestilling ${order.navn}`}
+        >
+          <Trash2 className="h-4 w-4" aria-hidden />
+          Slett
+        </button>
+      </form>
+    </article>
+  );
+}
+
 export function OrdersView() {
   const [filter, setFilter] = useState<OrdersFilterValue>("all");
   const orders = MOCK_ORDERS;
@@ -223,7 +273,7 @@ export function OrdersView() {
                 className="bg-card overflow-hidden rounded-[18px] border border-neutral-800"
               >
                 <div className="border-b border-neutral-800 px-5 py-4">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-neutral-50">
                         {turTittel}
@@ -238,7 +288,7 @@ export function OrdersView() {
                       type="button"
                       size="lg"
                       variant="outline"
-                      className="border-primary text-primary hover:bg-primary/10 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+                      className="border-primary text-primary hover:bg-primary/10 inline-flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
                       onClick={() => {
                         const csv = buildBookingsCSV(groupOrders);
                         const filename = `bestillinger-${sanitizeFilename(turTittel)}-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -250,7 +300,14 @@ export function OrdersView() {
                     </Button>
                   </div>
                 </div>
-                <div className="overflow-x-auto">
+                {/* Mobil: kortliste */}
+                <div className="space-y-3 p-4 md:hidden">
+                  {groupOrders.map((order) => (
+                    <OrderCard key={order.id} order={order} />
+                  ))}
+                </div>
+                {/* Desktop: tabell */}
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full min-w-[600px] text-left text-sm">
                     <OrdersTableHeader />
                     <tbody className="divide-y divide-neutral-800">
@@ -274,7 +331,14 @@ export function OrdersView() {
               Se og administrer alle bestillinger.
             </p>
           </div>
-          <div className="overflow-x-auto">
+          {/* Mobil: kortliste */}
+          <div className="space-y-3 p-4 md:hidden">
+            {orders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+          {/* Desktop: tabell */}
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[800px] text-left text-sm">
               <OrdersTableHeader />
               <tbody className="divide-y divide-neutral-800">
