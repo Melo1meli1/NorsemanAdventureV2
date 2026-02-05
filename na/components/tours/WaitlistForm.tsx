@@ -10,9 +10,14 @@ import { cn } from "@/lib/utils";
 type WaitlistFormProps = {
   tourId: string;
   className?: string;
+  onSuccess?: (data: { name: string; email: string }) => void;
 };
 
-export function WaitlistForm({ tourId, className }: WaitlistFormProps) {
+export function WaitlistForm({
+  tourId,
+  className,
+  onSuccess,
+}: WaitlistFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -42,6 +47,8 @@ export function WaitlistForm({ tourId, className }: WaitlistFormProps) {
         description:
           "Vi kontakter deg på e-post dersom det blir ledig plass på turen.",
       });
+
+      onSuccess?.({ name, email });
 
       setName("");
       setEmail("");

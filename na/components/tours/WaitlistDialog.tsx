@@ -13,6 +13,9 @@ type WaitlistDialogProps = {
 
 export function WaitlistDialog({ tourId, className }: WaitlistDialogProps) {
   const [open, setOpen] = useState(false);
+  const [lastWaitlistedEmail, setLastWaitlistedEmail] = useState<string | null>(
+    null,
+  );
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
@@ -25,6 +28,14 @@ export function WaitlistDialog({ tourId, className }: WaitlistDialogProps) {
       >
         Sett meg på venteliste
       </Button>
+
+      {lastWaitlistedEmail && (
+        <p className="text-muted-foreground text-xs">
+          Venteliste registrert for{" "}
+          <span className="font-semibold">{lastWaitlistedEmail}</span>. Du kan
+          registrere flere personer ved å trykke knappen igjen.
+        </p>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -44,7 +55,13 @@ export function WaitlistDialog({ tourId, className }: WaitlistDialogProps) {
                 <X className="size-4" aria-hidden />
               </Button>
             </div>
-            <WaitlistForm tourId={tourId} />
+            <WaitlistForm
+              tourId={tourId}
+              onSuccess={({ email }) => {
+                setLastWaitlistedEmail(email);
+                setOpen(false);
+              }}
+            />
           </div>
         </div>
       )}
