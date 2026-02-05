@@ -15,11 +15,36 @@ export type BookingStepId =
   | "betaling"
   | "bekreftelse";
 
-const STEPS: { id: BookingStepId; label: string; icon: LucideIcon }[] = [
-  { id: "handlekurv", label: "Handlekurv", icon: ShoppingCart },
-  { id: "informasjon", label: "Informasjon", icon: UserCircle },
-  { id: "betaling", label: "Betaling", icon: CreditCard },
-  { id: "bekreftelse", label: "Bekreftelse", icon: CheckCircle },
+const STEPS: {
+  id: BookingStepId;
+  label: string;
+  shortLabel: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    id: "handlekurv",
+    label: "Handlekurv",
+    shortLabel: "Kurv",
+    icon: ShoppingCart,
+  },
+  {
+    id: "informasjon",
+    label: "Informasjon",
+    shortLabel: "Info",
+    icon: UserCircle,
+  },
+  {
+    id: "betaling",
+    label: "Betaling",
+    shortLabel: "Betaling",
+    icon: CreditCard,
+  },
+  {
+    id: "bekreftelse",
+    label: "Bekreftelse",
+    shortLabel: "Ferdig",
+    icon: CheckCircle,
+  },
 ];
 
 export function BookingProgressBar({
@@ -44,10 +69,10 @@ export function BookingProgressBar({
 
         return (
           <div key={step.id} className="flex items-center">
-            {/* Boble: fullført = transparent oransj + oransj tekst; nåværende = helt oransj + hvit tekst */}
+            {/* Boble: mobil = kompakt (ikon + kort label), sm+ = full label – fullskjerm uendret */}
             <div
               className={cn(
-                "flex items-center gap-2 rounded-full border-2 px-2 py-1 sm:gap-2.5 sm:px-5 sm:py-2.5",
+                "flex items-center gap-1.5 rounded-full border-2 px-2 py-1.5 text-xs font-medium sm:gap-2.5 sm:px-5 sm:py-2.5 sm:text-base",
                 isCurrent &&
                   "border-primary bg-primary text-primary-foreground",
                 isCompleted && "border-primary bg-primary/25 text-primary",
@@ -56,17 +81,19 @@ export function BookingProgressBar({
                   "border-muted-foreground/30 bg-muted text-muted-foreground",
               )}
               aria-current={isCurrent ? "step" : undefined}
+              aria-label={step.label}
             >
-              <Icon className="size-5 shrink-0 sm:size-5" aria-hidden />
-              <span className="text-sm font-medium sm:text-base">
-                {step.label}
+              <Icon className="size-4 shrink-0 sm:size-5" aria-hidden />
+              <span className="sm:inline">
+                <span className="sm:hidden">{step.shortLabel}</span>
+                <span className="hidden sm:inline">{step.label}</span>
               </span>
             </div>
-            {/* Linje til neste: samme farge som boblene, gap så den ikke treffer kantene */}
+            {/* Linje til neste */}
             {!isLast && (
               <div
                 className={cn(
-                  "mx-2 h-0.5 w-6 shrink-0 sm:mx-3 sm:w-10",
+                  "mx-1.5 h-0.5 w-4 shrink-0 sm:mx-3 sm:w-10",
                   index < currentIndex ? "bg-primary" : "bg-muted",
                 )}
                 aria-hidden

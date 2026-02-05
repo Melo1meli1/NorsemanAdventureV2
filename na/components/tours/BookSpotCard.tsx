@@ -161,17 +161,6 @@ export function BookSpotCard({
           </Button>
         )}
         {isSoldOut && tourId && <WaitlistDialog tourId={tourId} />}
-        {!isSoldOut && (
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-primary text-foreground hover:bg-primary/10 w-full gap-2 font-semibold tracking-wide uppercase"
-            aria-label="Legg i handlekurv"
-          >
-            <ShoppingCart className="size-5" aria-hidden />
-            Legg i handlekurv
-          </Button>
-        )}
       </div>
 
       <div className="border-border mt-6 border-t pt-6">
