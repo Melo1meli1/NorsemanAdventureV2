@@ -165,7 +165,7 @@ export function BookSpotCard({
             variant="outline"
             className="w-full gap-2 border-yellow-500 font-semibold tracking-wide text-yellow-300 uppercase hover:bg-yellow-500/10"
             aria-label="Sett meg på venteliste"
-            // TODO (US.13): Koble til faktisk venteliste-flyt
+            // TODO: Koble til faktisk venteliste-flyt
             asChild
           >
             <Link href="#kontakt">Sett meg på venteliste</Link>

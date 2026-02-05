@@ -8,7 +8,7 @@ create table public.tours (
   price numeric(10, 2) not null,
 
   start_date timestamptz not null,
-  end_date timestamptz,
+  end_date timestamptz not null,
 
   seats_available integer not null,
   total_seats integer not null default 10,

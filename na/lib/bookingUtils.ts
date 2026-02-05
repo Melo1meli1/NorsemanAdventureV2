@@ -31,7 +31,7 @@ export async function getRemainingSeatsForTour(
 ): Promise<RemainingSeatsResult> {
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, total_seats")
+    .select("id, seats_available, total_seats")
     .eq("id", tourId)
     .single();
 
@@ -59,11 +59,16 @@ export async function getRemainingSeatsForTour(
 
   if (!confirmedBookings || confirmedBookings.length === 0) {
     const totalSeats = tour.total_seats;
+    const remainingSeats =
+      typeof (tour as { seats_available?: number }).seats_available === "number"
+        ? (tour as { seats_available: number }).seats_available
+        : totalSeats;
+
     return {
       success: true,
       totalSeats,
       confirmedSeats: 0,
-      remainingSeats: totalSeats,
+      remainingSeats,
     };
   }
 

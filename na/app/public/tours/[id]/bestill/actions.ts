@@ -75,7 +75,7 @@ export async function createBookingFromPublic(
       error:
         remainingSeats <= 0
           ? "Denne turen er dessverre utsolgt. Du kan sette deg på venteliste."
-          : `Det er bare ${remainingSeats} plasser igjen. Reduser antall deltakere og prøv igjen.`,
+          : `Det er bare ${remainingSeats} plasser igjen.`,
     };
   }
 
