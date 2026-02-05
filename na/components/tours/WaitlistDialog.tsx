@@ -20,7 +20,7 @@ export function WaitlistDialog({ tourId, className }: WaitlistDialogProps) {
         type="button"
         size="lg"
         variant="outline"
-        className="w-full gap-2 border-yellow-500 font-semibold tracking-wide text-yellow-300 uppercase hover:bg-yellow-500/10"
+        className="border-primary text-primary hover:bg-primary/10 w-full gap-2 font-semibold tracking-wide uppercase"
         onClick={() => setOpen(true)}
       >
         Sett meg på venteliste
