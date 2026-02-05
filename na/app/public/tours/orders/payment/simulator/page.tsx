@@ -1,10 +1,17 @@
 import { Suspense } from "react";
 import MockPaymentProvider from "@/app/admin/dashboard/utils/MockPaymentProvider";
+import { BookingProgressBar } from "@/components/tours/BookingProgressBar";
 
 export default function PaymentSimulatorPage() {
   return (
     <main className="bg-background min-h-screen">
       <div className="mx-auto w-full max-w-7xl px-4 pt-24 sm:px-6 sm:pt-28">
+        <div className="mb-8 flex w-full justify-center">
+          <BookingProgressBar
+            currentStep="betaling"
+            className="w-full max-w-md"
+          />
+        </div>
         <Suspense>
           <MockPaymentProvider />
         </Suspense>
