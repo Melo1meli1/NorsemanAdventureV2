@@ -11,6 +11,7 @@ create table public.tours (
   end_date timestamptz,
 
   seats_available integer not null,
+  total_seats integer not null default 10,
   image_url text,
 
   status tour_status not null default 'draft',

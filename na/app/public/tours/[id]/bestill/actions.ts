@@ -9,6 +9,7 @@ import {
   type BookingFormValues,
 } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
+import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
 
 /**
  * Server Actions for booking (offentlig + admin).
@@ -52,14 +53,38 @@ export async function createBookingFromPublic(
     return { success: false, error: "Minst én deltaker må oppgis." };
   }
 
+  const requestedSeats = participants.length;
+
+  const supabase = await createClient();
+
+  // Server-side kapasitetssjekk akkurat idet vi starter betaling.
+  const availability = await getRemainingSeatsForTour(supabase, input.tourId);
+
+  if (!availability.success) {
+    return {
+      success: false,
+      error: availability.error,
+    };
+  }
+
+  const remainingSeats = availability.remainingSeats;
+
+  if (requestedSeats > remainingSeats) {
+    return {
+      success: false,
+      error:
+        remainingSeats <= 0
+          ? "Denne turen er dessverre utsolgt. Du kan sette deg på venteliste."
+          : `Det er bare ${remainingSeats} plasser igjen. Reduser antall deltakere og prøv igjen.`,
+    };
+  }
+
   const first = participants[0];
   const navn = first.name.trim();
   const epost = first.email.trim();
   const dato = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const status: BookingStatus = "ikke_betalt";
   const type: BookingType = "tur";
-
-  const supabase = await createClient();
 
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")

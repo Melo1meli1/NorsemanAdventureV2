@@ -1,14 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ShoppingCart, Mail } from "lucide-react";
 import { formatPrice } from "@/lib/tourUtils";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import Link from "next/link";
 
 type BookSpotCardProps = {
   price: number;
-  seatsAvailable: number;
+  initialSeatsAvailable: number;
   totalSeats: number;
   tourId?: string;
   className?: string;
@@ -16,12 +18,92 @@ type BookSpotCardProps = {
 
 export function BookSpotCard({
   price,
-  seatsAvailable,
+  initialSeatsAvailable,
   totalSeats,
   tourId,
   className,
 }: BookSpotCardProps) {
-  const signedUp = totalSeats - seatsAvailable;
+  const [seatsAvailable, setSeatsAvailable] = useState(initialSeatsAvailable);
+
+  useEffect(() => {
+    setSeatsAvailable(initialSeatsAvailable);
+  }, [initialSeatsAvailable]);
+
+  useEffect(() => {
+    if (!tourId) return;
+
+    const supabase = getSupabaseBrowserClient();
+
+    async function refetchAvailability() {
+      try {
+        const res = await fetch(`/api/tours/${tourId}/availability`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.remainingSeats === "number") {
+          setSeatsAvailable(data.remainingSeats);
+        }
+      } catch {
+        // Ignorer feil –  beholder sist kjente verdi.
+      }
+    }
+
+    const channel = supabase
+      .channel(`tour-availability-${tourId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "bookings",
+          filter: `tour_id=eq.${tourId}`,
+        },
+        (payload: { new: { status?: string } | null }) => {
+          const status = (payload.new as { status?: string } | null)?.status;
+          if (status === "betalt" || status === "delvis_betalt") {
+            void refetchAvailability();
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "bookings",
+          filter: `tour_id=eq.${tourId}`,
+        },
+        (payload: {
+          new: { status?: string } | null;
+          old: { status?: string } | null;
+        }) => {
+          const newStatus = (payload.new as { status?: string } | null)?.status;
+          const oldStatus = (payload.old as { status?: string } | null)?.status;
+          const becameConfirmed =
+            (newStatus === "betalt" || newStatus === "delvis_betalt") &&
+            oldStatus !== "betalt" &&
+            oldStatus !== "delvis_betalt";
+          const leftConfirmed =
+            (oldStatus === "betalt" || oldStatus === "delvis_betalt") &&
+            newStatus !== "betalt" &&
+            newStatus !== "delvis_betalt";
+
+          if (becameConfirmed || leftConfirmed) {
+            void refetchAvailability();
+          }
+        },
+      )
+      .subscribe();
+
+    // Hent siste status ved mount slik at vi ikke er avhengig av SSR-data
+    void refetchAvailability();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [tourId]);
+
+  const signedUp = Math.max(0, totalSeats - seatsAvailable);
+  const isSoldOut = seatsAvailable <= 0;
 
   return (
     <aside
@@ -39,21 +121,32 @@ export function BookSpotCard({
         <span className="text-primary">{formatPrice(price)}</span>
       </h2>
 
-      <p className="text-muted-foreground mb-6 text-sm">
-        <span className="text-foreground font-medium">Ledige plasser:</span>{" "}
-        <span className="font-semibold text-green-500">
-          {seatsAvailable} av {totalSeats}
-        </span>
+      <div className="mb-6 space-y-2">
+        <p className="text-muted-foreground text-sm">
+          <span className="text-foreground font-medium">Kapasitet:</span>{" "}
+          <span className="font-semibold">{totalSeats} plasser totalt</span>
+        </p>
+        <p className="text-sm">
+          {isSoldOut ? (
+            <span className="inline-flex rounded-full bg-red-600 px-3 py-1 text-xs font-semibold tracking-wide text-white uppercase">
+              Utsolgt
+            </span>
+          ) : (
+            <span className="inline-flex rounded-full bg-amber-400 px-3 py-1 text-xs font-semibold tracking-wide text-black uppercase">
+              {seatsAvailable} plasser igjen
+            </span>
+          )}
+        </p>
         {signedUp > 0 && (
-          <span className="text-muted-foreground mt-1 block">
+          <p className="text-muted-foreground text-xs">
             {signedUp}{" "}
-            {signedUp === 1 ? "har meldt seg på" : "har meldt seg på"}
-          </span>
+            {signedUp === 1 ? "person er påmeldt" : "personer er påmeldt"}
+          </p>
         )}
-      </p>
+      </div>
 
       <div className="flex flex-col gap-3">
-        {tourId ? (
+        {tourId && !isSoldOut && (
           <Button
             size="lg"
             className="w-full gap-2 font-semibold tracking-wide uppercase"
@@ -65,25 +158,30 @@ export function BookSpotCard({
               Bestill nå
             </Link>
           </Button>
-        ) : (
+        )}
+        {isSoldOut && (
           <Button
             size="lg"
-            className="w-full gap-2 font-semibold tracking-wide uppercase"
-            aria-label="Bestill nå"
+            variant="outline"
+            className="w-full gap-2 border-yellow-500 font-semibold tracking-wide text-yellow-300 uppercase hover:bg-yellow-500/10"
+            aria-label="Sett meg på venteliste"
+            // TODO (US.13): Koble til faktisk venteliste-flyt
+            asChild
           >
-            <ShoppingCart className="size-5" aria-hidden />
-            Bestill nå
+            <Link href="#kontakt">Sett meg på venteliste</Link>
           </Button>
         )}
-        <Button
-          size="lg"
-          variant="outline"
-          className="border-primary text-foreground hover:bg-primary/10 w-full gap-2 font-semibold tracking-wide uppercase"
-          aria-label="Legg i handlekurv"
-        >
-          <ShoppingCart className="size-5" aria-hidden />
-          Legg i handlekurv
-        </Button>
+        {!isSoldOut && (
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-primary text-foreground hover:bg-primary/10 w-full gap-2 font-semibold tracking-wide uppercase"
+            aria-label="Legg i handlekurv"
+          >
+            <ShoppingCart className="size-5" aria-hidden />
+            Legg i handlekurv
+          </Button>
+        )}
       </div>
 
       <div className="border-border mt-6 border-t pt-6">

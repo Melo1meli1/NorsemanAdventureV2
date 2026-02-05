@@ -23,6 +23,7 @@ import {
   parseHoydepunkter,
 } from "@/lib/tourUtils";
 import { cn } from "@/lib/utils";
+import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -46,6 +47,18 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     .single();
 
   if (error || !tour) notFound();
+
+  const availability = await getRemainingSeatsForTour(supabase, tour.id);
+
+  const initialSeatsAvailable =
+    availability.success && availability.remainingSeats >= 0
+      ? availability.remainingSeats
+      : tour.seats_available;
+
+  const totalSeats =
+    availability.success && availability.totalSeats
+      ? availability.totalSeats
+      : (tour.total_seats ?? tour.seats_available);
 
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
@@ -198,8 +211,8 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             <div className="lg:sticky lg:top-8">
               <BookSpotCard
                 price={tour.price}
-                seatsAvailable={tour.seats_available}
-                totalSeats={tour.total_seats ?? tour.seats_available}
+                initialSeatsAvailable={initialSeatsAvailable}
+                totalSeats={totalSeats}
                 tourId={id}
               />
             </div>

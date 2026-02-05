@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   if (payload.status === "COMPLETED") {
     await supabaseAdmin
       .from("bookings")
-      .update({ status: "paid" })
+      .update({ status: "betalt" })
       .eq("id", payload.reference_id);
   }
 
