@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Home,
@@ -12,6 +13,7 @@ import {
   BookOpen,
   Users,
   MapPin,
+  X,
 } from "lucide-react";
 import type { Tour } from "@/lib/types";
 import { LogoutButton } from "./utils/LogoutButton";
@@ -61,6 +63,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
   const [selectedGalleryTour, setSelectedGalleryTour] = useState<Tour | null>(
     null,
   );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const sectionTitle = {
     overview: "Oversikt",
@@ -88,18 +91,22 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     <main className="bg-page-background flex min-h-screen text-neutral-50">
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
-        <div className="flex items-center gap-3 border-b border-neutral-800 px-6 py-4">
-          <div className="flex h-9 w-8 items-center justify-center rounded-full">
+        <Link
+          href="/"
+          className="flex items-center gap-3 border-b border-neutral-800 px-6 py-5 text-neutral-50"
+          aria-label="Gå til nettsiden"
+        >
+          <div className="flex h-10 w-8 items-center justify-center rounded-full">
             <Image
               src="/logonew.png"
-              alt="Norseman Adventures logo"
+              alt=""
               width={40}
               height={35}
               className="h-10 w-10 rounded-full object-contain"
             />
           </div>
           <span className="text-sm font-semibold tracking-wide">ADMIN</span>
-        </div>
+        </Link>
 
         <nav className="flex-1 space-y-1 px-3 py-5 text-sm">
           {navItems.map(({ id, label, icon: Icon }) => (
@@ -146,18 +153,129 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
         </div>
       </aside>
 
+      {/* Mobil-meny: overlay + drawer – kun synlig på små skjermer (md:hidden) */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          aria-modal="true"
+          role="dialog"
+          aria-label="Meny"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Lukk meny"
+          />
+          <aside className="bg-card absolute top-0 bottom-0 left-0 z-50 flex w-64 flex-col border-r border-neutral-800 shadow-xl">
+            <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-4">
+              <Link
+                href="/"
+                className="flex items-center gap-3 text-neutral-50"
+                aria-label="Gå til nettsiden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="flex h-9 w-8 items-center justify-center rounded-full">
+                  <Image
+                    src="/logonew.png"
+                    alt=""
+                    width={40}
+                    height={35}
+                    className="h-10 w-10 rounded-full object-contain"
+                  />
+                </div>
+                <span className="text-sm font-semibold tracking-wide">
+                  ADMIN
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                aria-label="Lukk meny"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5 text-sm">
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setActiveSection(id);
+                    if (id !== "gallery") setSelectedGalleryTour(null);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-medium ${
+                    activeSection === id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-neutral-300 hover:bg-neutral-800/80"
+                  }`}
+                >
+                  <span
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
+                      activeSection === id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-neutral-900/80 text-neutral-400"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden />
+                  </span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </nav>
+            <div className="space-y-3 border-t border-neutral-800 px-4 py-4 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full text-base font-semibold">
+                  A
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-white">admin</span>
+                  <span className="text-xs text-neutral-400">
+                    Administrator
+                  </span>
+                </div>
+              </div>
+              <LogoutButton />
+            </div>
+          </aside>
+        </div>
+      )}
+
       <section className="flex flex-1 flex-col">
         <header className="bg-page-background flex items-center justify-between border-b border-neutral-800 px-4 py-5 md:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
+              onClick={() => setMobileMenuOpen(true)}
               className="flex h-9 w-9 items-center justify-center rounded-md border border-neutral-700 md:hidden"
               aria-label="Åpne meny"
             >
-              ☰
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
             </button>
             <h1 className="text-lg font-semibold md:text-xl">{sectionTitle}</h1>
           </div>
+          <Link
+            href="/"
+            className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors"
+          >
+            SE NETTSIDE
+          </Link>
         </header>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-4 py-6 md:px-8">
