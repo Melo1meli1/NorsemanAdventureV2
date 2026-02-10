@@ -99,7 +99,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
     >
       <article
         className={cn(
-          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl shadow-lg transition-shadow hover:shadow-xl sm:max-w-md md:max-w-none",
+          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl shadow-lg transition-shadow hover:shadow-xl sm:max-w-md md:h-96 md:max-w-none lg:h-134",
           className,
         )}
       >
