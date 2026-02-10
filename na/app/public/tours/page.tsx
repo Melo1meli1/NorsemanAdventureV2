@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { TourCard } from "@/components/tours/TourCard";
 import { Button } from "@/components/ui/button";
+import { ToursListWithPagination } from "@/components/tours/ToursListWithPagination";
 
 export default async function TurerPage() {
   const supabase = await createClient();
@@ -21,11 +21,7 @@ export default async function TurerPage() {
         </div>
         <h1 className="text-primary mb-8 text-3xl font-bold">Alle turer</h1>
         {tours && tours.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {tours.map((tour) => (
-              <TourCard key={tour.id} tour={tour} fromPage="turer" />
-            ))}
-          </div>
+          <ToursListWithPagination tours={tours} />
         ) : (
           <p className="text-muted-foreground">Ingen publiserte turer.</p>
         )}

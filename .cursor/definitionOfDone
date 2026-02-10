@@ -36,7 +36,6 @@
 ### Documentation & Traceability
 - Relevant documentation is updated (README, admin guide, or internal docs).
 - User story is linked to the correct Epic.
-- Commit messages reference the user story ID.
 
 ### Deployment Readiness
 - Feature is deployable without manual intervention.
