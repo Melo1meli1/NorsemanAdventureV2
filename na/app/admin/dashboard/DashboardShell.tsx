@@ -375,7 +375,15 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             </>
           )}
 
-          {activeSection === "tours" && <TourListView tours={tours} />}
+          {activeSection === "tours" && (
+            <TourListView
+              tours={tours}
+              onOpenGalleryForTour={(tour) => {
+                setSelectedGalleryTour(tour);
+                setActiveSection("gallery");
+              }}
+            />
+          )}
 
           {activeSection === "news" && (
             <div>

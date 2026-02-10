@@ -48,7 +48,8 @@ export function GalleryView({ tours, onSelectTour }: GalleryViewProps) {
   if (tours.length === 0) {
     return (
       <section className="bg-card border-primary/20 rounded-[18px] border px-5 py-6 text-sm text-neutral-300">
-        Ingen turer funnet. Opprett en tur for å få en mappe i galleriet.
+        Ingen turer funnet. Opprett en tur i Turer-fanen for å få en mappe i
+        galleriet og kunne administrere bilder.
       </section>
     );
   }
@@ -58,7 +59,8 @@ export function GalleryView({ tours, onSelectTour }: GalleryViewProps) {
       <header className="flex items-center justify-between">
         <div className="space-y-1">
           <p className="text-sm text-neutral-400">
-            Mapper opprettes automatisk for hver tur.
+            Mapper opprettes automatisk for hver tur. Her administrerer du
+            bildene som hører til turene i admin.
           </p>
         </div>
       </header>
