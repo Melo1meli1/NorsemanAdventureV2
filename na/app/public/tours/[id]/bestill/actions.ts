@@ -135,19 +135,15 @@ export async function createBookingFromPublic(
   }
 
   const letsregBaseUrl = process.env.LETSREG_BASE_URL;
+  const ref = booking.id;
 
-  if (!letsregBaseUrl) {
-    return {
-      success: false,
-      error:
-        "LETSREG_BASE_URL er ikke satt. Kontakt administrator for å aktivere betaling.",
-    };
+  if (letsregBaseUrl) {
+    // Produksjon: redirect til ekte LetsReg-betaling
+    redirect(`${letsregBaseUrl}?ref=${ref}`);
   }
 
-  const paymentUrl = `${letsregBaseUrl}?ref=${booking.id}`;
-
-  // Server-side redirect til betalings-/simulatorside.
-  redirect(paymentUrl);
+  // Mangler LETSREG_BASE_URL (f.eks. på Vercel uten env): bruk betalingssimulator
+  redirect(`/turer/orders/payment/simulator?ref=${ref}`);
 }
 
 // --- Venteliste (offentlig) ---
