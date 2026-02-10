@@ -1,6 +1,6 @@
 "use client";
 import { deleteTour } from "../actions/tours";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -16,6 +16,7 @@ import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import TourFormModal from "./TourFormModal";
+import { Pagination } from "@/components/ui/pagination";
 
 type TourListViewProps = {
   tours: Tour[];
@@ -41,6 +42,8 @@ export function TourListView({
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const TOURS_PER_PAGE = 6;
   function resolveImageSrc(imageUrl: string | null) {
     if (!imageUrl) return null;
 
@@ -96,6 +99,20 @@ export function TourListView({
     setPendingDelete(null);
   }
 
+  const totalPages = Math.ceil(tours.length / TOURS_PER_PAGE) || 1;
+
+  const paginatedTours = useMemo(() => {
+    if (tours.length === 0) return [];
+    const startIndex = (currentPage - 1) * TOURS_PER_PAGE;
+    const endIndex = startIndex + TOURS_PER_PAGE;
+    return tours.slice(startIndex, endIndex);
+  }, [tours, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header: New Tour button */}
@@ -117,7 +134,7 @@ export function TourListView({
             Ingen turer ennå. Opprett en tur for å komme i gang.
           </li>
         ) : (
-          tours.map((tour) => {
+          paginatedTours.map((tour) => {
             const imageConfig = resolveImageSrc(tour.image_url);
             return (
               <li
@@ -223,6 +240,12 @@ export function TourListView({
           })
         )}
       </ul>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
