@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,14 @@ export function Navbar() {
           className="flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl"
           aria-label="Norseman Adventures - Forside"
         >
+          <Image
+            src="/logonew.png"
+            alt="Norseman Adventures logo"
+            width={36}
+            height={36}
+            className="h-9 w-9"
+            priority
+          />
           <span className="text-white">NORSEMAN</span>
           <span className="text-primary">ADVENTURES</span>
         </Link>
