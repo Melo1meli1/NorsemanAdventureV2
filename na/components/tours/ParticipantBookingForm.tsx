@@ -243,7 +243,6 @@ export const ParticipantBookingForm = forwardRef<
         ) : (
           <Accordion
             type="multiple"
-            defaultValue={["deltaker-0"]}
             className="border-border w-full rounded-xl border"
           >
             {fields.map((field, index) => {
