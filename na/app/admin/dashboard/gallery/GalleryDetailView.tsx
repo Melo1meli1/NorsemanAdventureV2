@@ -365,7 +365,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
             </div>
           ) : (
             <>
-              <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-120">
+              <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-160">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {images.map((image) => {
                     return (
