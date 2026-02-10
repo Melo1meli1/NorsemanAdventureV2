@@ -85,6 +85,9 @@ export function BookingStepNavigator({
             title: "Kunne ikke lagre bestilling",
             description: result.error,
           });
+        } else {
+          // Når informasjonen er gyldig og lagret, gå videre til betalingssteget
+          setCurrentStep("betaling");
         }
       } finally {
         setIsSubmittingInformasjon(false);
@@ -137,6 +140,31 @@ export function BookingStepNavigator({
         <BookingProgressBar
           currentStep={currentStep}
           className={progressBarClassName}
+          onStepClick={(stepId) => {
+            const targetIndex = STEP_ORDER.indexOf(stepId);
+            if (targetIndex === -1 || stepId === currentStep) return;
+
+            // Tillat alltid å gå tilbake til tidligere steg
+            if (targetIndex < currentIndex) {
+              setCurrentStep(stepId);
+              return;
+            }
+
+            // Fra handlekurv: hopp først til informasjon
+            if (currentStep === "handlekurv") {
+              setCurrentStep("informasjon");
+              return;
+            }
+
+            // Fra informasjon til senere steg: trigge validering/lagring først
+            if (currentStep === "informasjon") {
+              informasjonFormRef.current?.triggerSubmit();
+              return;
+            }
+
+            // Ellers: gå direkte til ønsket steg
+            setCurrentStep(stepId);
+          }}
         />
       </div>
       {/* Informasjonskomponent + ordresammendrag: bredere enn progress bar */}

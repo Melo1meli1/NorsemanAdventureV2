@@ -50,9 +50,11 @@ const STEPS: {
 export function BookingProgressBar({
   currentStep = "handlekurv",
   className,
+  onStepClick,
 }: {
   currentStep?: BookingStepId;
   className?: string;
+  onStepClick?: (stepId: BookingStepId) => void;
 }) {
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep);
 
@@ -67,10 +69,13 @@ export function BookingProgressBar({
         const isCompleted = index < currentIndex;
         const isCurrent = index === currentIndex;
 
+        const isClickable = typeof onStepClick === "function";
+
         return (
           <div key={step.id} className="flex items-center">
             {/* Boble: mobil = kompakt (ikon + kort label), sm+ = full label – fullskjerm uendret */}
-            <div
+            <button
+              type="button"
               className={cn(
                 "flex items-center gap-1.5 rounded-full border-2 px-2 py-1.5 text-xs font-medium sm:gap-2.5 sm:px-5 sm:py-2.5 sm:text-base",
                 isCurrent &&
@@ -79,16 +84,22 @@ export function BookingProgressBar({
                 !isCurrent &&
                   !isCompleted &&
                   "border-muted-foreground/30 bg-muted text-muted-foreground",
+                isClickable &&
+                  "focus-visible:ring-primary focus-visible:ring-offset-background cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
               )}
               aria-current={isCurrent ? "step" : undefined}
               aria-label={step.label}
+              onClick={() => {
+                if (!isClickable) return;
+                onStepClick?.(step.id);
+              }}
             >
               <Icon className="size-4 shrink-0 sm:size-5" aria-hidden />
               <span className="sm:inline">
                 <span className="sm:hidden">{step.shortLabel}</span>
                 <span className="hidden sm:inline">{step.label}</span>
               </span>
-            </div>
+            </button>
             {/* Linje til neste */}
             {!isLast && (
               <div
