@@ -341,7 +341,6 @@ function OrderTableRow({
               aria-label={`Slett bestilling ${order.navn}`}
             >
               <Trash2 className="h-4 w-4" aria-hidden />
-              <span>Slett</span>
             </button>
           </form>
         </td>
@@ -350,6 +349,14 @@ function OrderTableRow({
         <tr className="bg-neutral-900/50">
           <td colSpan={TABLE_COLUMNS} className="px-4 py-4">
             <div className="flex flex-col gap-2 text-sm text-neutral-100 sm:flex-row sm:items-start sm:justify-between sm:text-base">
+              <div className="mt-2 space-y-1 text-left sm:mt-0">
+                <p className="font-semibold text-neutral-50">
+                  {order.turTittel}
+                </p>
+                <p className="text-neutral-400">
+                  Dato: {formatDato(order.dato)}
+                </p>
+              </div>
               <div className="space-y-1">
                 {order.betaltBelop != null &&
                   order.gjenstaendeBelop != null && (
@@ -372,14 +379,6 @@ function OrderTableRow({
                       </span>
                     </div>
                   )}
-              </div>
-              <div className="mt-2 space-y-1 text-right sm:mt-0">
-                <p className="font-semibold text-neutral-50">
-                  {order.turTittel}
-                </p>
-                <p className="text-neutral-400">
-                  Dato: {formatDato(order.dato)}
-                </p>
               </div>
             </div>
 
@@ -475,7 +474,6 @@ function OrderCard({ order }: { order: OrderRow }) {
           aria-label={`Slett bestilling ${order.navn}`}
         >
           <Trash2 className="h-4 w-4" aria-hidden />
-          Slett
         </button>
       </form>
     </article>
