@@ -3,15 +3,7 @@
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  ImageIcon,
-  Plus,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ImageIcon, Plus, Star, Trash2 } from "lucide-react";
 import type { FileObject } from "@supabase/storage-js";
 import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -20,6 +12,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
 import { setTourCoverImage } from "../actions/tours";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
+import { Pagination } from "@/components/ui/pagination";
 
 const IMAGES_PER_PAGE = 12;
 
@@ -128,9 +121,6 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     setIsLoadingImages(false);
   }, [supabase, toast, tour.id]);
 
-  const totalPages = Math.ceil(totalCount / IMAGES_PER_PAGE) || 1;
-  const hasNextPage = currentPage < totalPages;
-
   const goToPage = useCallback(
     (page: number) => {
       setCurrentPage(page);
@@ -139,7 +129,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     [loadPage],
   );
 
-  const showPagination = totalPages > 1;
+  const totalPages = Math.ceil(totalCount / IMAGES_PER_PAGE) || 1;
+  const hasNextPage = currentPage < totalPages;
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
@@ -421,44 +412,12 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                   })}
                 </div>
               </div>
-              {showPagination ? (
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-neutral-600 text-neutral-200"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    aria-label="Forrige side"
-                  >
-                    <ChevronLeft className="h-4 w-4" aria-hidden />
-                    <span className="sr-only sm:not-sr-only sm:ml-1">
-                      Forrige
-                    </span>
-                  </Button>
-                  <span
-                    className="px-3 text-sm text-neutral-300"
-                    aria-live="polite"
-                  >
-                    Side {currentPage} av {totalPages}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-neutral-600 text-neutral-200"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={!hasNextPage}
-                    aria-label="Neste side"
-                  >
-                    <span className="sr-only sm:not-sr-only sm:mr-1">
-                      Neste
-                    </span>
-                    <ChevronRight className="h-4 w-4" aria-hidden />
-                  </Button>
-                </div>
-              ) : null}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                hasNextPage={hasNextPage}
+                onPageChange={goToPage}
+              />
             </>
           )}
           {isLoadingImages ? (
