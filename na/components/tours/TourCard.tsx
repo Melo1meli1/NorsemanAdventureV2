@@ -94,6 +94,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
   return (
     <Link
       href={detailHref}
+      aria-label={`Les mer om ${tour.title}`}
       className="focus-visible:ring-primary focus-visible:ring-offset-background block rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       <article
