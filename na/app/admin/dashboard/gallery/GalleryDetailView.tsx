@@ -45,6 +45,19 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
+  function sortImagesWithCoverFirst(
+    list: Array<{ name: string; url: string }>,
+    coverUrl: string | null,
+  ): Array<{ name: string; url: string }> {
+    if (!coverUrl || list.length === 0) return list;
+    const index = list.findIndex((img) => img.url === coverUrl);
+    if (index <= 0) return list;
+    const reordered = [...list];
+    const [cover] = reordered.splice(index, 1);
+    reordered.unshift(cover);
+    return reordered;
+  }
+
   const loadPage = useCallback(
     async (page: number) => {
       setIsLoadingImages(true);
@@ -77,11 +90,11 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
         return { name: file.name, url: publicData.publicUrl };
       });
 
-      setImages(mapped);
+      setImages(sortImagesWithCoverFirst(mapped, coverImageUrl));
       setIsLoadingImages(false);
       return mapped.length;
     },
-    [supabase, toast, tour.id],
+    [supabase, toast, tour.id, coverImageUrl],
   );
 
   const loadInitial = useCallback(async () => {
@@ -117,9 +130,9 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
           .getPublicUrl(`${tour.id}/${file.name}`);
         return { name: file.name, url: publicData.publicUrl };
       });
-    setImages(firstPage);
+    setImages(sortImagesWithCoverFirst(firstPage, coverImageUrl));
     setIsLoadingImages(false);
-  }, [supabase, toast, tour.id]);
+  }, [supabase, toast, tour.id, coverImageUrl]);
 
   const goToPage = useCallback(
     (page: number) => {
@@ -170,6 +183,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     const result = await setTourCoverImage(tour.id, imageUrl);
     if (result.success) {
       setCoverImageUrl(imageUrl);
+      setImages((prev) => sortImagesWithCoverFirst(prev, imageUrl));
       toast({
         title: "Hovedbilde oppdatert",
         description: "Dette bildet vises nå på forsiden for denne turen.",
@@ -322,7 +336,9 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               {tour.title} - Bilder
             </CardTitle>
             <p className="text-sm text-neutral-400">
-              Administrer bilder sortert etter tur
+              Administrer bildene for denne turen. Klikk på stjerne-ikonet på et
+              bilde for å velge hvilket som skal være hovedbilde (vises på
+              forsiden).
             </p>
           </div>
 
@@ -351,9 +367,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
             <>
               <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-120">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                  {images.map((image, index) => {
-                    const globalIndex =
-                      (currentPage - 1) * IMAGES_PER_PAGE + index + 1;
+                  {images.map((image) => {
                     return (
                       <div
                         key={image.name}
@@ -369,7 +383,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                           />
                           <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
                             {coverImageUrl === image.url ? (
-                              <span className="bg-primary/90 text-primary-foreground rounded-md px-2 py-0.5 text-xs font-medium">
+                              <span className="bg-primary/90 text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold shadow-sm">
                                 Hovedbilde
                               </span>
                             ) : (
@@ -383,15 +397,13 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                                   handleSetCoverImage(image.url, image.name);
                                 }}
                                 disabled={settingCoverImageName === image.name}
-                                aria-label={`Gjør ${image.name} til hovedbilde`}
-                                title="Gjør til hovedbilde (vises på forsiden)"
+                                aria-label={`Sett ${image.name} som hovedbilde`}
+                                title="Sett som hovedbilde for turen"
                               >
                                 <Star className="h-3.5 w-3.5" aria-hidden />
                               </Button>
                             )}
-                            <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-neutral-200">
-                              #{globalIndex}
-                            </span>
+
                             <Button
                               type="button"
                               size="icon-sm"
