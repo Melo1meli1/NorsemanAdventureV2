@@ -33,6 +33,12 @@ type OrderRow = {
   /** Nødkontakt – kun i CSV-eksport, ikke vist i admin-tabellen. */
   sos_navn?: string | null;
   sos_telefon?: string | null;
+  /**
+   * Valgfritt: hvor mye som allerede er betalt, og hvor mye som gjenstår.
+   * Disse feltene kan senere fylles fra LetsReg/backend.
+   */
+  betaltBelop?: number | null;
+  gjenstaendeBelop?: number | null;
 };
 
 function formatBelop(n: number): string {
@@ -94,7 +100,7 @@ const MOCK_ORDERS: OrderRow[] = [
     type: "tur",
     turTittel: "Nordkapp Ekspedisjon",
     belop: 12500,
-    status: "betalt",
+    status: "delvis_betalt",
     dato: "2026-01-14",
     telefon: "+47 123 45 678",
     antallDeltakere: 2,
@@ -103,6 +109,8 @@ const MOCK_ORDERS: OrderRow[] = [
     tourLedigePlasser: 9,
     sos_navn: "Lars Hansen",
     sos_telefon: "+47 876 54 321",
+    betaltBelop: 6000,
+    gjenstaendeBelop: 6500,
   },
   {
     id: "3",
@@ -145,12 +153,16 @@ function StatusBadge({ status }: { status: OrderRow["status"] }) {
     <span
       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
         status === "betalt"
-          ? "bg-green-500/20 text-green-400"
-          : status === "venteliste"
-            ? "bg-yellow-500/20 text-yellow-400"
-            : status === "kansellert"
-              ? "bg-red-500/20 text-red-400"
-              : "bg-neutral-700 text-neutral-300"
+          ? "border border-green-500/40 bg-green-500/15 text-green-400"
+          : status === "delvis_betalt"
+            ? "border border-orange-500/40 bg-orange-500/15 text-orange-300"
+            : status === "ikke_betalt"
+              ? "border border-red-500/40 bg-red-600/15 text-red-400"
+              : status === "venteliste"
+                ? "bg-yellow-500/20 text-yellow-400"
+                : status === "kansellert"
+                  ? "bg-neutral-700 text-neutral-300"
+                  : "bg-neutral-700 text-neutral-300"
       }`}
     >
       {BOOKING_STATUS_LABELS[status]}
@@ -160,14 +172,30 @@ function StatusBadge({ status }: { status: OrderRow["status"] }) {
 
 function OrderTableRow({ order }: { order: OrderRow }) {
   return (
-    <tr className="text-neutral-200 hover:bg-neutral-800/30">
-      <td className="px-4 py-5 font-medium text-neutral-50">{order.navn}</td>
-      <td className="px-4 py-5">{order.epost}</td>
-      <td className="px-4 py-5 text-neutral-400">{order.telefon ?? "–"}</td>
-      <td className="px-4 py-5">{order.antallDeltakere}</td>
-      <td className="px-4 py-5">{formatBelop(order.belop)}</td>
+    <tr className="text-sm text-neutral-200 hover:bg-neutral-800/30 sm:text-base">
+      <td className="px-4 py-5 font-semibold text-neutral-50">{order.navn}</td>
+      <td className="px-4 py-5 text-sm text-neutral-200 sm:text-base">
+        {order.epost}
+      </td>
+      <td className="px-4 py-5 text-xs text-neutral-400 sm:text-sm">
+        {order.telefon ?? "–"}
+      </td>
+      <td className="px-4 py-5 text-sm sm:text-base">
+        {order.antallDeltakere}
+      </td>
+      <td className="px-4 py-5 text-sm sm:text-base">
+        {formatBelop(order.belop)}
+      </td>
       <td className="px-4 py-5">
-        <StatusBadge status={order.status} />
+        <div className="flex flex-col gap-1">
+          <StatusBadge status={order.status} />
+          {order.betaltBelop != null && order.gjenstaendeBelop != null && (
+            <div className="text-[11px] text-neutral-400 sm:text-xs">
+              <p>Betalt: {formatBelop(order.betaltBelop)}</p>
+              <p>Gjenstår: {formatBelop(order.gjenstaendeBelop)}</p>
+            </div>
+          )}
+        </div>
       </td>
       <td className="px-4 py-5">
         <form
@@ -197,12 +225,16 @@ function OrderCard({ order }: { order: OrderRow }) {
     <article className="flex flex-col gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-neutral-50">{order.navn}</p>
-          <p className="truncate text-sm text-neutral-400">{order.epost}</p>
+          <p className="text-base font-semibold text-neutral-50 sm:text-lg">
+            {order.navn}
+          </p>
+          <p className="truncate text-xs text-neutral-400 sm:text-sm">
+            {order.epost}
+          </p>
         </div>
         <StatusBadge status={order.status} />
       </div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-neutral-400">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-neutral-400 sm:text-sm">
         <div>
           <span className="sr-only">Telefon</span>
           <span>{order.telefon ?? "–"}</span>
@@ -220,7 +252,15 @@ function OrderCard({ order }: { order: OrderRow }) {
           <span>{order.dato}</span>
         </div>
       </dl>
-      <p className="text-sm text-neutral-400">{order.turTittel}</p>
+      {order.betaltBelop != null && order.gjenstaendeBelop != null && (
+        <div className="mt-1 text-xs text-neutral-400 sm:text-sm">
+          <p>Betalt: {formatBelop(order.betaltBelop)}</p>
+          <p>Gjenstår: {formatBelop(order.gjenstaendeBelop)}</p>
+        </div>
+      )}
+      <p className="text-sm font-medium text-neutral-200 sm:text-base">
+        {order.turTittel}
+      </p>
       <form
         action={async (formData) => {
           await deleteBooking(formData);

@@ -15,11 +15,12 @@ The goal is to achieve an "A" grade by demonstrating professional coding standar
 - **Styling:** Tailwind CSS (Use utility classes, avoid arbitrary values).
 - **State Management:** React Server Components (RSC) for fetching, Server Actions for mutations.
 - **Testing/Quality:** ESLint, Prettier, Husky (Pre-commit hooks).
+- **Shadcn:** Reusable components 
 
 # Core Principles
 1.  **Traceability is King:** Every piece of code must be traceable back to a Requirement (US.xx) or Non-Functional Requirement (NFR.xx).
 2.  **Process = Product:** Documentation and process are 50% of the grade. Treat documentation tasks with the same priority as coding tasks.
-3.  **Clean Code:** Follow DRY (Don't Repeat Yourself) and SOLID principles. Code must be readable for a sensor.
+3.  **Clean Code:** Follow DRY (Don't Repeat Yourself) and SOLID principles. Code must be readable for a sensor. This includes utilizing shadcn components, research if they have a component of the type we are looking for BEFORE creating one from scratch. 
 
 # Coding Guidelines
 

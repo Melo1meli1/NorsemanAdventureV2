@@ -179,12 +179,12 @@ export function BookingStepNavigator({
             onInformasjonValid={onInformasjonValid}
             className="min-w-0"
           />
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {isFirstStep ? (
               <Button
                 variant="outline"
                 size="lg"
-                className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                className="border-primary text-primary hover:bg-primary/10 hover:text-primary text-base sm:text-lg"
                 asChild
                 aria-label="Tilbake til turen"
               >
@@ -198,7 +198,7 @@ export function BookingStepNavigator({
                 type="button"
                 variant="outline"
                 size="lg"
-                className="border-primary text-primary hover:bg-primary/10 hover:text-primary"
+                className="border-primary text-primary hover:bg-primary/10 hover:text-primary text-base sm:text-lg"
                 onClick={goBack}
                 aria-label="Forrige steg"
               >
@@ -209,6 +209,7 @@ export function BookingStepNavigator({
             <Button
               type="button"
               size="lg"
+              className="text-base font-semibold sm:text-lg"
               onClick={goNext}
               disabled={isLastStep || isSubmittingInformasjon}
               aria-label={
