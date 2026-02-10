@@ -1,18 +1,28 @@
 "use client";
 import { deleteTour } from "../actions/tours";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, MapPin, Pencil, Plus, Trash2, Users } from "lucide-react";
+import {
+  Calendar,
+  ImageIcon,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
 import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import TourFormModal from "./TourFormModal";
+import { Pagination } from "@/components/ui/pagination";
 
 type TourListViewProps = {
   tours: Tour[];
   onEdit?: (tour: Tour) => void;
   onNewTour?: () => void;
+  onOpenGalleryForTour?: (tour: Tour) => void;
 };
 
 function formatDate(iso: string | null): string {
@@ -22,31 +32,28 @@ function formatDate(iso: string | null): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
+export function TourListView({
+  tours,
+  onEdit,
+  onNewTour,
+  onOpenGalleryForTour,
+}: TourListViewProps) {
   const router = useRouter();
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
-  const fallbackImages = [
-    "/hero-motorcycle.jpg",
-    "/tour-asphalt.jpg",
-    "/tour-gravel.jpg",
-    "/tour-summer.jpg",
-  ];
-  function resolveImageSrc(imageUrl: string | null, index: number) {
-    if (imageUrl) {
-      if (imageUrl.startsWith("http")) {
-        return { src: imageUrl, unoptimized: true };
-      }
-      if (imageUrl.startsWith("/")) {
-        return { src: imageUrl, unoptimized: false };
-      }
-      return { src: `/${imageUrl}`, unoptimized: false };
+  const [currentPage, setCurrentPage] = useState(1);
+  const TOURS_PER_PAGE = 6;
+  function resolveImageSrc(imageUrl: string | null) {
+    if (!imageUrl) return null;
+
+    if (imageUrl.startsWith("http")) {
+      return { src: imageUrl, unoptimized: true as const };
     }
-    return {
-      src: fallbackImages[index % fallbackImages.length],
-      unoptimized: false,
-    };
+    if (imageUrl.startsWith("/")) {
+      return { src: imageUrl, unoptimized: false as const };
+    }
+    return { src: `/${imageUrl}`, unoptimized: false as const };
   }
 
   function handleRequestDelete(tour: Tour) {
@@ -92,6 +99,20 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
     setPendingDelete(null);
   }
 
+  const totalPages = Math.ceil(tours.length / TOURS_PER_PAGE) || 1;
+
+  const paginatedTours = useMemo(() => {
+    if (tours.length === 0) return [];
+    const startIndex = (currentPage - 1) * TOURS_PER_PAGE;
+    const endIndex = startIndex + TOURS_PER_PAGE;
+    return tours.slice(startIndex, endIndex);
+  }, [tours, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header: New Tour button */}
@@ -113,23 +134,38 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
             Ingen turer ennå. Opprett en tur for å komme i gang.
           </li>
         ) : (
-          tours.map((tour, index) => {
-            const { src, unoptimized } = resolveImageSrc(tour.image_url, index);
+          paginatedTours.map((tour) => {
+            const imageConfig = resolveImageSrc(tour.image_url);
             return (
               <li
                 key={tour.id}
-                className="flex items-center gap-4 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:border-neutral-700"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleOpenEditTour(tour)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleOpenEditTour(tour);
+                  }
+                }}
+                className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer items-center gap-4 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none"
               >
                 {/* Thumbnail */}
                 <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-neutral-800">
-                  <Image
-                    src={src}
-                    alt={tour.title}
-                    fill
-                    className="object-cover"
-                    sizes="72px"
-                    unoptimized={unoptimized}
-                  />
+                  {imageConfig ? (
+                    <Image
+                      src={imageConfig.src}
+                      alt={tour.title}
+                      fill
+                      className="object-cover"
+                      sizes="72px"
+                      unoptimized={imageConfig.unoptimized}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-neutral-900 text-neutral-500">
+                      <ImageIcon className="h-5 w-5" aria-hidden />
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}
@@ -162,17 +198,38 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
                     variant="ghost"
                     size="icon"
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
-                    onClick={() => handleOpenEditTour(tour)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleOpenEditTour(tour);
+                    }}
                     aria-label={`Rediger ${tour.title}`}
                   >
                     <Pencil className="h-5 w-5 text-current" />
                   </Button>
+                  {onOpenGalleryForTour && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpenGalleryForTour(tour);
+                      }}
+                      aria-label={`Åpne galleri for ${tour.title}`}
+                    >
+                      <ImageIcon className="h-5 w-5 text-current" />
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
-                    onClick={() => handleRequestDelete(tour)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleRequestDelete(tour);
+                    }}
                     aria-label={`Slett ${tour.title}`}
                   >
                     <Trash2 className="h-5 w-5 text-current" />
@@ -183,6 +240,12 @@ export function TourListView({ tours, onEdit, onNewTour }: TourListViewProps) {
           })
         )}
       </ul>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
