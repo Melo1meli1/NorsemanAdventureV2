@@ -94,7 +94,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
   return (
     <article
       className={cn(
-        "bg-card text-card-foreground flex flex-col overflow-hidden rounded-xl shadow-lg",
+        "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl shadow-lg sm:max-w-md md:max-w-none",
         className,
       )}
     >
@@ -142,7 +142,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
       <div className="flex flex-1 flex-col p-5">
         <h3 className="text-foreground mb-2 text-lg font-bold">{tour.title}</h3>
         {tour.short_description && (
-          <p className="text-muted-foreground mb-4 line-clamp-3 text-sm">
+          <p className="text-muted-foreground mb-4 line-clamp-2 text-sm sm:line-clamp-3">
             {tour.short_description}
           </p>
         )}
