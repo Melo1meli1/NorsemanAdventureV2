@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
+import {
+  getRemainingSeatsForTour,
+  getRemainingSeatsForTours,
+} from "@/lib/bookingUtils";
 import type { Booking, Participant, Tour } from "@/lib/types";
 
 export type BookingWithDetails = Booking & {
@@ -114,11 +117,18 @@ export async function getBookingsPage(
   }
 
   const bookingIds = bookings.map((b) => b.id);
-  const { data: participants, error: participantsError } = await supabase
-    .from("participants")
-    .select("*")
-    .in("booking_id", bookingIds);
+  const tourIds = [
+    ...new Set(
+      bookings.map((b) => b.tour_id).filter((id): id is string => id != null),
+    ),
+  ];
 
+  const [participantsResult, remainingByTourId] = await Promise.all([
+    supabase.from("participants").select("*").in("booking_id", bookingIds),
+    getRemainingSeatsForTours(supabase, tourIds),
+  ]);
+
+  const { data: participants, error: participantsError } = participantsResult;
   if (participantsError) {
     console.error("Error fetching participants:", participantsError);
   }
@@ -133,55 +143,38 @@ export async function getBookingsPage(
     }
   }
 
-  const tourAvailabilityCache = new Map<string, number | null>();
+  const bookingsWithDetails: BookingWithDetails[] = bookings.map((booking) => {
+    const bookingWithTours = booking as unknown as {
+      tours: Tour | Tour[] | null;
+    };
+    const toursData = bookingWithTours.tours;
 
-  const bookingsWithDetails: BookingWithDetails[] = await Promise.all(
-    bookings.map(async (booking) => {
-      const bookingWithTours = booking as unknown as {
-        tours: Tour | Tour[] | null;
-      };
-      const toursData = bookingWithTours.tours;
-
-      let tour: Tour | null = null;
-      if (toursData) {
-        if (Array.isArray(toursData)) {
-          tour = toursData.length > 0 ? toursData[0] : null;
-        } else {
-          tour = toursData;
-        }
+    let tour: Tour | null = null;
+    if (toursData) {
+      if (Array.isArray(toursData)) {
+        tour = toursData.length > 0 ? toursData[0] : null;
+      } else {
+        tour = toursData;
       }
+    }
 
-      const bookingParticipants = participantsByBookingId.get(booking.id) || [];
-      let tourLedigePlasser: number | null = null;
+    const bookingParticipants = participantsByBookingId.get(booking.id) || [];
+    const tourLedigePlasser =
+      booking.tour_id != null
+        ? (remainingByTourId.get(booking.tour_id) ?? null)
+        : null;
 
-      if (booking.tour_id && tour) {
-        if (!tourAvailabilityCache.has(booking.tour_id)) {
-          const availability = await getRemainingSeatsForTour(
-            supabase,
-            booking.tour_id,
-          );
-          tourLedigePlasser = availability.success
-            ? availability.remainingSeats
-            : null;
-          tourAvailabilityCache.set(booking.tour_id, tourLedigePlasser);
-        } else {
-          tourLedigePlasser =
-            tourAvailabilityCache.get(booking.tour_id) ?? null;
-        }
-      }
-
-      return {
-        ...booking,
-        tour,
-        participants: bookingParticipants,
-        antallDeltakere: bookingParticipants.length,
-        tourTittel: tour?.title ?? "Ukjent tur",
-        tourDato: tour?.start_date ?? null,
-        tourTotalPlasser: tour?.total_seats ?? null,
-        tourLedigePlasser,
-      };
-    }),
-  );
+    return {
+      ...booking,
+      tour,
+      participants: bookingParticipants,
+      antallDeltakere: bookingParticipants.length,
+      tourTittel: tour?.title ?? "Ukjent tur",
+      tourDato: tour?.start_date ?? null,
+      tourTotalPlasser: tour?.total_seats ?? null,
+      tourLedigePlasser,
+    };
+  });
 
   return {
     success: true,
