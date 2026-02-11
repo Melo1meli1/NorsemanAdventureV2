@@ -125,13 +125,12 @@ export const bookingRecordSchema = z.object({
     .min(0, "Beløp kan ikke være negativt."),
   type: bookingTypeEnum.default("tur"),
   tour_id: z.string().uuid("Ugyldig tur-id.").optional().nullable(),
-  telefon: optionalString
-    .nullable()
+  telefon: z
+    .string({ message: "Telefonnummer er påkrevd." })
+    .trim()
+    .min(1, "Telefonnummer er påkrevd.")
     .refine(
-      (val) =>
-        !val ||
-        val === "" ||
-        (phoneRegex.test(val) && countDigits(val) >= PHONE_MIN_DIGITS),
+      (val) => phoneRegex.test(val) && countDigits(val) >= PHONE_MIN_DIGITS,
       {
         message:
           "Ugyldig telefonnummer. Minst 8 siffer, kun tall og + - ( ) tillatt.",
