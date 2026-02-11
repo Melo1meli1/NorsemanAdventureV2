@@ -23,6 +23,7 @@ export type BookingStats = {
   bekreftet: number;
   venteliste: number;
   ledigePlasser: number;
+  aktiveTurer: number;
 };
 
 export async function deleteBooking(formData: FormData) {
@@ -356,6 +357,7 @@ export async function getBookingStats(): Promise<{
         bekreftet: 0,
         venteliste: 0,
         ledigePlasser: 0,
+        aktiveTurer: 0,
       },
     };
   }
@@ -365,19 +367,23 @@ export async function getBookingStats(): Promise<{
   const venteliste =
     bookings?.filter((b) => b.status === "venteliste").length ?? 0;
 
-  // Beregn ledige plasser for alle aktive turer
+  // Beregn ledige plasser for alle aktive turer (optimalisert med batch)
   const { data: tours, error: toursError } = await supabase
     .from("tours")
     .select("id")
     .eq("status", "published");
 
   let ledigePlasser = 0;
-  if (!toursError && tours) {
-    for (const tour of tours) {
-      const availability = await getRemainingSeatsForTour(supabase, tour.id);
-      if (availability.success) {
-        ledigePlasser += availability.remainingSeats;
-      }
+  const aktiveTurer = tours?.length ?? 0;
+
+  if (!toursError && tours && tours.length > 0) {
+    const tourIds = tours.map((t) => t.id);
+    const remainingByTourId = await getRemainingSeatsForTours(
+      supabase,
+      tourIds,
+    );
+    for (const seats of remainingByTourId.values()) {
+      ledigePlasser += seats;
     }
   }
 
@@ -388,6 +394,73 @@ export async function getBookingStats(): Promise<{
       bekreftet,
       venteliste,
       ledigePlasser,
+      aktiveTurer,
     },
+  };
+}
+
+/**
+ * Henter de siste N bestillingene for "Siste bestillinger" i overview.
+ */
+export async function getRecentBookings(limit: number = 3): Promise<{
+  success: true;
+  data: Array<{
+    id: string;
+    navn: string;
+    turTittel: string;
+    status: Booking["status"];
+  }>;
+}> {
+  const supabase = await createClient();
+
+  const { data: bookings, error } = await supabase
+    .from("bookings")
+    .select(
+      `
+      id,
+      navn,
+      status,
+      tours (
+        title
+      )
+    `,
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Error fetching recent bookings:", error);
+    return {
+      success: true,
+      data: [],
+    };
+  }
+
+  const recentBookings = (bookings || []).map((booking) => {
+    const bookingWithTours = booking as unknown as {
+      tours: Tour | Tour[] | null;
+    };
+    const toursData = bookingWithTours.tours;
+
+    let tour: Tour | null = null;
+    if (toursData) {
+      if (Array.isArray(toursData)) {
+        tour = toursData.length > 0 ? toursData[0] : null;
+      } else if (!Array.isArray(toursData)) {
+        tour = toursData;
+      }
+    }
+
+    return {
+      id: booking.id,
+      navn: booking.navn,
+      turTittel: tour?.title ?? "Ukjent tur",
+      status: booking.status,
+    };
+  });
+
+  return {
+    success: true,
+    data: recentBookings,
   };
 }

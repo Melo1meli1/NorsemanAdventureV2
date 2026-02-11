@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,12 @@ import {
   X,
 } from "lucide-react";
 import type { Tour } from "@/lib/types";
+import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
+import {
+  getBookingStats,
+  getRecentBookings,
+  type BookingStats,
+} from "./actions/bookings";
 import { LogoutButton } from "./utils/LogoutButton";
 import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
@@ -29,13 +35,6 @@ const navItems = [
   { id: "orders", label: "Bestillinger", icon: ClipboardList },
   { id: "gallery", label: "Galleri", icon: ImageIcon },
 ] as const;
-
-const kpiCards = [
-  { label: "Totale bestillinger", value: "8", tone: "orange", Icon: BookOpen },
-  { label: "Bekreftet", value: "2", tone: "green", Icon: Users },
-  { label: "Venteliste", value: "1", tone: "yellow", Icon: Users },
-  { label: "Aktive turer", value: "5", tone: "blue", Icon: MapPin },
-];
 
 type DashboardShellProps = {
   tours?: Tour[];
@@ -64,6 +63,21 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     null,
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [kpiStats, setKpiStats] = useState<BookingStats | null>(null);
+  const [recentBookings, setRecentBookings] = useState<
+    Array<{
+      id: string;
+      navn: string;
+      turTittel: string;
+      status:
+        | "betalt"
+        | "ikke_betalt"
+        | "venteliste"
+        | "kansellert"
+        | "delvis_betalt";
+    }>
+  >([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   const sectionTitle = {
     overview: "Oversikt",
@@ -72,6 +86,26 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     orders: "Bestillinger",
     gallery: "Galleri",
   }[activeSection];
+
+  const fetchStats = useCallback(async () => {
+    setIsLoadingStats(true);
+    try {
+      const [statsResult, recentResult] = await Promise.all([
+        getBookingStats(),
+        getRecentBookings(3),
+      ]);
+      if (statsResult.success) {
+        setKpiStats(statsResult.data);
+      }
+      if (recentResult.success) {
+        setRecentBookings(recentResult.data);
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard stats:", err);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -86,6 +120,12 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     }
     router.replace(nextParams ? `?${nextParams}` : "");
   }, [activeSection, searchParams, router]);
+
+  useEffect(() => {
+    if (activeSection === "overview") {
+      fetchStats();
+    }
+  }, [activeSection, fetchStats]);
 
   return (
     <main className="bg-page-background flex min-h-screen text-neutral-50">
@@ -282,7 +322,40 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
           {activeSection === "overview" && (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {kpiCards.map((card) => (
+                {[
+                  {
+                    label: "Totale bestillinger",
+                    value: isLoadingStats
+                      ? "–"
+                      : (kpiStats?.totaleBestillinger.toString() ?? "0"),
+                    tone: "orange" as const,
+                    Icon: BookOpen,
+                  },
+                  {
+                    label: "Bekreftet",
+                    value: isLoadingStats
+                      ? "–"
+                      : (kpiStats?.bekreftet.toString() ?? "0"),
+                    tone: "green" as const,
+                    Icon: Users,
+                  },
+                  {
+                    label: "Venteliste",
+                    value: isLoadingStats
+                      ? "–"
+                      : (kpiStats?.venteliste.toString() ?? "0"),
+                    tone: "yellow" as const,
+                    Icon: Users,
+                  },
+                  {
+                    label: "Ledige plasser",
+                    value: isLoadingStats
+                      ? "–"
+                      : (kpiStats?.ledigePlasser.toString() ?? "0"),
+                    tone: "blue" as const,
+                    Icon: MapPin,
+                  },
+                ].map((card) => (
                   <article
                     key={card.label}
                     className="bg-card hover:bg-card/90 border-primary/30 hover:border-primary/60 flex transform flex-col justify-center rounded-[18px] border px-6 py-4 transition hover:-translate-y-0.5"
@@ -321,56 +394,55 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
                   </h2>
                   <button
                     type="button"
+                    onClick={() => setActiveSection("orders")}
                     className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium"
                   >
                     <span>Se alle</span>
                     <span>›</span>
                   </button>
                 </header>
-                <ul className="divide-y divide-neutral-800 text-sm">
-                  {[
-                    {
-                      name: "Ole Nordmann",
-                      tour: "Nordkapp Ekspedisjon",
-                      status: "Venteliste",
-                    },
-                    {
-                      name: "Kari Hansen",
-                      tour: "Nordkapp Ekspedisjon",
-                      status: "Bekreftet",
-                    },
-                    {
-                      name: "Per Olsen",
-                      tour: "Grusveiene i Setesdal",
-                      status: "Venteliste",
-                    },
-                  ].map((order) => (
-                    <li
-                      key={order.name}
-                      className="flex items-center justify-between px-5 py-3"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-neutral-50">
-                          {order.name}
-                        </span>
-                        <span className="text-sm text-neutral-400">
-                          {order.tour}
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium">
-                        {order.status === "Bekreftet" ? (
-                          <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
-                            {order.status}
+                {isLoadingStats ? (
+                  <div className="px-5 py-8 text-center text-sm text-neutral-400">
+                    Henter bestillinger...
+                  </div>
+                ) : recentBookings.length === 0 ? (
+                  <div className="px-5 py-8 text-center text-sm text-neutral-400">
+                    Ingen bestillinger ennå.
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-neutral-800 text-sm">
+                    {recentBookings.map((order) => {
+                      const isBekreftet = order.status === "betalt";
+                      const statusLabel = BOOKING_STATUS_LABELS[order.status];
+                      return (
+                        <li
+                          key={order.id}
+                          className="flex items-center justify-between px-5 py-3"
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium text-neutral-50">
+                              {order.navn}
+                            </span>
+                            <span className="text-sm text-neutral-400">
+                              {order.turTittel}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium">
+                            {isBekreftet ? (
+                              <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
+                                {statusLabel}
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-neutral-800 px-2 py-1 text-neutral-300">
+                                {statusLabel}
+                              </span>
+                            )}
                           </span>
-                        ) : (
-                          <span className="rounded-full bg-neutral-800 px-2 py-1 text-neutral-300">
-                            {order.status}
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </section>
             </>
           )}
