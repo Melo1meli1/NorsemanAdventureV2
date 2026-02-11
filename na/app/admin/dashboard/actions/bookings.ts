@@ -52,8 +52,147 @@ export async function deleteBooking(formData: FormData) {
   };
 }
 
+const DEFAULT_PAGE_SIZE = 10;
+
 /**
- * Henter alle bookings med participants og tour-info.
+ * Henter en side med bookings (med participants og tour-info) og totalt antall for paginering.
+ */
+export async function getBookingsPage(
+  page: number,
+  pageSize: number = DEFAULT_PAGE_SIZE,
+): Promise<{
+  success: true;
+  data: BookingWithDetails[];
+  totalCount: number;
+  totalPages: number;
+}> {
+  const supabase = await createClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const {
+    data: bookings,
+    error: bookingsError,
+    count,
+  } = await supabase
+    .from("bookings")
+    .select(
+      `
+      *,
+      tours (
+        id,
+        title,
+        start_date,
+        total_seats
+      )
+    `,
+      { count: "exact" },
+    )
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (bookingsError) {
+    console.error("Error fetching bookings page:", bookingsError);
+    return {
+      success: true,
+      data: [],
+      totalCount: 0,
+      totalPages: 0,
+    };
+  }
+
+  const totalCount = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  if (!bookings || bookings.length === 0) {
+    return {
+      success: true,
+      data: [],
+      totalCount,
+      totalPages,
+    };
+  }
+
+  const bookingIds = bookings.map((b) => b.id);
+  const { data: participants, error: participantsError } = await supabase
+    .from("participants")
+    .select("*")
+    .in("booking_id", bookingIds);
+
+  if (participantsError) {
+    console.error("Error fetching participants:", participantsError);
+  }
+
+  const participantsByBookingId = new Map<string, Participant[]>();
+  if (participants) {
+    for (const participant of participants) {
+      const existing =
+        participantsByBookingId.get(participant.booking_id) || [];
+      existing.push(participant);
+      participantsByBookingId.set(participant.booking_id, existing);
+    }
+  }
+
+  const tourAvailabilityCache = new Map<string, number | null>();
+
+  const bookingsWithDetails: BookingWithDetails[] = await Promise.all(
+    bookings.map(async (booking) => {
+      const bookingWithTours = booking as unknown as {
+        tours: Tour | Tour[] | null;
+      };
+      const toursData = bookingWithTours.tours;
+
+      let tour: Tour | null = null;
+      if (toursData) {
+        if (Array.isArray(toursData)) {
+          tour = toursData.length > 0 ? toursData[0] : null;
+        } else {
+          tour = toursData;
+        }
+      }
+
+      const bookingParticipants = participantsByBookingId.get(booking.id) || [];
+      let tourLedigePlasser: number | null = null;
+
+      if (booking.tour_id && tour) {
+        if (!tourAvailabilityCache.has(booking.tour_id)) {
+          const availability = await getRemainingSeatsForTour(
+            supabase,
+            booking.tour_id,
+          );
+          tourLedigePlasser = availability.success
+            ? availability.remainingSeats
+            : null;
+          tourAvailabilityCache.set(booking.tour_id, tourLedigePlasser);
+        } else {
+          tourLedigePlasser =
+            tourAvailabilityCache.get(booking.tour_id) ?? null;
+        }
+      }
+
+      return {
+        ...booking,
+        tour,
+        participants: bookingParticipants,
+        antallDeltakere: bookingParticipants.length,
+        tourTittel: tour?.title ?? "Ukjent tur",
+        tourDato: tour?.start_date ?? null,
+        tourTotalPlasser: tour?.total_seats ?? null,
+        tourLedigePlasser,
+      };
+    }),
+  );
+
+  return {
+    success: true,
+    data: bookingsWithDetails,
+    totalCount,
+    totalPages,
+  };
+}
+
+/**
+ * Henter alle bookings med participants og tour-info (uten paginering).
  */
 export async function getAllBookingsWithParticipants(): Promise<{
   success: true;

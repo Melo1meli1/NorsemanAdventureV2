@@ -12,13 +12,16 @@ import {
 } from "@/lib/csvUtils";
 import {
   deleteBooking,
-  getAllBookingsWithParticipants,
+  getBookingsPage,
   type BookingWithDetails,
 } from "../actions/bookings";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 import { ChevronDown, ChevronRight } from "lucide-react";
+
+const ORDERS_PAGE_SIZE = 10;
 
 /** Mock-rad for tabellen (felter som i schema; turTittel + tur-meta for gruppert visning). SOS vises ikke i panelet, men med i CSV. */
 type OrderRow = {
@@ -30,7 +33,7 @@ type OrderRow = {
   belop: number;
   status: BookingStatus;
   dato: string;
-  telefon: string | null;
+  telefon: string;
   antallDeltakere: number;
   tourDato?: string;
   tourTotalPlasser?: number;
@@ -42,7 +45,7 @@ type OrderRow = {
   participants?: Array<{
     name: string;
     email: string;
-    telefon: string | null;
+    telefon: string;
     sos_navn?: string | null;
     sos_telefon?: string | null;
   }>;
@@ -418,18 +421,22 @@ export function OrdersView() {
   const [filter, setFilter] = useState<OrdersFilterValue>("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (page: number = currentPage) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await getAllBookingsWithParticipants();
+      const result = await getBookingsPage(page, ORDERS_PAGE_SIZE);
       if (result.success) {
         const mappedOrders = result.data.map(mapBookingToOrderRow);
         setOrders(mappedOrders);
+        setTotalPages(result.totalPages);
+        setCurrentPage(page);
       } else {
         setError("Kunne ikke hente bestillinger. Prøv igjen senere.");
       }
@@ -442,8 +449,13 @@ export function OrdersView() {
   };
 
   useEffect(() => {
-    fetchBookings();
+    fetchBookings(1);
   }, []);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    fetchBookings(page);
+  };
 
   const handleDelete = async (id: string) => {
     setDeletingIds((prev) => new Set(prev).add(id));
@@ -451,7 +463,7 @@ export function OrdersView() {
       const formData = new FormData();
       formData.append("id", id);
       await deleteBooking(formData);
-      await fetchBookings();
+      await fetchBookings(currentPage);
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev);
@@ -524,23 +536,11 @@ export function OrdersView() {
               (o) => o.status === "venteliste",
             ).length;
             const isOverbooked = booked > total && total > 0;
-            const isLowAvailability =
-              ledige <= 5 && ledige > 0 && !isOverbooked;
-            const isSoldOut = ledige === 0 && total > 0;
-
-            // Bestem border-farge basert på status
-            const borderColor = isOverbooked
-              ? "border-red-500/60"
-              : isSoldOut
-                ? "border-red-500/40"
-                : isLowAvailability
-                  ? "border-yellow-500/40"
-                  : "border-neutral-800";
 
             return (
               <div
                 key={turTittel}
-                className={`bg-card overflow-hidden rounded-[18px] border ${borderColor}`}
+                className={`bg-card overflow-hidden rounded-[18px]`}
               >
                 <div className="border-b border-neutral-800 px-5 py-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -669,6 +669,12 @@ export function OrdersView() {
           </div>
         </div>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </section>
   );
 }
