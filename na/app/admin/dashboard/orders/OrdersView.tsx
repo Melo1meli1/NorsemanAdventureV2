@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
@@ -215,12 +215,14 @@ function OrderTableRow({
   onToggle,
   onDelete,
   isDeleting,
+  waitlistPosition,
 }: {
   order: OrderRow;
   isExpanded: boolean;
   onToggle: () => void;
   onDelete: (id: string) => Promise<void>;
   isDeleting: boolean;
+  waitlistPosition?: number;
 }) {
   return (
     <>
@@ -250,6 +252,15 @@ function OrderTableRow({
                 <ChevronRight className="h-4 w-4" />
               )}
             </span>
+            {waitlistPosition !== undefined && (
+              <span
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20 text-xs font-bold text-yellow-400"
+                aria-label={`Posisjon ${waitlistPosition} på venteliste`}
+                title={`Posisjon ${waitlistPosition} på venteliste`}
+              >
+                {waitlistPosition}
+              </span>
+            )}
             <span className="font-semibold text-neutral-50">{order.navn}</span>
           </div>
         </td>
@@ -364,18 +375,31 @@ function OrderCard({
   order,
   onDelete,
   isDeleting,
+  waitlistPosition,
 }: {
   order: OrderRow;
   onDelete: (id: string) => Promise<void>;
   isDeleting: boolean;
+  waitlistPosition?: number;
 }) {
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-base font-semibold text-neutral-50 sm:text-lg">
-            {order.navn}
-          </p>
+          <div className="flex items-center gap-2">
+            {waitlistPosition !== undefined && (
+              <span
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-yellow-500/20 text-xs font-bold text-yellow-400"
+                aria-label={`Posisjon ${waitlistPosition} på venteliste`}
+                title={`Posisjon ${waitlistPosition} på venteliste`}
+              >
+                {waitlistPosition}
+              </span>
+            )}
+            <p className="text-base font-semibold text-neutral-50 sm:text-lg">
+              {order.navn}
+            </p>
+          </div>
           <p className="truncate text-xs text-neutral-400 sm:text-sm">
             {order.epost}
           </p>
@@ -427,7 +451,7 @@ export function OrdersView() {
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const fetchBookings = async (page: number = currentPage) => {
+  const fetchBookings = useCallback(async (page: number) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -446,11 +470,11 @@ export function OrdersView() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBookings(1);
-  }, []);
+  }, [fetchBookings]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -480,7 +504,28 @@ export function OrdersView() {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(order);
     }
-    return Array.from(map.entries());
+    // Sorter bookings innenfor hver tur-gruppe:
+    // 1. Venteliste først (eldste først = først i køen)
+    // 2. Deretter andre statuser (nyeste først)
+    return Array.from(map.entries()).map(([turTittel, groupOrders]) => {
+      const sorted = [...groupOrders].sort((a, b) => {
+        const aIsWaitlist = a.status === "venteliste";
+        const bIsWaitlist = b.status === "venteliste";
+
+        // Hvis begge er venteliste: sorter etter dato (eldste først)
+        if (aIsWaitlist && bIsWaitlist) {
+          return new Date(a.dato).getTime() - new Date(b.dato).getTime();
+        }
+
+        // Hvis bare en er venteliste: venteliste først
+        if (aIsWaitlist && !bIsWaitlist) return -1;
+        if (!aIsWaitlist && bIsWaitlist) return 1;
+
+        // Begge er ikke venteliste: nyeste først
+        return new Date(b.dato).getTime() - new Date(a.dato).getTime();
+      });
+      return [turTittel, sorted] as [string, OrderRow[]];
+    });
   }, [orders]);
 
   if (isLoading) {
@@ -589,34 +634,52 @@ export function OrdersView() {
                 </div>
                 {/* Mobil: kortliste */}
                 <div className="space-y-3 p-4 md:hidden">
-                  {groupOrders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      onDelete={handleDelete}
-                      isDeleting={deletingIds.has(order.id)}
-                    />
-                  ))}
+                  {groupOrders.map((order) => {
+                    const waitlistPosition =
+                      order.status === "venteliste"
+                        ? groupOrders
+                            .filter((o) => o.status === "venteliste")
+                            .indexOf(order) + 1
+                        : undefined;
+                    return (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onDelete={handleDelete}
+                        isDeleting={deletingIds.has(order.id)}
+                        waitlistPosition={waitlistPosition}
+                      />
+                    );
+                  })}
                 </div>
                 {/* Desktop: tabell med utvidbare rader */}
                 <div className="hidden overflow-x-auto md:block">
                   <table className="w-full min-w-[600px] text-left text-sm">
                     <OrdersTableHeader />
                     <tbody className="divide-y divide-neutral-800">
-                      {groupOrders.map((order) => (
-                        <OrderTableRow
-                          key={order.id}
-                          order={order}
-                          isExpanded={expandedOrderId === order.id}
-                          onToggle={() =>
-                            setExpandedOrderId((id) =>
-                              id === order.id ? null : order.id,
-                            )
-                          }
-                          onDelete={handleDelete}
-                          isDeleting={deletingIds.has(order.id)}
-                        />
-                      ))}
+                      {groupOrders.map((order) => {
+                        const waitlistPosition =
+                          order.status === "venteliste"
+                            ? groupOrders
+                                .filter((o) => o.status === "venteliste")
+                                .indexOf(order) + 1
+                            : undefined;
+                        return (
+                          <OrderTableRow
+                            key={order.id}
+                            order={order}
+                            isExpanded={expandedOrderId === order.id}
+                            onToggle={() =>
+                              setExpandedOrderId((id) =>
+                                id === order.id ? null : order.id,
+                              )
+                            }
+                            onDelete={handleDelete}
+                            isDeleting={deletingIds.has(order.id)}
+                            waitlistPosition={waitlistPosition}
+                          />
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
