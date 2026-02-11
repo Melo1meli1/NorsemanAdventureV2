@@ -122,12 +122,19 @@ export async function getAllBookingsWithParticipants(): Promise<{
     bookings.map(async (booking) => {
       // Supabase returnerer tours som en array når man bruker select med relasjoner
       // Hvis det er en one-to-many relasjon, kan det være en array, men vi forventer én tour
-      const toursData = (booking as unknown as { tours: Tour | Tour[] | null })
-        .tours;
-      const tour =
-        Array.isArray(toursData) && toursData.length > 0
-          ? toursData[0]
-          : toursData || null;
+      const bookingWithTours = booking as unknown as {
+        tours: Tour | Tour[] | null;
+      };
+      const toursData = bookingWithTours.tours;
+
+      let tour: Tour | null = null;
+      if (toursData) {
+        if (Array.isArray(toursData)) {
+          tour = toursData.length > 0 ? toursData[0] : null;
+        } else {
+          tour = toursData;
+        }
+      }
 
       const bookingParticipants = participantsByBookingId.get(booking.id) || [];
 
