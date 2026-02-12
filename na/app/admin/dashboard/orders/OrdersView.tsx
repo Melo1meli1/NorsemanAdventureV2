@@ -22,6 +22,7 @@ import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { SearchInput } from "@/components/common/SearchInput";
 
 const ORDERS_PAGE_SIZE = 8;
 
@@ -614,6 +615,11 @@ export function OrdersView() {
     return (
       <section className="space-y-4">
         <OrdersFilterTabs value={filter} onChange={setFilter} />
+        <div className="border-b border-neutral-800/80" />
+        <SearchInput
+          placeholder="Søk etter navn eller e-post"
+          className="w-full sm:max-w-xs"
+        />
         <div className="bg-card border-primary/20 flex items-center justify-center rounded-[18px] border px-5 py-12">
           <p className="text-neutral-400">Ingen bestillinger funnet.</p>
         </div>
@@ -624,7 +630,11 @@ export function OrdersView() {
   return (
     <section className="space-y-4">
       <OrdersFilterTabs value={filter} onChange={setFilter} />
-
+      <div className="border-b border-neutral-800/80" />
+      <SearchInput
+        placeholder="Søk etter navn eller e-post"
+        className="w-full sm:max-w-xs"
+      />
       {filter === "tours" ? (
         <div className="space-y-6">
           {groupedByTour.map(([turTittel, groupOrders]) => {
@@ -773,6 +783,7 @@ export function OrdersView() {
               Se og administrer alle bestillinger.
             </p>
           </div>
+
           {/* Mobil: kortliste */}
           <div className="space-y-3 p-4 md:hidden">
             {orders.map((order) => (

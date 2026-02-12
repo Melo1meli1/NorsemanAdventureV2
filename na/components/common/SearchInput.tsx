@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -84,12 +84,17 @@ export function SearchInput({
 
   return (
     <div className={cn("relative w-full max-w-sm", className)}>
+      {/* Søk-ikon til venstre */}
+      <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-neutral-500">
+        <Search className="h-4 w-4" aria-hidden />
+      </span>
+
       <Input
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="pr-8"
+        className="bg-card border-neutral-800 pr-8 pl-8"
         autoComplete="off"
       />
 
