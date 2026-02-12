@@ -93,6 +93,79 @@ export async function getRemainingSeatsForTour(
   };
 }
 
+/**
+ * Henter ledige plasser for flere turer i én batch (færre rundturer til DB).
+ * Returnerer Map<tourId, remainingSeats>.
+ */
+export async function getRemainingSeatsForTours(
+  supabase: SupabaseClient<Database>,
+  tourIds: string[],
+): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+  const uniqueIds = [...new Set(tourIds)].filter(Boolean);
+  if (uniqueIds.length === 0) return result;
+
+  const { data: tours, error: tourError } = await supabase
+    .from("tours")
+    .select("id, total_seats, seats_available")
+    .in("id", uniqueIds);
+
+  if (tourError || !tours?.length) {
+    uniqueIds.forEach((id) => result.set(id, 0));
+    return result;
+  }
+
+  const { data: confirmedBookings, error: bookingsError } = await supabase
+    .from("bookings")
+    .select("id, tour_id")
+    .in("tour_id", uniqueIds)
+    .in("status", ["betalt", "delvis_betalt"]);
+
+  if (bookingsError || !confirmedBookings?.length) {
+    tours.forEach((t) =>
+      result.set(
+        t.id,
+        Math.max(
+          0,
+          (t as { seats_available?: number }).seats_available ?? t.total_seats,
+        ),
+      ),
+    );
+    return result;
+  }
+
+  const bookingIds = confirmedBookings.map((b: { id: string }) => b.id);
+  const { data: participantRows, error: participantsError } = await supabase
+    .from("participants")
+    .select("booking_id")
+    .in("booking_id", bookingIds);
+
+  const countByBookingId = new Map<string, number>();
+  if (!participantsError && participantRows) {
+    for (const row of participantRows) {
+      const bid = (row as { booking_id: string }).booking_id;
+      countByBookingId.set(bid, (countByBookingId.get(bid) ?? 0) + 1);
+    }
+  }
+
+  const confirmedByTourId = new Map<string, number>();
+  for (const b of confirmedBookings) {
+    const tid = (b as { tour_id: string }).tour_id;
+    const count = countByBookingId.get(b.id) ?? 0;
+    confirmedByTourId.set(tid, (confirmedByTourId.get(tid) ?? 0) + count);
+  }
+
+  for (const t of tours) {
+    const total = t.total_seats;
+    const confirmed = confirmedByTourId.get(t.id) ?? 0;
+    result.set(t.id, Math.max(0, total - confirmed));
+  }
+  uniqueIds.forEach((id) => {
+    if (!result.has(id)) result.set(id, 0);
+  });
+  return result;
+}
+
 export type WaitlistBooking = Tables<"bookings">;
 
 export type WaitlistResult =

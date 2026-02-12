@@ -24,8 +24,8 @@ export type CreateBookingFromPublicInput = {
   tourId: string;
   participants: BookingFormValues["participants"];
   belop: number;
-  /** Valgfritt: telefon og notater på booking-nivå (f.eks. hovedbestillers telefon). */
-  telefon?: string | null;
+  /** Valgfritt: telefon på booking-nivå (f.eks. hovedbestillers telefon). Hvis ikke oppgitt, brukes første deltakers telefon. */
+  telefon?: string;
   notater?: string | null;
 };
 
@@ -87,6 +87,8 @@ export async function createBookingFromPublic(
   const dato = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const status: BookingStatus = "ikke_betalt";
   const type: BookingType = "tur";
+  // Use provided telefon or fall back to first participant's telefon
+  const telefon = input.telefon?.trim() || first.telefon.trim();
 
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
@@ -98,7 +100,7 @@ export async function createBookingFromPublic(
       belop: input.belop,
       type,
       tour_id: input.tourId,
-      telefon: input.telefon ?? null,
+      telefon,
       notater: input.notater ?? null,
     })
     .select("id")
@@ -187,7 +189,7 @@ export async function joinWaitlistFromPublic(
     belop: 0,
     type,
     tour_id: tourId,
-    telefon: null,
+    telefon: "", // Empty string for waitlist since telefon is not collected
     notater: "Venteliste (offentlig registrering)",
   });
 
@@ -246,7 +248,7 @@ export async function createBookingFromAdmin(
       belop: data.belop,
       type: data.type ?? "tur",
       tour_id: data.tour_id ?? null,
-      telefon: data.telefon ?? null,
+      telefon: data.telefon.trim(),
       notater: data.notater ?? null,
     })
     .select("id")

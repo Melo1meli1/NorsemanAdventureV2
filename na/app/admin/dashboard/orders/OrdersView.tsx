@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Download, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, Loader2, Trash2 } from "lucide-react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
 import {
@@ -10,11 +11,19 @@ import {
   escapeCsvField,
   sanitizeFilename,
 } from "@/lib/csvUtils";
-import { deleteBooking } from "../actions/bookings";
+import {
+  deleteBooking,
+  getBookingsPage,
+  type BookingWithDetails,
+} from "../actions/bookings";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
+import { ConfirmDialog } from "../utils/ConfirmDialog";
 import { ChevronDown, ChevronRight } from "lucide-react";
+
+const ORDERS_PAGE_SIZE = 8;
 
 /** Mock-rad for tabellen (felter som i schema; turTittel + tur-meta for gruppert visning). SOS vises ikke i panelet, men med i CSV. */
 type OrderRow = {
@@ -26,7 +35,7 @@ type OrderRow = {
   belop: number;
   status: BookingStatus;
   dato: string;
-  telefon: string | null;
+  telefon: string;
   antallDeltakere: number;
   tourDato?: string;
   tourTotalPlasser?: number;
@@ -38,7 +47,7 @@ type OrderRow = {
   participants?: Array<{
     name: string;
     email: string;
-    telefon: string | null;
+    telefon: string;
     sos_navn?: string | null;
     sos_telefon?: string | null;
   }>;
@@ -125,133 +134,63 @@ function buildBookingsCSV(orders: OrderRow[]): string {
   return buildCsv(header, rows);
 }
 
-const MOCK_ORDERS: OrderRow[] = [
-  {
-    id: "1",
-    navn: "Ole Nordmann",
-    epost: "ole.nordmann@example.com",
-    type: "tur",
-    turTittel: "Nordkapp Ekspedisjon",
-    belop: 12500,
-    status: "venteliste",
-    dato: "2026-01-15",
-    telefon: "98765432",
-    antallDeltakere: 1,
-    tourDato: "2025-06-15",
-    tourTotalPlasser: 12,
-    tourLedigePlasser: 9,
-    sos_navn: "Ingrid Nordmann",
-    sos_telefon: "12345678",
-    participants: [
-      {
-        name: "Ole Nordmann",
-        email: "ole.nordmann@example.com",
-        telefon: "98765432",
-        sos_navn: "Ingrid Nordmann",
-        sos_telefon: "12345678",
-      },
-    ],
-  },
-  {
-    id: "2",
-    navn: "Kari Hansen",
-    epost: "kari.hansen@example.com",
-    type: "tur",
-    turTittel: "Nordkapp Ekspedisjon",
-    belop: 12500,
-    status: "delvis_betalt",
-    dato: "2026-01-14",
-    telefon: "+47 123 45 678",
-    antallDeltakere: 2,
-    tourDato: "2025-06-15",
-    tourTotalPlasser: 12,
-    tourLedigePlasser: 9,
-    sos_navn: "Lars Hansen",
-    sos_telefon: "+47 876 54 321",
-    betaltBelop: 6000,
-    gjenstaendeBelop: 6500,
-    participants: [
-      {
-        name: "Kari Hansen",
-        email: "kari.hansen@example.com",
-        telefon: "+47 123 45 678",
-        sos_navn: "Lars Hansen",
-        sos_telefon: "+47 876 54 321",
-      },
-      {
-        name: "Per Hansen",
-        email: "per.hansen@example.com",
-        telefon: "+47 999 88 777",
-        sos_navn: "Siv Hansen",
-        sos_telefon: "+47 111 22 333",
-      },
-      {
-        name: "Per Hansen",
-        email: "per.hansen@example.com",
-        telefon: "+47 999 88 777",
-        sos_navn: "Siv Hansen",
-        sos_telefon: "+47 111 22 333",
-      },
-    ],
-  },
-  {
-    id: "3",
-    navn: "Per Olsen",
-    epost: "per.olsen@example.com",
-    type: "tur",
-    turTittel: "Grusveiene i Setesdal",
-    belop: 8900,
-    status: "ikke_betalt",
-    dato: "2026-01-20",
-    telefon: null,
-    antallDeltakere: 1,
-    tourDato: "2025-07-10",
-    tourTotalPlasser: 8,
-    tourLedigePlasser: 7,
-    sos_navn: "Maria Olsen",
-    sos_telefon: "11223344",
-    participants: [
-      {
-        name: "Per Olsen",
-        email: "per.olsen@example.com",
-        telefon: null,
-        sos_navn: "Maria Olsen",
-        sos_telefon: "11223344",
-      },
-    ],
-  },
-  {
-    id: "4",
-    navn: "Anna Larsen",
-    epost: "anna.larsen@example.com",
-    type: "tur",
-    turTittel: "Nordkapp Ekspedisjon",
-    belop: 12500,
-    status: "venteliste",
-    dato: "2026-01-18",
-    telefon: "456 78 901",
-    antallDeltakere: 1,
-    tourDato: "2025-06-15",
-    tourTotalPlasser: 12,
-    tourLedigePlasser: 9,
-    sos_navn: null,
-    sos_telefon: null,
-    participants: [
-      {
-        name: "Anna Larsen",
-        email: "anna.larsen@example.com",
-        telefon: "456 78 901",
-        sos_navn: null,
-        sos_telefon: null,
-      },
-    ],
-  },
-];
+/**
+ * Mapper BookingWithDetails til OrderRow-format for visning.
+ */
+function mapBookingToOrderRow(booking: BookingWithDetails): OrderRow {
+  // Beregn betalt/gjenstående beløp basert på status
+  let betaltBelop: number | null = null;
+  let gjenstaendeBelop: number | null = null;
+
+  if (booking.status === "betalt") {
+    betaltBelop = booking.belop;
+    gjenstaendeBelop = 0;
+  } else if (booking.status === "delvis_betalt") {
+    // For delvis betalt, estimer 50% betalt (kan endres senere hvis vi lagrer dette i DB)
+    betaltBelop = Math.round(booking.belop * 0.5);
+    gjenstaendeBelop = booking.belop - betaltBelop;
+  } else {
+    betaltBelop = null;
+    gjenstaendeBelop = booking.belop;
+  }
+
+  // Hent første deltakers SOS-info som fallback
+  const firstParticipant = booking.participants[0];
+  const sos_navn = firstParticipant?.sos_navn ?? null;
+  const sos_telefon = firstParticipant?.sos_telefon ?? null;
+
+  return {
+    id: booking.id,
+    navn: booking.navn,
+    epost: booking.epost,
+    type: booking.type,
+    turTittel: booking.tourTittel,
+    belop: booking.belop,
+    status: booking.status,
+    dato: booking.dato,
+    telefon: booking.telefon,
+    antallDeltakere: booking.antallDeltakere,
+    tourDato: booking.tourDato ?? undefined,
+    tourTotalPlasser: booking.tourTotalPlasser ?? undefined,
+    tourLedigePlasser: booking.tourLedigePlasser ?? undefined,
+    sos_navn,
+    sos_telefon,
+    betaltBelop,
+    gjenstaendeBelop,
+    participants: booking.participants.map((p) => ({
+      name: p.name,
+      email: p.email,
+      telefon: p.telefon,
+      sos_navn: p.sos_navn,
+      sos_telefon: p.sos_telefon,
+    })),
+  };
+}
 
 function StatusBadge({ status }: { status: OrderRow["status"] }) {
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold sm:text-sm ${
+      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold sm:text-sm ${
         status === "betalt"
           ? "border border-green-600/60 bg-green-700 text-green-200"
           : status === "delvis_betalt"
@@ -259,7 +198,7 @@ function StatusBadge({ status }: { status: OrderRow["status"] }) {
             : status === "ikke_betalt"
               ? "border border-red-600/70 bg-red-800 text-red-100"
               : status === "venteliste"
-                ? "border border-sky-600/60 bg-sky-800 text-sky-100"
+                ? "border border-yellow-600/60 bg-yellow-500/20 text-yellow-400"
                 : status === "kansellert"
                   ? "border border-neutral-600/60 bg-neutral-800/40 text-neutral-100"
                   : "border border-neutral-600/60 bg-neutral-800/40 text-neutral-100"
@@ -276,10 +215,16 @@ function OrderTableRow({
   order,
   isExpanded,
   onToggle,
+  onDelete,
+  isDeleting,
+  waitlistPosition,
 }: {
   order: OrderRow;
   isExpanded: boolean;
   onToggle: () => void;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+  waitlistPosition?: number;
 }) {
   return (
     <>
@@ -309,6 +254,15 @@ function OrderTableRow({
                 <ChevronRight className="h-4 w-4" />
               )}
             </span>
+            {waitlistPosition !== undefined && (
+              <span
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20 text-xs font-bold text-yellow-400"
+                aria-label={`Posisjon ${waitlistPosition} på venteliste`}
+                title={`Posisjon ${waitlistPosition} på venteliste`}
+              >
+                {waitlistPosition}
+              </span>
+            )}
             <span className="font-semibold text-neutral-50">{order.navn}</span>
           </div>
         </td>
@@ -328,21 +282,15 @@ function OrderTableRow({
           <StatusBadge status={order.status} />
         </td>
         <td className="px-4 py-5" onClick={(e) => e.stopPropagation()}>
-          <form
-            action={async (formData) => {
-              await deleteBooking(formData);
-            }}
-            className="inline-block"
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={() => onDelete(order.id)}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
+            aria-label={`Slett bestilling ${order.navn}`}
           >
-            <input type="hidden" name="id" value={order.id} />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-neutral-50 hover:bg-red-500/20 hover:text-red-100"
-              aria-label={`Slett bestilling ${order.navn}`}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-            </button>
-          </form>
+            <Trash2 className="h-4 w-4" aria-hidden />
+          </button>
         </td>
       </tr>
       {isExpanded && (
@@ -425,14 +373,35 @@ function OrderTableRow({
 }
 
 /** Kortvisning for én bestilling – brukes kun på mobil (< md). */
-function OrderCard({ order }: { order: OrderRow }) {
+function OrderCard({
+  order,
+  onDelete,
+  isDeleting,
+  waitlistPosition,
+}: {
+  order: OrderRow;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+  waitlistPosition?: number;
+}) {
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-base font-semibold text-neutral-50 sm:text-lg">
-            {order.navn}
-          </p>
+          <div className="flex items-center gap-2">
+            {waitlistPosition !== undefined && (
+              <span
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-yellow-500/20 text-xs font-bold text-yellow-400"
+                aria-label={`Posisjon ${waitlistPosition} på venteliste`}
+                title={`Posisjon ${waitlistPosition} på venteliste`}
+              >
+                {waitlistPosition}
+              </span>
+            )}
+            <p className="text-base font-semibold text-neutral-50 sm:text-lg">
+              {order.navn}
+            </p>
+          </div>
           <p className="truncate text-xs text-neutral-400 sm:text-sm">
             {order.epost}
           </p>
@@ -461,21 +430,15 @@ function OrderCard({ order }: { order: OrderRow }) {
       <p className="text-sm font-medium text-neutral-200 sm:text-base">
         {order.turTittel}
       </p>
-      <form
-        action={async (formData) => {
-          await deleteBooking(formData);
-        }}
-        className="mt-1"
+      <button
+        type="button"
+        disabled={isDeleting}
+        onClick={() => onDelete(order.id)}
+        className="mt-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
+        aria-label={`Slett bestilling ${order.navn}`}
       >
-        <input type="hidden" name="id" value={order.id} />
-        <button
-          type="submit"
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-50 hover:bg-red-500/20 hover:text-red-100"
-          aria-label={`Slett bestilling ${order.navn}`}
-        >
-          <Trash2 className="h-4 w-4" aria-hidden />
-        </button>
-      </form>
+        <Trash2 className="h-4 w-4" aria-hidden />
+      </button>
     </article>
   );
 }
@@ -483,7 +446,115 @@ function OrderCard({ order }: { order: OrderRow }) {
 export function OrdersView() {
   const [filter, setFilter] = useState<OrdersFilterValue>("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-  const orders = MOCK_ORDERS;
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+
+  const fetchBookings = useCallback(async (page: number) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await getBookingsPage(page, ORDERS_PAGE_SIZE);
+      if (result.success) {
+        const mappedOrders = result.data.map(mapBookingToOrderRow);
+        setOrders(mappedOrders);
+        setTotalPages(result.totalPages);
+        setCurrentPage(page);
+      } else {
+        setError("Kunne ikke hente bestillinger. Prøv igjen senere.");
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      setError("En feil oppstod ved henting av bestillinger.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookings(1);
+  }, [fetchBookings]);
+
+  // Realtime: abonner på bookings og participants, debounced refresh
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
+  const DEBOUNCE_MS = 800;
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    const scheduleRefresh = () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshTimeoutRef.current = null;
+        fetchBookings(currentPageRef.current);
+      }, DEBOUNCE_MS);
+    };
+
+    const channel = supabase
+      .channel("orders-bookings-participants")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings" },
+        () => scheduleRefresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "participants" },
+        () => scheduleRefresh(),
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBookings]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    fetchBookings(page);
+  };
+
+  const handleDelete = async (id: string) => {
+    // Optimistisk oppdatering: fjern bestillingen lokalt med en gang
+    setDeletingIds((prev) => new Set(prev).add(id));
+    setOrders((prev) => prev.filter((order) => order.id !== id));
+
+    try {
+      const formData = new FormData();
+      formData.append("id", id);
+      await deleteBooking(formData);
+      // Ingen eksplisitt fetch her – Supabase Realtime vil trigge en oppdatert fetch
+    } catch (err) {
+      console.error("Error deleting booking:", err);
+      // Ved feil: hent data på nytt for å resynce UI
+      await fetchBookings(currentPage);
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    setIsConfirmingDelete(true);
+    try {
+      await handleDelete(pendingDeleteId);
+      setPendingDeleteId(null);
+    } finally {
+      setIsConfirmingDelete(false);
+    }
+  };
 
   const groupedByTour = useMemo(() => {
     const map = new Map<string, OrderRow[]>();
@@ -492,8 +563,63 @@ export function OrdersView() {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(order);
     }
-    return Array.from(map.entries());
+    // Sorter bookings innenfor hver tur-gruppe:
+    // 1. Venteliste først (eldste først = først i køen)
+    // 2. Deretter andre statuser (nyeste først)
+    return Array.from(map.entries()).map(([turTittel, groupOrders]) => {
+      const sorted = [...groupOrders].sort((a, b) => {
+        const aIsWaitlist = a.status === "venteliste";
+        const bIsWaitlist = b.status === "venteliste";
+
+        // Hvis begge er venteliste: sorter etter dato (eldste først)
+        if (aIsWaitlist && bIsWaitlist) {
+          return new Date(a.dato).getTime() - new Date(b.dato).getTime();
+        }
+
+        // Hvis bare en er venteliste: venteliste først
+        if (aIsWaitlist && !bIsWaitlist) return -1;
+        if (!aIsWaitlist && bIsWaitlist) return 1;
+
+        // Begge er ikke venteliste: nyeste først
+        return new Date(b.dato).getTime() - new Date(a.dato).getTime();
+      });
+      return [turTittel, sorted] as [string, OrderRow[]];
+    });
   }, [orders]);
+
+  if (isLoading) {
+    return (
+      <section className="space-y-4">
+        <OrdersFilterTabs value={filter} onChange={setFilter} />
+        <div className="bg-card border-primary/20 flex flex-col items-center justify-center gap-3 rounded-[18px] border px-5 py-12">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" aria-hidden />
+          <p className="text-neutral-400">Henter bestillinger...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="space-y-4">
+        <OrdersFilterTabs value={filter} onChange={setFilter} />
+        <div className="bg-card flex items-center justify-center rounded-[18px] border border-red-500/20 px-5 py-12">
+          <p className="text-red-400">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <section className="space-y-4">
+        <OrdersFilterTabs value={filter} onChange={setFilter} />
+        <div className="bg-card border-primary/20 flex items-center justify-center rounded-[18px] border px-5 py-12">
+          <p className="text-neutral-400">Ingen bestillinger funnet.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-4">
@@ -511,21 +637,59 @@ export function OrdersView() {
             const total = first?.tourTotalPlasser ?? 0;
             const ledige = first?.tourLedigePlasser ?? 0;
             const booked = total - ledige;
+            const ventelisteCount = groupOrders.filter(
+              (o) => o.status === "venteliste",
+            ).length;
+            const isOverbooked = booked > total && total > 0;
+            // Ledige plasser: grønn > 5, gul 1–5, rød 0
+            const availabilityTone =
+              ledige > 5 ? "green" : ledige > 0 ? "yellow" : "red";
+
             return (
               <div
                 key={turTittel}
-                className="bg-card overflow-hidden rounded-[18px] border border-neutral-800"
+                className={`bg-card overflow-hidden rounded-[18px]`}
               >
                 <div className="border-b border-neutral-800 px-5 py-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 className="text-lg font-semibold text-neutral-50">
-                        {turTittel}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-semibold text-neutral-50">
+                          {turTittel}
+                        </h2>
+                        {isOverbooked && (
+                          <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
+                            Overbooked
+                          </span>
+                        )}
+                        {ventelisteCount > 0 && (
+                          <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-semibold text-yellow-400">
+                            {ventelisteCount} på venteliste
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-1 text-sm text-neutral-400">
                         {tourDato} · {groupOrders.length} bestilling
                         {groupOrders.length !== 1 ? "er" : ""} · {booked}/
                         {total} plasser
+                        {isOverbooked && (
+                          <span className="ml-2 font-semibold text-red-400">
+                            Overbooked: {booked - total} plasser over kapasitet
+                          </span>
+                        )}
+                        {!isOverbooked && (
+                          <span
+                            className={`ml-2 font-medium ${
+                              availabilityTone === "green"
+                                ? "text-green-400"
+                                : availabilityTone === "yellow"
+                                  ? "text-yellow-400"
+                                  : "text-red-400"
+                            }`}
+                          >
+                            {ledige} ledige
+                          </span>
+                        )}
                       </p>
                     </div>
                     <Button
@@ -546,27 +710,52 @@ export function OrdersView() {
                 </div>
                 {/* Mobil: kortliste */}
                 <div className="space-y-3 p-4 md:hidden">
-                  {groupOrders.map((order) => (
-                    <OrderCard key={order.id} order={order} />
-                  ))}
+                  {groupOrders.map((order) => {
+                    const waitlistPosition =
+                      order.status === "venteliste"
+                        ? groupOrders
+                            .filter((o) => o.status === "venteliste")
+                            .indexOf(order) + 1
+                        : undefined;
+                    return (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onDelete={setPendingDeleteId}
+                        isDeleting={deletingIds.has(order.id)}
+                        waitlistPosition={waitlistPosition}
+                      />
+                    );
+                  })}
                 </div>
                 {/* Desktop: tabell med utvidbare rader */}
                 <div className="hidden overflow-x-auto md:block">
                   <table className="w-full min-w-[600px] text-left text-sm">
                     <OrdersTableHeader />
                     <tbody className="divide-y divide-neutral-800">
-                      {groupOrders.map((order) => (
-                        <OrderTableRow
-                          key={order.id}
-                          order={order}
-                          isExpanded={expandedOrderId === order.id}
-                          onToggle={() =>
-                            setExpandedOrderId((id) =>
-                              id === order.id ? null : order.id,
-                            )
-                          }
-                        />
-                      ))}
+                      {groupOrders.map((order) => {
+                        const waitlistPosition =
+                          order.status === "venteliste"
+                            ? groupOrders
+                                .filter((o) => o.status === "venteliste")
+                                .indexOf(order) + 1
+                            : undefined;
+                        return (
+                          <OrderTableRow
+                            key={order.id}
+                            order={order}
+                            isExpanded={expandedOrderId === order.id}
+                            onToggle={() =>
+                              setExpandedOrderId((id) =>
+                                id === order.id ? null : order.id,
+                              )
+                            }
+                            onDelete={setPendingDeleteId}
+                            isDeleting={deletingIds.has(order.id)}
+                            waitlistPosition={waitlistPosition}
+                          />
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -587,7 +776,12 @@ export function OrdersView() {
           {/* Mobil: kortliste */}
           <div className="space-y-3 p-4 md:hidden">
             {orders.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                onDelete={setPendingDeleteId}
+                isDeleting={deletingIds.has(order.id)}
+              />
             ))}
           </div>
           {/* Desktop: tabell med utvidbare rader */}
@@ -605,6 +799,8 @@ export function OrdersView() {
                         id === order.id ? null : order.id,
                       )
                     }
+                    onDelete={setPendingDeleteId}
+                    isDeleting={deletingIds.has(order.id)}
                   />
                 ))}
               </tbody>
@@ -612,6 +808,23 @@ export function OrdersView() {
           </div>
         </div>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Slett bestilling"
+        description="Er du sikker på at du vil slette denne bestillingen? Denne handlingen kan ikke angres."
+        onClose={() => setPendingDeleteId(null)}
+        onConfirm={confirmDelete}
+        confirmLabel="Slett"
+        cancelLabel="Avbryt"
+        isConfirming={isConfirmingDelete}
+      />
     </section>
   );
 }

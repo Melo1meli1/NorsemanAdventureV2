@@ -91,7 +91,7 @@ export type Database = {
           belop: number;
           type: Database["public"]["Enums"]["booking_type"];
           tour_id: string | null;
-          telefon: string | null;
+          telefon: string;
           notater: string | null;
           created_at: string;
         };
@@ -104,7 +104,7 @@ export type Database = {
           belop: number;
           type?: Database["public"]["Enums"]["booking_type"];
           tour_id?: string | null;
-          telefon?: string | null;
+          telefon: string;
           notater?: string | null;
           created_at?: string;
         };
@@ -117,7 +117,7 @@ export type Database = {
           belop?: number;
           type?: Database["public"]["Enums"]["booking_type"];
           tour_id?: string | null;
-          telefon?: string | null;
+          telefon?: string;
           notater?: string | null;
           created_at?: string;
         };

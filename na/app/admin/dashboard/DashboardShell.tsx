@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,13 @@ import {
   X,
 } from "lucide-react";
 import type { Tour } from "@/lib/types";
+import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
+import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
+import {
+  getBookingStats,
+  getRecentBookings,
+  type BookingStats,
+} from "./actions/bookings";
 import { LogoutButton } from "./utils/LogoutButton";
 import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
@@ -29,13 +36,6 @@ const navItems = [
   { id: "orders", label: "Bestillinger", icon: ClipboardList },
   { id: "gallery", label: "Galleri", icon: ImageIcon },
 ] as const;
-
-const kpiCards = [
-  { label: "Totale bestillinger", value: "8", tone: "orange", Icon: BookOpen },
-  { label: "Bekreftet", value: "2", tone: "green", Icon: Users },
-  { label: "Venteliste", value: "1", tone: "yellow", Icon: Users },
-  { label: "Aktive turer", value: "5", tone: "blue", Icon: MapPin },
-];
 
 type DashboardShellProps = {
   tours?: Tour[];
@@ -64,6 +64,22 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     null,
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [kpiStats, setKpiStats] = useState<BookingStats | null>(null);
+  const [recentBookings, setRecentBookings] = useState<
+    Array<{
+      id: string;
+      navn: string;
+      turTittel: string;
+      status:
+        | "betalt"
+        | "ikke_betalt"
+        | "venteliste"
+        | "kansellert"
+        | "delvis_betalt";
+    }>
+  >([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   const sectionTitle = {
     overview: "Oversikt",
@@ -72,6 +88,30 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     orders: "Bestillinger",
     gallery: "Galleri",
   }[activeSection];
+
+  const fetchStats = useCallback(async () => {
+    setIsLoadingStats(true);
+    setStatsError(null);
+    try {
+      const [statsResult, recentResult] = await Promise.all([
+        getBookingStats(),
+        getRecentBookings(3),
+      ]);
+      if (statsResult.success) {
+        setKpiStats(statsResult.data);
+      } else {
+        setStatsError("Kunne ikke hente KPI-data.");
+      }
+      if (recentResult.success) {
+        setRecentBookings(recentResult.data);
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard stats:", err);
+      setStatsError("En feil oppstod. Viser siste lagrede data.");
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -86,6 +126,53 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
     }
     router.replace(nextParams ? `?${nextParams}` : "");
   }, [activeSection, searchParams, router]);
+
+  useEffect(() => {
+    if (activeSection === "overview") {
+      fetchStats();
+    }
+  }, [activeSection, fetchStats]);
+
+  // Realtime: oppdater KPI og Siste bestillinger ved endringer i bookings/participants
+  const statsRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const STATS_DEBOUNCE_MS = 600;
+
+  useEffect(() => {
+    if (activeSection !== "overview") return;
+
+    const supabase = getSupabaseBrowserClient();
+
+    const scheduleStatsRefresh = () => {
+      if (statsRefreshTimeoutRef.current)
+        clearTimeout(statsRefreshTimeoutRef.current);
+      statsRefreshTimeoutRef.current = setTimeout(() => {
+        statsRefreshTimeoutRef.current = null;
+        fetchStats();
+      }, STATS_DEBOUNCE_MS);
+    };
+
+    const channel = supabase
+      .channel("dashboard-stats")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings" },
+        () => scheduleStatsRefresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "participants" },
+        () => scheduleStatsRefresh(),
+      )
+      .subscribe();
+
+    return () => {
+      if (statsRefreshTimeoutRef.current)
+        clearTimeout(statsRefreshTimeoutRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [activeSection, fetchStats]);
 
   return (
     <main className="bg-page-background flex min-h-screen text-neutral-50">
@@ -281,37 +368,84 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
         <div className="flex-1 space-y-6 overflow-y-auto px-4 py-6 md:px-8">
           {activeSection === "overview" && (
             <>
+              {statsError && (
+                <p className="rounded-lg border border-red-500/30 bg-red-950/30 px-4 py-2 text-sm text-red-300">
+                  {statsError}
+                </p>
+              )}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {kpiCards.map((card) => (
-                  <article
-                    key={card.label}
-                    className="bg-card hover:bg-card/90 border-primary/30 hover:border-primary/60 flex transform flex-col justify-center rounded-[18px] border px-6 py-4 transition hover:-translate-y-0.5"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span
-                        className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                          card.tone === "orange"
-                            ? "bg-primary/20 text-primary"
-                            : card.tone === "green"
-                              ? "bg-green-500/20 text-green-400"
-                              : card.tone === "yellow"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-blue-500/20 text-blue-400"
-                        }`}
+                {isLoadingStats && !kpiStats
+                  ? // Skeleton loaders for KPI-kortene
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <article
+                        key={i}
+                        className="bg-card border-primary/20 flex flex-col justify-center rounded-[18px] border px-6 py-4"
+                        aria-hidden
                       >
-                        <card.Icon className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      <div className="flex flex-col">
-                        <span className="text-2xl font-bold text-neutral-50">
-                          {card.value}
-                        </span>
-                        <span className="text-sm text-neutral-400">
-                          {card.label}
-                        </span>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+                        <div className="flex items-center gap-4">
+                          <span className="h-12 w-12 animate-pulse rounded-full bg-neutral-700" />
+                          <div className="flex flex-col gap-2">
+                            <span className="h-8 w-24 animate-pulse rounded bg-neutral-700" />
+                            <span className="h-4 w-20 animate-pulse rounded bg-neutral-800" />
+                          </div>
+                        </div>
+                      </article>
+                    ))
+                  : [
+                      {
+                        label: "Totale bestillinger",
+                        value: kpiStats?.totaleBestillinger.toString() ?? "0",
+                        tone: "orange" as const,
+                        Icon: BookOpen,
+                      },
+                      {
+                        label: "Bekreftet",
+                        value: kpiStats?.bekreftet.toString() ?? "0",
+                        tone: "green" as const,
+                        Icon: Users,
+                      },
+                      {
+                        label: "Venteliste",
+                        value: kpiStats?.venteliste.toString() ?? "0",
+                        tone: "yellow" as const,
+                        Icon: Users,
+                      },
+                      {
+                        label: "Ledige plasser",
+                        value: kpiStats?.ledigePlasser.toString() ?? "0",
+                        tone: "blue" as const,
+                        Icon: MapPin,
+                      },
+                    ].map((card) => (
+                      <article
+                        key={card.label}
+                        className="bg-card hover:bg-card/90 border-primary/30 hover:border-primary/60 flex transform flex-col justify-center rounded-[18px] border px-6 py-4 transition hover:-translate-y-0.5"
+                      >
+                        <div className="flex items-center gap-4">
+                          <span
+                            className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                              card.tone === "orange"
+                                ? "bg-primary/20 text-primary"
+                                : card.tone === "green"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : card.tone === "yellow"
+                                    ? "bg-yellow-500/20 text-yellow-400"
+                                    : "bg-blue-500/20 text-blue-400"
+                            }`}
+                          >
+                            <card.Icon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-2xl font-bold text-neutral-50">
+                              {card.value}
+                            </span>
+                            <span className="text-sm text-neutral-400">
+                              {card.label}
+                            </span>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
               </div>
 
               <section className="bg-card border-primary/20 overflow-hidden rounded-[18px] border">
@@ -321,56 +455,61 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
                   </h2>
                   <button
                     type="button"
+                    onClick={() => setActiveSection("orders")}
                     className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium"
                   >
                     <span>Se alle</span>
                     <span>›</span>
                   </button>
                 </header>
-                <ul className="divide-y divide-neutral-800 text-sm">
-                  {[
-                    {
-                      name: "Ole Nordmann",
-                      tour: "Nordkapp Ekspedisjon",
-                      status: "Venteliste",
-                    },
-                    {
-                      name: "Kari Hansen",
-                      tour: "Nordkapp Ekspedisjon",
-                      status: "Bekreftet",
-                    },
-                    {
-                      name: "Per Olsen",
-                      tour: "Grusveiene i Setesdal",
-                      status: "Venteliste",
-                    },
-                  ].map((order) => (
-                    <li
-                      key={order.name}
-                      className="flex items-center justify-between px-5 py-3"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-neutral-50">
-                          {order.name}
-                        </span>
-                        <span className="text-sm text-neutral-400">
-                          {order.tour}
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium">
-                        {order.status === "Bekreftet" ? (
-                          <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
-                            {order.status}
+                {isLoadingStats && recentBookings.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 px-5 py-8">
+                    <div className="h-4 w-32 animate-pulse rounded bg-neutral-800" />
+                    <div className="h-3 w-24 animate-pulse rounded bg-neutral-800" />
+                    <div className="mt-2 h-3 w-28 animate-pulse rounded bg-neutral-800" />
+                  </div>
+                ) : recentBookings.length === 0 ? (
+                  <div className="px-5 py-8 text-center text-sm text-neutral-400">
+                    Ingen bestillinger ennå.
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-neutral-800 text-sm">
+                    {recentBookings.map((order) => {
+                      const isBekreftet = order.status === "betalt";
+                      const statusLabel = BOOKING_STATUS_LABELS[order.status];
+                      return (
+                        <li
+                          key={order.id}
+                          className="flex items-center justify-between px-5 py-3"
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium text-neutral-50">
+                              {order.navn}
+                            </span>
+                            <span className="text-sm text-neutral-400">
+                              {order.turTittel}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium">
+                            {isBekreftet ? (
+                              <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
+                                {statusLabel}
+                              </span>
+                            ) : order.status === "venteliste" ? (
+                              <span className="rounded-full bg-yellow-500/20 px-2 py-1 text-yellow-400">
+                                {statusLabel}
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-neutral-800 px-2 py-1 text-neutral-300">
+                                {statusLabel}
+                              </span>
+                            )}
                           </span>
-                        ) : (
-                          <span className="rounded-full bg-neutral-800 px-2 py-1 text-neutral-300">
-                            {order.status}
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </section>
             </>
           )}
