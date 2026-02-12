@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
+import { ConfirmDialog } from "../utils/ConfirmDialog";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 const ORDERS_PAGE_SIZE = 8;
@@ -221,7 +222,7 @@ function OrderTableRow({
   order: OrderRow;
   isExpanded: boolean;
   onToggle: () => void;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
   isDeleting: boolean;
   waitlistPosition?: number;
 }) {
@@ -379,7 +380,7 @@ function OrderCard({
   waitlistPosition,
 }: {
   order: OrderRow;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
   isDeleting: boolean;
   waitlistPosition?: number;
 }) {
@@ -451,6 +452,8 @@ export function OrdersView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const fetchBookings = useCallback(async (page: number) => {
     setIsLoading(true);
@@ -520,11 +523,18 @@ export function OrdersView() {
   };
 
   const handleDelete = async (id: string) => {
+    // Optimistisk oppdatering: fjern bestillingen lokalt med en gang
     setDeletingIds((prev) => new Set(prev).add(id));
+    setOrders((prev) => prev.filter((order) => order.id !== id));
+
     try {
       const formData = new FormData();
       formData.append("id", id);
       await deleteBooking(formData);
+      // Ingen eksplisitt fetch her – Supabase Realtime vil trigge en oppdatert fetch
+    } catch (err) {
+      console.error("Error deleting booking:", err);
+      // Ved feil: hent data på nytt for å resynce UI
       await fetchBookings(currentPage);
     } finally {
       setDeletingIds((prev) => {
@@ -532,6 +542,17 @@ export function OrdersView() {
         next.delete(id);
         return next;
       });
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    setIsConfirmingDelete(true);
+    try {
+      await handleDelete(pendingDeleteId);
+      setPendingDeleteId(null);
+    } finally {
+      setIsConfirmingDelete(false);
     }
   };
 
@@ -700,7 +721,7 @@ export function OrdersView() {
                       <OrderCard
                         key={order.id}
                         order={order}
-                        onDelete={handleDelete}
+                        onDelete={setPendingDeleteId}
                         isDeleting={deletingIds.has(order.id)}
                         waitlistPosition={waitlistPosition}
                       />
@@ -729,7 +750,7 @@ export function OrdersView() {
                                 id === order.id ? null : order.id,
                               )
                             }
-                            onDelete={handleDelete}
+                            onDelete={setPendingDeleteId}
                             isDeleting={deletingIds.has(order.id)}
                             waitlistPosition={waitlistPosition}
                           />
@@ -758,7 +779,7 @@ export function OrdersView() {
               <OrderCard
                 key={order.id}
                 order={order}
-                onDelete={handleDelete}
+                onDelete={setPendingDeleteId}
                 isDeleting={deletingIds.has(order.id)}
               />
             ))}
@@ -778,7 +799,7 @@ export function OrdersView() {
                         id === order.id ? null : order.id,
                       )
                     }
-                    onDelete={handleDelete}
+                    onDelete={setPendingDeleteId}
                     isDeleting={deletingIds.has(order.id)}
                   />
                 ))}
@@ -792,6 +813,17 @@ export function OrdersView() {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
+      />
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Slett bestilling"
+        description="Er du sikker på at du vil slette denne bestillingen? Denne handlingen kan ikke angres."
+        onClose={() => setPendingDeleteId(null)}
+        onConfirm={confirmDelete}
+        confirmLabel="Slett"
+        cancelLabel="Avbryt"
+        isConfirming={isConfirmingDelete}
       />
     </section>
   );
