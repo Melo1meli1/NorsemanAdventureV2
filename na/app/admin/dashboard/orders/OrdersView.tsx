@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
@@ -451,31 +452,43 @@ export function OrdersView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
-  const fetchBookings = useCallback(async (page: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await getBookingsPage(page, ORDERS_PAGE_SIZE);
-      if (result.success) {
-        const mappedOrders = result.data.map(mapBookingToOrderRow);
-        setOrders(mappedOrders);
-        setTotalPages(result.totalPages);
-        setCurrentPage(page);
-      } else {
-        setError("Kunne ikke hente bestillinger. Prøv igjen senere.");
+  const searchParams = useSearchParams();
+  const searchTerm = searchParams.get("query") ?? undefined;
+
+  const fetchBookings = useCallback(
+    async (page: number) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const result = await getBookingsPage(
+          page,
+          ORDERS_PAGE_SIZE,
+          searchTerm,
+        );
+        if (result.success) {
+          const mappedOrders = result.data.map(mapBookingToOrderRow);
+          setOrders(mappedOrders);
+          setTotalPages(result.totalPages);
+          setCurrentPage(page);
+          setHasLoadedOnce(true);
+        } else {
+          setError("Kunne ikke hente bestillinger. Prøv igjen senere.");
+        }
+      } catch (err) {
+        console.error("Error fetching bookings:", err);
+        setError("En feil oppstod ved henting av bestillinger.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching bookings:", err);
-      setError("En feil oppstod ved henting av bestillinger.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [searchTerm],
+  );
 
   useEffect(() => {
     fetchBookings(1);
@@ -588,7 +601,8 @@ export function OrdersView() {
     });
   }, [orders]);
 
-  if (isLoading) {
+  // Kun vis fullskjerms "Henter bestillinger..." ved første innlasting.
+  if (!hasLoadedOnce && isLoading) {
     return (
       <section className="space-y-4">
         <OrdersFilterTabs value={filter} onChange={setFilter} />

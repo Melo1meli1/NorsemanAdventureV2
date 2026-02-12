@@ -64,6 +64,7 @@ const DEFAULT_PAGE_SIZE = 10;
 export async function getBookingsPage(
   page: number,
   pageSize: number = DEFAULT_PAGE_SIZE,
+  searchTerm?: string,
 ): Promise<{
   success: true;
   data: BookingWithDetails[];
@@ -74,11 +75,7 @@ export async function getBookingsPage(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const {
-    data: bookings,
-    error: bookingsError,
-    count,
-  } = await supabase
+  let query = supabase
     .from("bookings")
     .select(
       `
@@ -92,8 +89,19 @@ export async function getBookingsPage(
     `,
       { count: "exact" },
     )
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order("created_at", { ascending: false });
+
+  if (searchTerm && searchTerm.trim().length > 0) {
+    const term = searchTerm.trim();
+    // Søk kun i navn og e-post (case-insensitive, partial match)
+    query = query.or(`navn.ilike.%${term}%,epost.ilike.%${term}%`);
+  }
+
+  const {
+    data: bookings,
+    error: bookingsError,
+    count,
+  } = await query.range(from, to);
 
   if (bookingsError) {
     console.error("Error fetching bookings page:", bookingsError);
