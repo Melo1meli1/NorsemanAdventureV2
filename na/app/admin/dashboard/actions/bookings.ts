@@ -333,6 +333,14 @@ export async function getBookingsByTour(): Promise<{
   };
 }
 
+const EMPTY_STATS: BookingStats = {
+  totaleBestillinger: 0,
+  bekreftet: 0,
+  venteliste: 0,
+  ledigePlasser: 0,
+  aktiveTurer: 0,
+};
+
 /**
  * Henter booking-statistikk for KPI-kortene.
  */
@@ -340,63 +348,62 @@ export async function getBookingStats(): Promise<{
   success: true;
   data: BookingStats;
 }> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Hent alle bookings
-  const { data: bookings, error: bookingsError } = await supabase
-    .from("bookings")
-    .select("id, status, tour_id")
-    .neq("status", "kansellert");
+    const { data: bookings, error: bookingsError } = await supabase
+      .from("bookings")
+      .select("id, status, tour_id")
+      .neq("status", "kansellert");
 
-  if (bookingsError) {
-    console.error("Error fetching bookings for stats:", bookingsError);
+    if (bookingsError) {
+      console.error("Error fetching bookings for stats:", bookingsError);
+      return { success: true, data: EMPTY_STATS };
+    }
+
+    const totaleBestillinger = bookings?.length ?? 0;
+    const bekreftet =
+      bookings?.filter((b) => b.status === "betalt").length ?? 0;
+    const venteliste =
+      bookings?.filter((b) => b.status === "venteliste").length ?? 0;
+
+    const { data: tours, error: toursError } = await supabase
+      .from("tours")
+      .select("id")
+      .eq("status", "published");
+
+    let ledigePlasser = 0;
+    const aktiveTurer = tours?.length ?? 0;
+
+    if (!toursError && tours && tours.length > 0) {
+      try {
+        const tourIds = tours.map((t) => t.id);
+        const remainingByTourId = await getRemainingSeatsForTours(
+          supabase,
+          tourIds,
+        );
+        for (const seats of remainingByTourId.values()) {
+          ledigePlasser += seats;
+        }
+      } catch (err) {
+        console.error("Error computing remaining seats for stats:", err);
+      }
+    }
+
     return {
       success: true,
       data: {
-        totaleBestillinger: 0,
-        bekreftet: 0,
-        venteliste: 0,
-        ledigePlasser: 0,
-        aktiveTurer: 0,
+        totaleBestillinger,
+        bekreftet,
+        venteliste,
+        ledigePlasser,
+        aktiveTurer,
       },
     };
+  } catch (err) {
+    console.error("Error in getBookingStats:", err);
+    return { success: true, data: EMPTY_STATS };
   }
-
-  const totaleBestillinger = bookings?.length ?? 0;
-  const bekreftet = bookings?.filter((b) => b.status === "betalt").length ?? 0;
-  const venteliste =
-    bookings?.filter((b) => b.status === "venteliste").length ?? 0;
-
-  // Beregn ledige plasser for alle aktive turer (optimalisert med batch)
-  const { data: tours, error: toursError } = await supabase
-    .from("tours")
-    .select("id")
-    .eq("status", "published");
-
-  let ledigePlasser = 0;
-  const aktiveTurer = tours?.length ?? 0;
-
-  if (!toursError && tours && tours.length > 0) {
-    const tourIds = tours.map((t) => t.id);
-    const remainingByTourId = await getRemainingSeatsForTours(
-      supabase,
-      tourIds,
-    );
-    for (const seats of remainingByTourId.values()) {
-      ledigePlasser += seats;
-    }
-  }
-
-  return {
-    success: true,
-    data: {
-      totaleBestillinger,
-      bekreftet,
-      venteliste,
-      ledigePlasser,
-      aktiveTurer,
-    },
-  };
 }
 
 /**
@@ -411,12 +418,13 @@ export async function getRecentBookings(limit: number = 3): Promise<{
     status: Booking["status"];
   }>;
 }> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: bookings, error } = await supabase
-    .from("bookings")
-    .select(
-      `
+    const { data: bookings, error } = await supabase
+      .from("bookings")
+      .select(
+        `
       id,
       navn,
       status,
@@ -424,43 +432,47 @@ export async function getRecentBookings(limit: number = 3): Promise<{
         title
       )
     `,
-    )
-    .order("created_at", { ascending: false })
-    .limit(limit);
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-  if (error) {
-    console.error("Error fetching recent bookings:", error);
-    return {
-      success: true,
-      data: [],
-    };
-  }
-
-  const recentBookings = (bookings || []).map((booking) => {
-    const bookingWithTours = booking as unknown as {
-      tours: Tour | Tour[] | null;
-    };
-    const toursData = bookingWithTours.tours;
-
-    let tour: Tour | null = null;
-    if (toursData) {
-      if (Array.isArray(toursData)) {
-        tour = toursData.length > 0 ? toursData[0] : null;
-      } else if (!Array.isArray(toursData)) {
-        tour = toursData;
-      }
+    if (error) {
+      console.error("Error fetching recent bookings:", error);
+      return {
+        success: true,
+        data: [],
+      };
     }
 
-    return {
-      id: booking.id,
-      navn: booking.navn,
-      turTittel: tour?.title ?? "Ukjent tur",
-      status: booking.status,
-    };
-  });
+    const recentBookings = (bookings || []).map((booking) => {
+      const bookingWithTours = booking as unknown as {
+        tours: Tour | Tour[] | null;
+      };
+      const toursData = bookingWithTours.tours;
 
-  return {
-    success: true,
-    data: recentBookings,
-  };
+      let tour: Tour | null = null;
+      if (toursData) {
+        if (Array.isArray(toursData)) {
+          tour = toursData.length > 0 ? toursData[0] : null;
+        } else if (!Array.isArray(toursData)) {
+          tour = toursData;
+        }
+      }
+
+      return {
+        id: booking.id,
+        navn: booking.navn,
+        turTittel: tour?.title ?? "Ukjent tur",
+        status: booking.status,
+      };
+    });
+
+    return {
+      success: true,
+      data: recentBookings,
+    };
+  } catch (err) {
+    console.error("Error in getRecentBookings:", err);
+    return { success: true, data: [] };
+  }
 }

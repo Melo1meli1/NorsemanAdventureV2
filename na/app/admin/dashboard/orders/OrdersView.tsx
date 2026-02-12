@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, Loader2, Trash2 } from "lucide-react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
 import {
@@ -21,7 +22,7 @@ import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-const ORDERS_PAGE_SIZE = 10;
+const ORDERS_PAGE_SIZE = 8;
 
 /** Mock-rad for tabellen (felter som i schema; turTittel + tur-meta for gruppert visning). SOS vises ikke i panelet, men med i CSV. */
 type OrderRow = {
@@ -196,7 +197,7 @@ function StatusBadge({ status }: { status: OrderRow["status"] }) {
             : status === "ikke_betalt"
               ? "border border-red-600/70 bg-red-800 text-red-100"
               : status === "venteliste"
-                ? "border border-sky-600/60 bg-sky-800 text-sky-100"
+                ? "border border-yellow-600/60 bg-yellow-500/20 text-yellow-400"
                 : status === "kansellert"
                   ? "border border-neutral-600/60 bg-neutral-800/40 text-neutral-100"
                   : "border border-neutral-600/60 bg-neutral-800/40 text-neutral-100"
@@ -476,6 +477,43 @@ export function OrdersView() {
     fetchBookings(1);
   }, [fetchBookings]);
 
+  // Realtime: abonner på bookings og participants, debounced refresh
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
+  const DEBOUNCE_MS = 800;
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    const scheduleRefresh = () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshTimeoutRef.current = null;
+        fetchBookings(currentPageRef.current);
+      }, DEBOUNCE_MS);
+    };
+
+    const channel = supabase
+      .channel("orders-bookings-participants")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings" },
+        () => scheduleRefresh(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "participants" },
+        () => scheduleRefresh(),
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBookings]);
+
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     fetchBookings(page);
@@ -532,7 +570,8 @@ export function OrdersView() {
     return (
       <section className="space-y-4">
         <OrdersFilterTabs value={filter} onChange={setFilter} />
-        <div className="bg-card border-primary/20 flex items-center justify-center rounded-[18px] border px-5 py-12">
+        <div className="bg-card border-primary/20 flex flex-col items-center justify-center gap-3 rounded-[18px] border px-5 py-12">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" aria-hidden />
           <p className="text-neutral-400">Henter bestillinger...</p>
         </div>
       </section>
@@ -581,6 +620,9 @@ export function OrdersView() {
               (o) => o.status === "venteliste",
             ).length;
             const isOverbooked = booked > total && total > 0;
+            // Ledige plasser: grønn > 5, gul 1–5, rød 0
+            const availabilityTone =
+              ledige > 5 ? "green" : ledige > 0 ? "yellow" : "red";
 
             return (
               <div
@@ -611,7 +653,20 @@ export function OrdersView() {
                         {total} plasser
                         {isOverbooked && (
                           <span className="ml-2 font-semibold text-red-400">
-                            ({booked - total} over kapasitet)
+                            Overbooked: {booked - total} plasser over kapasitet
+                          </span>
+                        )}
+                        {!isOverbooked && (
+                          <span
+                            className={`ml-2 font-medium ${
+                              availabilityTone === "green"
+                                ? "text-green-400"
+                                : availabilityTone === "yellow"
+                                  ? "text-yellow-400"
+                                  : "text-red-400"
+                            }`}
+                          >
+                            {ledige} ledige
                           </span>
                         )}
                       </p>
