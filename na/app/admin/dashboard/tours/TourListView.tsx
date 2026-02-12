@@ -2,6 +2,7 @@
 import { deleteTour } from "../actions/tours";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFilteredBySearch } from "@/hooks/useSearchQuery";
 import Image from "next/image";
 import {
   Calendar,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import TourFormModal from "./TourFormModal";
 import { Pagination } from "@/components/ui/pagination";
+import { SearchInput } from "@/components/common/SearchInput";
 
 type TourListViewProps = {
   tours: Tour[];
@@ -39,11 +41,20 @@ export function TourListView({
   onOpenGalleryForTour,
 }: TourListViewProps) {
   const router = useRouter();
+  const tourSearchKeys = useMemo(() => ["title", "sted"] as const, []);
+  const [tourSearchTerm, setTourSearchTerm] = useState("");
+  const filteredTours = useFilteredBySearch(tours, tourSearchKeys, {
+    overrideQuery: tourSearchTerm,
+  });
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const TOURS_PER_PAGE = 6;
+
+  const totalPages = Math.ceil(filteredTours.length / TOURS_PER_PAGE) || 1;
+  const displayPage = Math.min(currentPage, totalPages);
+
   function resolveImageSrc(imageUrl: string | null) {
     if (!imageUrl) return null;
 
@@ -99,14 +110,12 @@ export function TourListView({
     setPendingDelete(null);
   }
 
-  const totalPages = Math.ceil(tours.length / TOURS_PER_PAGE) || 1;
-
   const paginatedTours = useMemo(() => {
-    if (tours.length === 0) return [];
-    const startIndex = (currentPage - 1) * TOURS_PER_PAGE;
+    if (filteredTours.length === 0) return [];
+    const startIndex = (displayPage - 1) * TOURS_PER_PAGE;
     const endIndex = startIndex + TOURS_PER_PAGE;
-    return tours.slice(startIndex, endIndex);
-  }, [tours, currentPage]);
+    return filteredTours.slice(startIndex, endIndex);
+  }, [filteredTours, displayPage]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -116,7 +125,13 @@ export function TourListView({
   return (
     <div className="flex flex-col gap-6">
       {/* Header: New Tour button */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <SearchInput
+          placeholder="Søk etter tur"
+          className="w-full sm:max-w-xs"
+          syncToUrl={false}
+          onChange={setTourSearchTerm}
+        />
         <Button
           type="button"
           onClick={handleOpenNewTour}
@@ -129,9 +144,11 @@ export function TourListView({
 
       {/* Tour list */}
       <ul className="flex flex-col gap-4">
-        {tours.length === 0 ? (
+        {filteredTours.length === 0 ? (
           <li className="rounded-lg border border-neutral-800 bg-[#161920] px-6 py-12 text-center text-sm text-neutral-400">
-            Ingen turer ennå. Opprett en tur for å komme i gang.
+            {tours.length === 0
+              ? "Ingen turer ennå. Opprett en tur for å komme i gang."
+              : "Ingen turer matcher søket."}
           </li>
         ) : (
           paginatedTours.map((tour) => {
@@ -242,7 +259,7 @@ export function TourListView({
       </ul>
 
       <Pagination
-        currentPage={currentPage}
+        currentPage={displayPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />

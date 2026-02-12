@@ -532,7 +532,13 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             </div>
           )}
 
-          {activeSection === "orders" && <OrdersView />}
+          {/* Hold OrdersView mounted men skjult når inaktiv, så state (bestillinger) bevares ved tab-bytt. isActive=false hindrer fetch når bruker søker på Turer. */}
+          <div
+            className={activeSection === "orders" ? "block" : "hidden"}
+            aria-hidden={activeSection !== "orders"}
+          >
+            <OrdersView isActive={activeSection === "orders"} />
+          </div>
 
           {activeSection === "gallery" &&
             (selectedGalleryTour ? (

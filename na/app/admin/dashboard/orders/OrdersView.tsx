@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchQuery } from "@/hooks/useSearchQuery";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
@@ -445,7 +445,12 @@ function OrderCard({
   );
 }
 
-export function OrdersView() {
+type OrdersViewProps = {
+  /** Når false (f.eks. bruker er på Turer-fanen), unngår vi å fetche – hindrer masse GET/POST ved søk på andre faner. */
+  isActive?: boolean;
+};
+
+export function OrdersView({ isActive = true }: OrdersViewProps) {
   const [filter, setFilter] = useState<OrdersFilterValue>("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -458,8 +463,7 @@ export function OrdersView() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
-  const searchParams = useSearchParams();
-  const searchTerm = searchParams.get("query") ?? undefined;
+  const searchTerm = useSearchQuery() || undefined;
 
   const fetchBookings = useCallback(
     async (page: number) => {
@@ -492,8 +496,9 @@ export function OrdersView() {
   );
 
   useEffect(() => {
+    if (!isActive) return;
     fetchBookings(1);
-  }, [fetchBookings]);
+  }, [fetchBookings, isActive]);
 
   // Realtime: abonner på bookings og participants, debounced refresh
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -502,6 +507,7 @@ export function OrdersView() {
   const DEBOUNCE_MS = 800;
 
   useEffect(() => {
+    if (!isActive) return;
     // Når brukeren er i et aktivt søk, prioriterer vi søkekall fremfor realtime-refresh
     // og hopper derfor over Supabase-realtime-abonnementet midlertidig.
     if (searchTerm && searchTerm.trim().length > 0) {
@@ -536,7 +542,7 @@ export function OrdersView() {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       supabase.removeChannel(channel);
     };
-  }, [fetchBookings, searchTerm]);
+  }, [fetchBookings, searchTerm, isActive]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
