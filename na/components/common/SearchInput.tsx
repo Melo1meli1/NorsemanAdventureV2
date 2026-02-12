@@ -11,30 +11,27 @@ export type SearchInputProps = {
   placeholder: string;
   queryParamKey?: string;
   className?: string;
+  syncToUrl?: boolean;
+  onChange?: (value: string) => void;
 };
 
 /**
- * Gjenbrukbar søkekomponent som:
- * - Leser initialverdi fra URL (`searchParams`)
- * - Debouncer brukerens input
- * - Oppdaterer URL-en (router.replace) i stedet for å holde søkeresultater i lokal state
- *
- * Selve filtreringen gjøres på serveren ved å lese `searchParams[queryParamKey]`.
+ * Søk leser/skriver URL når syncToUrl er true (default). Da overlever søk refresh (Bestillinger, Turer, Nyheter).
+ * syncToUrl false = kun lokal state + onChange, ingen URL (brukes ikke lenger – vi bruker URL overalt).
  */
 export function SearchInput({
   placeholder,
   queryParamKey = "query",
   className,
+  syncToUrl = true,
+  onChange,
 }: SearchInputProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  // Initial verdi hentes fra URL, slik at Refresh / deling av lenke fungerer.
-  const initialQuery = searchParams.get(queryParamKey) ?? "";
+  const initialQuery = syncToUrl ? (searchParams.get(queryParamKey) ?? "") : "";
   const [value, setValue] = useState(initialQuery);
-
-  // Debounce for å unngå unødvendige fetch-kall mens bruker skriver.
   const [debouncedValue, setDebouncedValue] = useState(initialQuery);
 
   useEffect(() => {
@@ -48,37 +45,41 @@ export function SearchInput({
   }, [value]);
 
   useEffect(() => {
-    const currentQueryInUrl = searchParams.get(queryParamKey) ?? "";
+    const trimmed = debouncedValue.trim();
+    if (syncToUrl) {
+      const currentQueryInUrl = searchParams.get(queryParamKey) ?? "";
+      if (trimmed === currentQueryInUrl) return;
 
-    // Hvis URL allerede matcher debounced verdi, trenger vi ikke å gjøre noe.
-    if (debouncedValue === currentQueryInUrl) return;
-
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (debouncedValue && debouncedValue.trim().length > 0) {
-      params.set(queryParamKey, debouncedValue.trim());
-      // Her kan man evt. resette paginering: params.delete("page");
+      const params = new URLSearchParams(searchParams.toString());
+      if (trimmed) params.set(queryParamKey, trimmed);
+      else params.delete(queryParamKey);
+      const queryString = params.toString();
+      const url = queryString ? `${pathname}?${queryString}` : pathname;
+      router.replace(url);
     } else {
-      params.delete(queryParamKey);
+      onChange?.(trimmed);
     }
-
-    const queryString = params.toString();
-    const url = queryString ? `${pathname}?${queryString}` : pathname;
-
-    router.replace(url);
-  }, [debouncedValue, pathname, queryParamKey, router, searchParams]);
+  }, [
+    debouncedValue,
+    pathname,
+    queryParamKey,
+    router,
+    searchParams,
+    syncToUrl,
+    onChange,
+  ]);
 
   const handleClear = () => {
     setValue("");
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete(queryParamKey);
-    // params.delete("page");
-
-    const queryString = params.toString();
-    const url = queryString ? `${pathname}?${queryString}` : pathname;
-
-    router.replace(url);
+    if (syncToUrl) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete(queryParamKey);
+      const queryString = params.toString();
+      const url = queryString ? `${pathname}?${queryString}` : pathname;
+      router.replace(url);
+    } else {
+      onChange?.("");
+    }
   };
 
   return (

@@ -18,9 +18,8 @@ export function useSearchQuery(
 }
 
 /**
- * Filtrerer en liste på tvers av angitte nøkler basert på URL-søk.
- * For client-side søk (f.eks. Turer, Nyheter) – én sted for søkelogikken.
- * Bestillinger bruker server-side søk og trenger bare useSearchQuery().
+ * Filtrerer en liste basert på søk i URL (samme query-param som SearchInput).
+ * Brukes for Turer, Nyheter (client-side filtrering). Bestillinger bruker server-side + useSearchQuery().
  */
 export function useFilteredBySearch<T extends Record<string, unknown>>(
   items: T[],
