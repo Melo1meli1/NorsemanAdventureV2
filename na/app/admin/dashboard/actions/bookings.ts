@@ -65,6 +65,7 @@ export async function getBookingsPage(
   page: number,
   pageSize: number = DEFAULT_PAGE_SIZE,
   searchTerm?: string,
+  filter?: string,
 ): Promise<{
   success: true;
   data: BookingWithDetails[];
@@ -74,6 +75,8 @@ export async function getBookingsPage(
   const supabase = await createClient();
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+
+  const hasSearch = !!(searchTerm && searchTerm.trim().length > 0);
 
   let query = supabase
     .from("bookings")
@@ -87,12 +90,12 @@ export async function getBookingsPage(
         total_seats
       )
     `,
-      { count: "exact" },
+      { count: hasSearch ? "planned" : "exact" },
     )
     .order("created_at", { ascending: false });
 
-  if (searchTerm && searchTerm.trim().length > 0) {
-    const term = searchTerm.trim();
+  if (hasSearch) {
+    const term = searchTerm!.trim();
     // Søk kun i navn og e-post (case-insensitive, partial match)
     query = query.or(`navn.ilike.%${term}%,epost.ilike.%${term}%`);
   }
@@ -126,16 +129,31 @@ export async function getBookingsPage(
   }
 
   const bookingIds = bookings.map((b) => b.id);
-  const tourIds = [
-    ...new Set(
-      bookings.map((b) => b.tour_id).filter((id): id is string => id != null),
-    ),
-  ];
 
-  const [participantsResult, remainingByTourId] = await Promise.all([
-    supabase.from("participants").select("*").in("booking_id", bookingIds),
-    getRemainingSeatsForTours(supabase, tourIds),
-  ]);
+  const tourIds =
+    !hasSearch && filter === "tours"
+      ? [
+          ...new Set(
+            bookings
+              .map((b) => b.tour_id)
+              .filter((id): id is string => id != null),
+          ),
+        ]
+      : [];
+
+  const participantsPromise = supabase
+    .from("participants")
+    .select("*")
+    .in("booking_id", bookingIds);
+
+  const remainingSeatsPromise =
+    tourIds.length > 0 ? getRemainingSeatsForTours(supabase, tourIds) : null;
+
+  const participantsResult = await participantsPromise;
+  const remainingByTourId =
+    remainingSeatsPromise !== null
+      ? await remainingSeatsPromise
+      : new Map<string, number>();
 
   const { data: participants, error: participantsError } = participantsResult;
   if (participantsError) {

@@ -470,6 +470,7 @@ export function OrdersView() {
           page,
           ORDERS_PAGE_SIZE,
           searchTerm,
+          filter,
         );
         if (result.success) {
           const mappedOrders = result.data.map(mapBookingToOrderRow);
@@ -487,7 +488,7 @@ export function OrdersView() {
         setIsLoading(false);
       }
     },
-    [searchTerm],
+    [searchTerm, filter],
   );
 
   useEffect(() => {
@@ -501,6 +502,12 @@ export function OrdersView() {
   const DEBOUNCE_MS = 800;
 
   useEffect(() => {
+    // Når brukeren er i et aktivt søk, prioriterer vi søkekall fremfor realtime-refresh
+    // og hopper derfor over Supabase-realtime-abonnementet midlertidig.
+    if (searchTerm && searchTerm.trim().length > 0) {
+      return;
+    }
+
     const supabase = getSupabaseBrowserClient();
 
     const scheduleRefresh = () => {
@@ -529,7 +536,7 @@ export function OrdersView() {
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
       supabase.removeChannel(channel);
     };
-  }, [fetchBookings]);
+  }, [fetchBookings, searchTerm]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;

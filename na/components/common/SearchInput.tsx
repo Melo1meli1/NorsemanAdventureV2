@@ -40,7 +40,7 @@ export function SearchInput({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedValue(value);
-    }, 400);
+    }, 250);
 
     return () => {
       clearTimeout(timeoutId);
@@ -60,7 +60,6 @@ export function SearchInput({
       // Her kan man evt. resette paginering: params.delete("page");
     } else {
       params.delete(queryParamKey);
-      // params.delete("page");
     }
 
     const queryString = params.toString();
