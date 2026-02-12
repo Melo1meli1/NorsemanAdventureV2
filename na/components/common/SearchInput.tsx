@@ -16,8 +16,10 @@ export type SearchInputProps = {
 };
 
 /**
- * Søk leser/skriver URL når syncToUrl er true (default). Da overlever søk refresh (Bestillinger, Turer, Nyheter).
- * syncToUrl false = kun lokal state + onChange, ingen URL (brukes ikke lenger – vi bruker URL overalt).
+ * Gjenbrukbar søkekomponent som:
+ * - Leser initialverdi fra URL (`searchParams`) når syncToUrl er true
+ * - Debouncer brukerens input
+ * - Oppdaterer URL (router.replace) når syncToUrl er true; ellers kun lokal state + onChange
  */
 export function SearchInput({
   placeholder,
@@ -44,20 +46,23 @@ export function SearchInput({
     };
   }, [value]);
 
+  // Når syncToUrl: oppdater URL. Når ikke: bare kall onChange.
   useEffect(() => {
-    const trimmed = debouncedValue.trim();
     if (syncToUrl) {
       const currentQueryInUrl = searchParams.get(queryParamKey) ?? "";
-      if (trimmed === currentQueryInUrl) return;
+      if (debouncedValue === currentQueryInUrl) return;
 
       const params = new URLSearchParams(searchParams.toString());
-      if (trimmed) params.set(queryParamKey, trimmed);
-      else params.delete(queryParamKey);
+      if (debouncedValue && debouncedValue.trim().length > 0) {
+        params.set(queryParamKey, debouncedValue.trim());
+      } else {
+        params.delete(queryParamKey);
+      }
       const queryString = params.toString();
       const url = queryString ? `${pathname}?${queryString}` : pathname;
       router.replace(url);
     } else {
-      onChange?.(trimmed);
+      onChange?.(debouncedValue.trim());
     }
   }, [
     debouncedValue,

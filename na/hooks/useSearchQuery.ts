@@ -18,15 +18,17 @@ export function useSearchQuery(
 }
 
 /**
- * Filtrerer en liste basert på søk i URL (samme query-param som SearchInput).
- * Brukes for Turer, Nyheter (client-side filtrering). Bestillinger bruker server-side + useSearchQuery().
+ * Filtrerer en liste på tvers av angitte nøkler basert på søk.
+ * - overrideQuery: bruk lokal state (f.eks. Turer med syncToUrl=false) – ingen URL-kall.
+ * - Ellers leses query fra URL (useSearchQuery). Bestillinger bruker server-side og useSearchQuery().
  */
 export function useFilteredBySearch<T extends Record<string, unknown>>(
   items: T[],
   keys: ReadonlyArray<keyof T>,
-  options?: { queryParamKey?: string },
+  options?: { queryParamKey?: string; overrideQuery?: string },
 ): T[] {
-  const query = useSearchQuery(options?.queryParamKey).toLowerCase();
+  const urlQuery = useSearchQuery(options?.queryParamKey);
+  const query = (options?.overrideQuery ?? urlQuery).toLowerCase();
 
   return useMemo(() => {
     if (!query) return items;

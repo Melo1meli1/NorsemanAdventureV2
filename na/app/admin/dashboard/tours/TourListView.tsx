@@ -42,7 +42,10 @@ export function TourListView({
 }: TourListViewProps) {
   const router = useRouter();
   const tourSearchKeys = useMemo(() => ["title", "sted"] as const, []);
-  const filteredTours = useFilteredBySearch(tours, tourSearchKeys);
+  const [tourSearchTerm, setTourSearchTerm] = useState("");
+  const filteredTours = useFilteredBySearch(tours, tourSearchKeys, {
+    overrideQuery: tourSearchTerm,
+  });
   const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
@@ -126,6 +129,8 @@ export function TourListView({
         <SearchInput
           placeholder="Søk etter tur"
           className="w-full sm:max-w-xs"
+          syncToUrl={false}
+          onChange={setTourSearchTerm}
         />
         <Button
           type="button"
