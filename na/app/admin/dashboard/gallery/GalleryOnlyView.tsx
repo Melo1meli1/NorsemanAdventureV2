@@ -267,9 +267,9 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
               Offentlige bilder
             </CardTitle>
             <p className="text-sm text-neutral-400">
-              Alt som vises her er sannhetskilden for den offentlige
-              galleri-siden. Inkluderer bilder fra turer (når du har trykket
-              globus) og bilder lastet opp uten tur.
+              Alle bilder som vises her vises på den offentlige galleri-siden.
+              Inkluderer bilder fra turer (når du har trykket globus) og bilder
+              lastet opp uten tur.
             </p>
           </div>
 
@@ -314,14 +314,14 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
                     />
                     <div className="absolute top-2 left-2">
                       <span
-                        className="rounded-md bg-black/60 px-2 py-1 text-xs text-neutral-200"
+                        className="rounded-md bg-black/80 px-2 py-1 text-xs text-neutral-200"
                         title={
                           img.tour_id
                             ? `Fra tur: ${img.tour_title ?? ""}`
                             : "Uten tur"
                         }
                       >
-                        {img.tour_title ? `Fra: ${img.tour_title}` : "Uten tur"}
+                        {img.tour_title ? `${img.tour_title}` : "Uten tur"}
                       </span>
                     </div>
                     <div className="absolute right-2 bottom-2">

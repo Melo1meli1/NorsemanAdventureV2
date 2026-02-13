@@ -83,11 +83,10 @@ export function GalleryView({
             </div>
             <div className="min-w-0 flex-1 space-y-0.5 text-left">
               <h3 className="text-base font-semibold text-neutral-50">
-                Offentlige bilder (uten tur)
+                Offentlige bilder
               </h3>
               <p className="text-sm text-neutral-400">
-                Last opp bilder som kun vises i offentlig galleri, uten å
-                knyttes til en tur.
+                Last opp bilder som vil vises på den offentlige siden.
               </p>
             </div>
             <ChevronRight
