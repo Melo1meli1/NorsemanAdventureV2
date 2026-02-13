@@ -169,6 +169,35 @@ export type Database = {
           },
         ];
       };
+      public_gallery_images: {
+        Row: {
+          id: string;
+          tour_id: string | null;
+          file_path: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          tour_id?: string | null;
+          file_path: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          tour_id?: string | null;
+          file_path?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_gallery_images_tour_id_fkey";
+            columns: ["tour_id"];
+            isOneToOne: false;
+            referencedRelation: "tours";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
