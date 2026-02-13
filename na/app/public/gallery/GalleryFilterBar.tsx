@@ -13,9 +13,16 @@ type Tour = { id: string; title: string };
 
 type GalleryFilterBarProps = {
   tours: Tour[];
+  /** null = alle bilder */
+  value: string | null;
+  onValueChange: (tourId: string | null) => void;
 };
 
-export function GalleryFilterBar({ tours }: GalleryFilterBarProps) {
+export function GalleryFilterBar({
+  tours,
+  value,
+  onValueChange,
+}: GalleryFilterBarProps) {
   return (
     <div className="flex w-full flex-wrap items-start gap-3">
       <div className="flex -translate-y-4 items-center gap-4">
@@ -23,10 +30,14 @@ export function GalleryFilterBar({ tours }: GalleryFilterBarProps) {
           type="button"
           size="default"
           className="font-semibold uppercase"
+          onClick={() => onValueChange(null)}
         >
           ALLE BILDER
         </Button>
-        <Select>
+        <Select
+          value={value ?? ""}
+          onValueChange={(v) => onValueChange(v || null)}
+        >
           <SelectTrigger
             className="bg-background border-border min-w-[280px] flex-1"
             aria-label="Velg tur for å filtrere bilder"
