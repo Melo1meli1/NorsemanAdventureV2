@@ -3,7 +3,15 @@
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ImageIcon, Plus, Star, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ImageIcon,
+  Globe,
+  GlobeLock,
+  Plus,
+  Star,
+  Trash2,
+} from "lucide-react";
 import type { FileObject } from "@supabase/storage-js";
 import type { Tour } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +19,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
 import { setTourCoverImage } from "../actions/tours";
+import {
+  getPublicGalleryFilePathsForTour,
+  addToPublicGallery,
+  removeFromPublicGallery,
+} from "../actions/gallery";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import { Pagination } from "@/components/ui/pagination";
 
@@ -42,6 +55,12 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   const [settingCoverImageName, setSettingCoverImageName] = useState<
     string | null
   >(null);
+  const [publicGalleryPaths, setPublicGalleryPaths] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [togglingPublicPath, setTogglingPublicPath] = useState<string | null>(
+    null,
+  );
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   type UploadResult = { data: unknown; error: { message?: string } | null };
 
@@ -57,6 +76,13 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     reordered.unshift(cover);
     return reordered;
   }
+
+  const loadPublicGalleryPaths = useCallback(async () => {
+    const res = await getPublicGalleryFilePathsForTour(tour.id);
+    if (res.success) {
+      setPublicGalleryPaths(new Set(res.data));
+    }
+  }, [tour.id]);
 
   const loadPage = useCallback(
     async (page: number) => {
@@ -163,8 +189,14 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
         description: error.message,
       });
     } else {
+      await removeFromPublicGallery(path);
       toast({ title: "Bilde slettet" });
       setTotalCount((c) => Math.max(0, c - 1));
+      setPublicGalleryPaths((prev) => {
+        const next = new Set(prev);
+        next.delete(path);
+        return next;
+      });
       const count = await loadPage(currentPage);
       if (count === 0 && currentPage > 1) {
         goToPage(currentPage - 1);
@@ -196,6 +228,43 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
       });
     }
     setSettingCoverImageName(null);
+  };
+
+  const handleTogglePublicGallery = async (imageName: string) => {
+    const filePath = `${tour.id}/${imageName}`;
+    const isInPublic = publicGalleryPaths.has(filePath);
+    setTogglingPublicPath(filePath);
+
+    if (isInPublic) {
+      const result = await removeFromPublicGallery(filePath);
+      if (result.success) {
+        setPublicGalleryPaths((prev) => {
+          const next = new Set(prev);
+          next.delete(filePath);
+          return next;
+        });
+        toast({ title: "Fjernet fra offentlig galleri" });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Kunne ikke fjerne",
+          description: result.error,
+        });
+      }
+    } else {
+      const result = await addToPublicGallery(tour.id, filePath);
+      if (result.success) {
+        setPublicGalleryPaths((prev) => new Set(prev).add(filePath));
+        toast({ title: "Lagt til i offentlig galleri" });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Kunne ikke legge til",
+          description: result.error,
+        });
+      }
+    }
+    setTogglingPublicPath(null);
   };
 
   const handleFilesSelected = async (
@@ -284,6 +353,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
           description: `${files.length} bilde(r) lastet opp.`,
         });
         await loadInitial();
+        await loadPublicGalleryPaths();
       }
     } finally {
       setUploadProgress(null);
@@ -295,6 +365,10 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
   useEffect(() => {
     loadInitial();
   }, [loadInitial]);
+
+  useEffect(() => {
+    loadPublicGalleryPaths();
+  }, [loadPublicGalleryPaths]);
 
   return (
     <section className="space-y-6">
@@ -336,9 +410,8 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               {tour.title} - Bilder
             </CardTitle>
             <p className="text-sm text-neutral-400">
-              Administrer bildene for denne turen. Klikk på stjerne-ikonet på et
-              bilde for å velge hvilket som skal være hovedbilde (vises på
-              forsiden).
+              Administrer bildene for denne turen. Stjerne = hovedbilde. Globus
+              = vises i offentlig galleri på nettsiden.
             </p>
           </div>
 
@@ -368,6 +441,9 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
               <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-160">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {images.map((image) => {
+                    const filePath = `${tour.id}/${image.name}`;
+                    const isInPublicGallery = publicGalleryPaths.has(filePath);
+                    const isToggling = togglingPublicPath === filePath;
                     return (
                       <div
                         key={image.name}
@@ -381,6 +457,17 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             className="object-cover"
                           />
+                          {isInPublicGallery && (
+                            <div className="absolute top-2 left-2">
+                              <span
+                                className="bg-primary/90 text-primary-foreground flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium shadow-sm"
+                                title="Vises i offentlig galleri"
+                              >
+                                <Globe className="h-3.5 w-3.5" aria-hidden />
+                                Offentlig
+                              </span>
+                            </div>
+                          )}
                           <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
                             {coverImageUrl === image.url ? (
                               <span className="bg-primary/90 text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold shadow-sm">
@@ -403,6 +490,43 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                                 <Star className="h-3.5 w-3.5" aria-hidden />
                               </Button>
                             )}
+
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              variant={
+                                isInPublicGallery ? "secondary" : "default"
+                              }
+                              className={
+                                isInPublicGallery
+                                  ? "h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
+                                  : "bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTogglePublicGallery(image.name);
+                              }}
+                              disabled={isToggling}
+                              aria-label={
+                                isInPublicGallery
+                                  ? `Fjern ${image.name} fra offentlig galleri`
+                                  : `Legg ${image.name} til i offentlig galleri`
+                              }
+                              title={
+                                isInPublicGallery
+                                  ? "Fjern fra offentlig galleri"
+                                  : "Legg til i offentlig galleri"
+                              }
+                            >
+                              {isInPublicGallery ? (
+                                <GlobeLock
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden
+                                />
+                              ) : (
+                                <Globe className="h-3.5 w-3.5" aria-hidden />
+                              )}
+                            </Button>
 
                             <Button
                               type="button"
