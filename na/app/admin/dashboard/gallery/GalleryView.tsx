@@ -5,17 +5,23 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Folder } from "lucide-react";
 import type { Tour } from "@/lib/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
+import { Globe } from "lucide-react";
 
 type GalleryViewProps = {
   tours: Tour[];
   onSelectTour: (tour: Tour) => void;
+  onOpenGalleryOnly?: () => void;
 };
 
 function formatImageCount(n: number): string {
   return n === 1 ? "1 bilde" : `${n} bilder`;
 }
 
-export function GalleryView({ tours, onSelectTour }: GalleryViewProps) {
+export function GalleryView({
+  tours,
+  onSelectTour,
+  onOpenGalleryOnly,
+}: GalleryViewProps) {
   const [imageCounts, setImageCounts] = useState<Record<string, number>>({});
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
 
@@ -64,6 +70,33 @@ export function GalleryView({ tours, onSelectTour }: GalleryViewProps) {
           </p>
         </div>
       </header>
+
+      {onOpenGalleryOnly && (
+        <button
+          type="button"
+          onClick={onOpenGalleryOnly}
+          className="bg-card border-primary/20 hover:border-primary/50 flex min-h-[88px] w-full items-center rounded-[18px] border px-5 py-5 text-left transition hover:-translate-y-0.5"
+        >
+          <div className="flex w-full items-center gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-700/80 bg-neutral-800/80 text-neutral-400">
+              <Globe className="h-5 w-5" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1 space-y-0.5 text-left">
+              <h3 className="text-base font-semibold text-neutral-50">
+                Offentlige bilder (uten tur)
+              </h3>
+              <p className="text-sm text-neutral-400">
+                Last opp bilder som kun vises i offentlig galleri, uten å
+                knyttes til en tur.
+              </p>
+            </div>
+            <ChevronRight
+              className="h-5 w-5 shrink-0 text-neutral-400"
+              aria-hidden
+            />
+          </div>
+        </button>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {tours.map((tour) => (
