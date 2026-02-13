@@ -44,7 +44,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
           <button
             type="button"
             key={img.id}
-            className="group focus-visible:ring-ring focus-visible:ring-offset-background relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="group focus-visible:ring-ring focus-visible:ring-offset-background relative aspect-5/4 w-full overflow-hidden rounded-xl bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             onClick={() => setLightboxImage(img)}
           >
             <Image

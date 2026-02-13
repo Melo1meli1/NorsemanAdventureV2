@@ -29,6 +29,7 @@ export function GalleryFilterBar({
         <Button
           type="button"
           size="default"
+          variant={value === null ? "default" : "outline"}
           className="font-semibold uppercase"
           onClick={() => onValueChange(null)}
         >
