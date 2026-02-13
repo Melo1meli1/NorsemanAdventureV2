@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/turer", destination: "/public/tours" },
       { source: "/turer/:path*", destination: "/public/tours/:path*" },
+      { source: "/galleri", destination: "/public/gallery" },
     ];
   },
   images: {
