@@ -9,7 +9,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getGalleryOnlyImages,
+  getAllPublicGalleryImages,
   addGalleryOnlyToPublicGallery,
   removeFromPublicGallery,
 } from "../actions/gallery";
@@ -26,17 +26,26 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [images, setImages] = useState<
-    Array<{ id: string; file_path: string; url: string }>
+    Array<{
+      id: string;
+      file_path: string;
+      url: string;
+      tour_id: string | null;
+      tour_title: string | null;
+    }>
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
-  const [pathToDelete, setPathToDelete] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{
+    file_path: string;
+    tour_id: string | null;
+  } | null>(null);
   const { toast } = useToast();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
 
   const loadImages = useCallback(async () => {
     setIsLoading(true);
-    const res = await getGalleryOnlyImages();
+    const res = await getAllPublicGalleryImages();
     if (!res.success) {
       toast({
         variant: "destructive",
@@ -51,7 +60,13 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
       const { data: urlData } = supabase.storage
         .from("tours-gallery")
         .getPublicUrl(row.file_path);
-      return { ...row, url: urlData.publicUrl };
+      return {
+        id: row.id,
+        file_path: row.file_path,
+        url: urlData.publicUrl,
+        tour_id: row.tour_id,
+        tour_title: row.tour_title,
+      };
     });
     setImages(withUrls);
     setIsLoading(false);
@@ -63,40 +78,51 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
 
   const openFilePicker = () => fileInputRef.current?.click();
 
-  const handleDelete = async (filePath: string) => {
+  const handleDelete = async (filePath: string, tourId: string | null) => {
     setDeletingPath(filePath);
-    const { error: storageError } = await supabase.storage
-      .from("tours-gallery")
-      .remove([filePath]);
-
-    if (storageError) {
-      toast({
-        variant: "destructive",
-        title: "Kunne ikke slette fil",
-        description: storageError.message,
-      });
-      setDeletingPath(null);
-      setPathToDelete(null);
-      return;
+    const isFromTour = tourId != null;
+    if (!isFromTour) {
+      const { error: storageError } = await supabase.storage
+        .from("tours-gallery")
+        .remove([filePath]);
+      if (storageError) {
+        toast({
+          variant: "destructive",
+          title: "Kunne ikke slette fil",
+          description: storageError.message,
+        });
+        setDeletingPath(null);
+        setItemToDelete(null);
+        return;
+      }
     }
-
     const removeResult = await removeFromPublicGallery(filePath);
     if (removeResult.success) {
       setImages((prev) => prev.filter((img) => img.file_path !== filePath));
-      toast({ title: "Bilde slettet" });
+      toast(
+        isFromTour
+          ? {
+              title:
+                "Fjernet fra offentlig galleri (bildet ligger fortsatt under turen)",
+            }
+          : { title: "Bilde slettet" },
+      );
     } else {
       toast({
         variant: "destructive",
-        title: "Bilde fjernet fra lagring, men kunne ikke oppdatere galleri",
+        title: isFromTour
+          ? "Kunne ikke fjerne fra offentlig galleri"
+          : "Bilde fjernet fra lagring, men kunne ikke oppdatere galleri",
         description: removeResult.error,
       });
     }
     setDeletingPath(null);
-    setPathToDelete(null);
+    setItemToDelete(null);
   };
 
   const onConfirmDelete = () => {
-    if (pathToDelete) handleDelete(pathToDelete);
+    if (itemToDelete)
+      handleDelete(itemToDelete.file_path, itemToDelete.tour_id);
   };
 
   const handleFilesSelected = async (
@@ -173,7 +199,13 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
             .from("tours-gallery")
             .getPublicUrl(filePath);
           setImages((prev) => [
-            { id: "", file_path: filePath, url: urlData.publicUrl },
+            {
+              id: "",
+              file_path: filePath,
+              url: urlData.publicUrl,
+              tour_id: null,
+              tour_title: null,
+            },
             ...prev,
           ]);
         } else {
@@ -232,11 +264,12 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
         <CardContent className="space-y-6 px-6 pt-4 pb-8">
           <div className="space-y-2">
             <CardTitle className="text-xl text-neutral-50">
-              Offentlige bilder (uten tur)
+              Offentlige bilder
             </CardTitle>
             <p className="text-sm text-neutral-400">
-              Bilder du laster opp her vises kun i offentlig galleri under «alle
-              bilder», ikke ved filtrering på tur.
+              Alt som vises her er sannhetskilden for den offentlige
+              galleri-siden. Inkluderer bilder fra turer (når du har trykket
+              globus) og bilder lastet opp uten tur.
             </p>
           </div>
 
@@ -248,11 +281,11 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
                 <ImageIcon className="h-6 w-6" aria-hidden />
               </div>
               <h3 className="mt-4 text-base font-semibold text-neutral-50">
-                Ingen offentlige bilder (uten tur)
+                Ingen offentlige bilder
               </h3>
               <p className="mt-2 text-sm text-neutral-400">
-                Last opp bilder som skal vises i offentlig galleri uten å
-                knyttes til en tur.
+                Legg bilder til fra en tur (globus-knappen) eller last opp her
+                uten å knytte til tur.
               </p>
               <Button
                 type="button"
@@ -268,7 +301,7 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {images.map((img) => (
                 <div
-                  key={img.file_path}
+                  key={img.id || img.file_path}
                   className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
                 >
                   <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
@@ -279,14 +312,35 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
                       sizes="(max-width: 768px) 50vw, 33vw, 25vw"
                       className="object-cover"
                     />
+                    <div className="absolute top-2 left-2">
+                      <span
+                        className="rounded-md bg-black/60 px-2 py-1 text-xs text-neutral-200"
+                        title={
+                          img.tour_id
+                            ? `Fra tur: ${img.tour_title ?? ""}`
+                            : "Uten tur"
+                        }
+                      >
+                        {img.tour_title ? `Fra: ${img.tour_title}` : "Uten tur"}
+                      </span>
+                    </div>
                     <div className="absolute right-2 bottom-2">
                       <Button
                         type="button"
                         size="icon-sm"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
-                        onClick={() => setPathToDelete(img.file_path)}
+                        className="h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
+                        onClick={() =>
+                          setItemToDelete({
+                            file_path: img.file_path,
+                            tour_id: img.tour_id,
+                          })
+                        }
                         disabled={deletingPath === img.file_path}
-                        aria-label={`Slett ${img.file_path}`}
+                        aria-label={
+                          img.tour_id
+                            ? "Fjern fra offentlig galleri"
+                            : `Slett ${img.file_path}`
+                        }
                       >
                         <Trash2 className="h-3.5 w-3.5" aria-hidden />
                       </Button>
@@ -309,14 +363,24 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
       />
 
       <ConfirmDialog
-        open={pathToDelete !== null}
-        title="Slett bilde?"
-        description="Er du sikker på at du vil slette dette bildet fra offentlig galleri? Handlingen kan ikke angres."
-        onClose={() => setPathToDelete(null)}
+        open={itemToDelete !== null}
+        title={
+          itemToDelete?.tour_id
+            ? "Fjerne fra offentlig galleri?"
+            : "Slett bilde?"
+        }
+        description={
+          itemToDelete?.tour_id
+            ? "Bildet fjernes fra den offentlige galleri-siden, men beholdes under turen i admin."
+            : "Er du sikker på at du vil slette dette bildet? Handlingen kan ikke angres."
+        }
+        onClose={() => setItemToDelete(null)}
         onConfirm={onConfirmDelete}
-        confirmLabel="Slett"
+        confirmLabel={itemToDelete?.tour_id ? "Fjern fra galleri" : "Slett"}
         cancelLabel="Avbryt"
-        isConfirming={deletingPath === pathToDelete}
+        isConfirming={
+          itemToDelete !== null && deletingPath === itemToDelete.file_path
+        }
       />
     </section>
   );

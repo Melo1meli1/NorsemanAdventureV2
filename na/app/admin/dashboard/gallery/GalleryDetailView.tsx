@@ -457,17 +457,6 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             className="object-cover"
                           />
-                          {isInPublicGallery && (
-                            <div className="absolute top-2 left-2">
-                              <span
-                                className="bg-primary/90 text-primary-foreground flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium shadow-sm"
-                                title="Vises i offentlig galleri"
-                              >
-                                <Globe className="h-3.5 w-3.5" aria-hidden />
-                                Offentlig
-                              </span>
-                            </div>
-                          )}
                           <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
                             {coverImageUrl === image.url ? (
                               <span className="bg-primary/90 text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold shadow-sm">
@@ -478,7 +467,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                                 type="button"
                                 size="icon-sm"
                                 variant="secondary"
-                                className="h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
+                                className="h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleSetCoverImage(image.url, image.name);
@@ -494,13 +483,11 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                             <Button
                               type="button"
                               size="icon-sm"
-                              variant={
-                                isInPublicGallery ? "secondary" : "default"
-                              }
+                              variant="secondary"
                               className={
                                 isInPublicGallery
-                                  ? "h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
-                                  : "bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                                  : "h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
                               }
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -519,19 +506,20 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                               }
                             >
                               {isInPublicGallery ? (
+                                <Globe className="h-3.5 w-3.5" aria-hidden />
+                              ) : (
                                 <GlobeLock
                                   className="h-3.5 w-3.5"
                                   aria-hidden
                                 />
-                              ) : (
-                                <Globe className="h-3.5 w-3.5" aria-hidden />
                               )}
                             </Button>
 
                             <Button
                               type="button"
                               size="icon-sm"
-                              className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                              variant="secondary"
+                              className="h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setImageToDelete(image.name);
