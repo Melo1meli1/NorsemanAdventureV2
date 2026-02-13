@@ -28,6 +28,7 @@ import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
 import { GalleryDetailView } from "./gallery/GalleryDetailView";
 import { OrdersView } from "./orders/OrdersView";
+import { GalleryOnlyView } from "./gallery/GalleryOnlyView";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -80,6 +81,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
   >([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const [showGalleryOnlyView, setShowGalleryOnlyView] = useState(false);
 
   const sectionTitle = {
     overview: "Oversikt",
@@ -546,10 +548,13 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
                 tour={selectedGalleryTour}
                 onBack={() => setSelectedGalleryTour(null)}
               />
+            ) : showGalleryOnlyView ? (
+              <GalleryOnlyView onBack={() => setShowGalleryOnlyView(false)} />
             ) : (
               <GalleryView
                 tours={tours}
                 onSelectTour={(tour) => setSelectedGalleryTour(tour)}
+                onOpenGalleryOnly={() => setShowGalleryOnlyView(true)}
               />
             ))}
         </div>
