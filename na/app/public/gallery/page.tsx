@@ -21,7 +21,7 @@ export default async function GalleriPage() {
           src="/hero-motorcycle.jpg"
           alt=""
           fill
-          className="object-cover object-center"
+          className="object-cover object-[50%_60%]"
           sizes="100vw"
           priority
         />
@@ -41,12 +41,17 @@ export default async function GalleriPage() {
             Opplevelser fra våre turer
           </p>
         </div>
-        {/* Filter: toppen holder seg, innhold mot toppen, mindre høyde fra bunnen */}
-        <div className="border-border bg-card absolute right-0 bottom-0 left-0 flex border-t px-6 pt-8 pb-4 shadow-sm sm:px-10 sm:pt-10 sm:pb-5 md:px-14 md:pt-12 md:pb-5 lg:px-20 lg:pt-14 lg:pb-6">
+        {/* Filter: lav boks. For å flytte vertikalt: bytt bottom-0 til f.eks. bottom-4 (opp), bottom-8, bottom-12, eller -bottom-4 (ned) */}
+        <div className="border-border bg-card absolute right-0 bottom-4 left-0 flex border-t px-6 pt-4 pb-5 shadow-sm sm:px-10 sm:pt-5 sm:pb-6 md:px-14 md:pt-6 md:pb-8 lg:px-20 lg:pt-8 lg:pb-10">
           <div className="w-full">
             <GalleryFilterBar tours={tours ?? []} />
           </div>
         </div>
+        {/* Dekker gapet under filterbaren så hero-bildet ikke skinner gjennom (h-12 dekker opp til bottom-12) */}
+        <div
+          className="bg-background absolute right-0 bottom-0 left-0 h-12"
+          aria-hidden
+        />
       </section>
 
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 md:px-10">

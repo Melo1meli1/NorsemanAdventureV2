@@ -18,24 +18,34 @@ type GalleryFilterBarProps = {
 export function GalleryFilterBar({ tours }: GalleryFilterBarProps) {
   return (
     <div className="flex w-full flex-wrap items-start gap-3">
-      <Button type="button" size="default" className="font-semibold uppercase">
-        ALLE BILDER
-      </Button>
-      <Select>
-        <SelectTrigger
-          className="max-w-xs min-w-[200px] flex-1"
-          aria-label="Velg tur for å filtrere bilder"
+      <div className="flex -translate-y-4 items-center gap-4">
+        <Button
+          type="button"
+          size="default"
+          className="font-semibold uppercase"
         >
-          <SelectValue placeholder="Velg en tur…" />
-        </SelectTrigger>
-        <SelectContent position="popper" align="start">
-          {tours.map((tour) => (
-            <SelectItem key={tour.id} value={tour.id}>
-              {tour.title}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          ALLE BILDER
+        </Button>
+        <Select>
+          <SelectTrigger
+            className="bg-background border-border min-w-[280px] flex-1"
+            aria-label="Velg tur for å filtrere bilder"
+          >
+            <SelectValue placeholder="Velg en tur…" />
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            align="start"
+            className="bg-background border-border w-[max(280px,var(--radix-select-trigger-width))]"
+          >
+            {tours.map((tour) => (
+              <SelectItem key={tour.id} value={tour.id}>
+                {tour.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
