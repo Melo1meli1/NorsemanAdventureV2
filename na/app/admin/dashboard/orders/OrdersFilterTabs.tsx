@@ -21,7 +21,7 @@ export function OrdersFilterTabs({ value, onChange }: OrdersFilterTabsProps) {
         size="sm"
         onClick={() => onChange?.("all")}
         className={cn(
-          "rounded-xl px-6 py-4 text-base font-semibold tracking-[0.16em]",
+          "rounded-l px-6 py-4 text-base font-semibold tracking-[0.16em]",
           isAllActive
             ? "bg-primary text-primary-foreground border-primary border"
             : "text-primary border-primary hover:bg-primary/10 border bg-transparent",
@@ -36,7 +36,7 @@ export function OrdersFilterTabs({ value, onChange }: OrdersFilterTabsProps) {
         variant="outline"
         onClick={() => onChange?.("tours")}
         className={cn(
-          "rounded-xl px-6 py-4 text-base font-semibold tracking-[0.16em]",
+          "rounded-l px-6 py-4 text-base font-semibold tracking-[0.16em]",
           isToursActive
             ? "bg-primary text-primary-foreground border-primary border"
             : "text-primary border-primary hover:bg-primary/10 border bg-transparent",

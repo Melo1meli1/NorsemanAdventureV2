@@ -361,7 +361,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
           </div>
           <Link
             href="/"
-            className="border-primary/60 text-primary hover:bg-primary/10 inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors"
+            className="border-primary/60 bg-primary/90 hover:bg-primary/40 inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium text-white transition-colors"
           >
             SE NETTSIDE
           </Link>

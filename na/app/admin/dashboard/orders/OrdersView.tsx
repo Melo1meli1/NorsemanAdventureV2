@@ -22,8 +22,9 @@ import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
 import { OrdersTableHeader } from "./OrdersTableHeader";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { SearchInput } from "@/components/common/SearchInput";
+import { ManualBookingModal } from "./ManualBookingModal";
 
 const ORDERS_PAGE_SIZE = 8;
 
@@ -462,6 +463,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [manualBookingOpen, setManualBookingOpen] = useState(false);
 
   const searchTerm = useSearchQuery() || undefined;
 
@@ -640,17 +642,33 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
 
   if (orders.length === 0) {
     return (
-      <section className="space-y-4">
-        <OrdersFilterTabs value={filter} onChange={setFilter} />
-        <div className="border-b border-neutral-800/80" />
-        <SearchInput
-          placeholder="Søk etter navn eller e-post"
-          className="w-full sm:max-w-xs"
+      <>
+        <section className="space-y-4">
+          <OrdersFilterTabs value={filter} onChange={setFilter} />
+          <div className="border-b border-neutral-800/80" />
+          <div className="flex flex-wrap items-center gap-3">
+            <SearchInput
+              placeholder="Søk etter navn eller e-post"
+              className="w-full max-w-68 sm:max-w-xs"
+            />
+            <Button
+              type="button"
+              className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#dd7431] px-4 py-3 text-sm font-semibold text-white hover:bg-[#c9682a]"
+              onClick={() => setManualBookingOpen(true)}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              LEGG TIL MANUELT
+            </Button>
+          </div>
+          <div className="bg-card border-primary/20 flex items-center justify-center rounded-[18px] border px-5 py-12">
+            <p className="text-neutral-400">Ingen bestillinger funnet.</p>
+          </div>
+        </section>
+        <ManualBookingModal
+          open={manualBookingOpen}
+          onClose={() => setManualBookingOpen(false)}
         />
-        <div className="bg-card border-primary/20 flex items-center justify-center rounded-[18px] border px-5 py-12">
-          <p className="text-neutral-400">Ingen bestillinger funnet.</p>
-        </div>
-      </section>
+      </>
     );
   }
 
@@ -658,9 +676,23 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
     <section className="space-y-4">
       <OrdersFilterTabs value={filter} onChange={setFilter} />
       <div className="border-b border-neutral-800/80" />
-      <SearchInput
-        placeholder="Søk etter navn eller e-post"
-        className="w-full sm:max-w-xs"
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchInput
+          placeholder="Søk etter navn eller e-post"
+          className="w-full max-w-68 sm:max-w-xs"
+        />
+        <Button
+          type="button"
+          className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#dd7431] px-4 py-3 text-sm font-semibold text-white hover:bg-[#c9682a]"
+          onClick={() => setManualBookingOpen(true)}
+        >
+          <Plus className="h-4 w-4" aria-hidden />
+          LEGG TIL MANUELT
+        </Button>
+      </div>
+      <ManualBookingModal
+        open={manualBookingOpen}
+        onClose={() => setManualBookingOpen(false)}
       />
       {filter === "tours" ? (
         <div className="space-y-6">
