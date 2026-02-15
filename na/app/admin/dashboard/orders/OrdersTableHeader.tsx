@@ -17,7 +17,7 @@ export function OrdersTableHeader() {
         {COLUMNS.map((label) => (
           <th
             key={label}
-            className="px-4 py-4 text-xs font-semibold tracking-wide text-neutral-400 uppercase sm:text-sm"
+            className="px-4 py-4 text-left text-xs font-semibold tracking-wide text-neutral-400 uppercase sm:text-sm"
           >
             {label}
           </th>

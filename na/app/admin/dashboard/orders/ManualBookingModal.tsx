@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useFieldArray, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X, Plus, Trash2 } from "lucide-react";
@@ -24,10 +24,20 @@ import type { BookingStatus, BookingType } from "@/lib/types";
 
 type TourOption = { id: string; title: string; price: number };
 
+export type ManualBookingInitialData = {
+  id: string;
+} & AdminBookingFormValues;
+
 type ManualBookingModalProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit?: (data: AdminBookingFormValues) => void | Promise<void>;
+  /** Ved redigering: forhåndsutfylte verdier + booking-id */
+  initialData?: ManualBookingInitialData | null;
+  /** (data, editId) – editId satt ved redigering */
+  onSubmit?: (
+    data: AdminBookingFormValues,
+    editId?: string,
+  ) => void | Promise<void>;
 };
 
 const defaultParticipant = {
@@ -44,13 +54,56 @@ function isParticipantFilled(p: typeof defaultParticipant) {
   );
 }
 
+const emptyDefaultValues: AdminBookingFormValues = {
+  type: "tur",
+  tour_id: null,
+  navn: "",
+  epost: "",
+  telefon: "",
+  dato: new Date(),
+  status: "ikke_betalt",
+  belop: 0,
+  betalt_belop: null,
+  notater: null,
+  participants: [{ ...defaultParticipant }],
+};
+
+function toFormValues(data: ManualBookingInitialData): AdminBookingFormValues {
+  const dato =
+    data.dato instanceof Date ? data.dato : new Date(data.dato as string);
+  return {
+    type: data.type ?? "tur",
+    tour_id: data.tour_id ?? null,
+    navn: data.navn ?? "",
+    epost: data.epost ?? "",
+    telefon: data.telefon ?? "",
+    dato: Number.isNaN(dato.getTime()) ? new Date() : dato,
+    status: data.status ?? "ikke_betalt",
+    belop: data.belop ?? 0,
+    betalt_belop: data.betalt_belop ?? null,
+    notater: data.notater ?? null,
+    participants:
+      data.participants && data.participants.length > 0
+        ? data.participants.map((p) => ({
+            name: p.name ?? "",
+            email: p.email ?? "",
+            telefon: p.telefon ?? "",
+            sos_navn: p.sos_navn ?? "",
+            sos_telefon: p.sos_telefon ?? "",
+          }))
+        : [{ ...defaultParticipant }],
+  };
+}
+
 export function ManualBookingModal({
   open,
   onClose,
+  initialData,
   onSubmit: onSubmitProp,
 }: ManualBookingModalProps) {
   const [tours, setTours] = useState<TourOption[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const prevOpenRef = useRef(false);
 
   const {
     register,
@@ -63,19 +116,7 @@ export function ManualBookingModal({
     resolver: zodResolver(
       adminBookingFormSchema,
     ) as import("react-hook-form").Resolver<AdminBookingFormValues>,
-    defaultValues: {
-      type: "tur",
-      tour_id: null,
-      navn: "",
-      epost: "",
-      telefon: "",
-      dato: new Date(),
-      status: "ikke_betalt",
-      belop: 0,
-      betalt_belop: null,
-      notater: null,
-      participants: [{ ...defaultParticipant }],
-    },
+    defaultValues: emptyDefaultValues,
   });
 
   const type = useWatch({ control, name: "type", defaultValue: "tur" });
@@ -104,6 +145,16 @@ export function ManualBookingModal({
   }, [open]);
 
   useEffect(() => {
+    const justOpened = open && !prevOpenRef.current;
+    prevOpenRef.current = open;
+    if (!open) return;
+    if (justOpened) {
+      if (initialData) reset(toFormValues(initialData));
+      else reset(emptyDefaultValues);
+    }
+  }, [open, reset]);
+
+  useEffect(() => {
     if (type !== "tur") {
       setValue("tour_id", null);
       setValue("belop", 0);
@@ -129,7 +180,7 @@ export function ManualBookingModal({
       return;
     }
     try {
-      await onSubmitProp(payload);
+      await onSubmitProp(payload, initialData?.id);
       reset();
       onClose();
     } catch (err) {
@@ -146,7 +197,7 @@ export function ManualBookingModal({
       <div className="border-border bg-page-background relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border shadow-lg">
         <div className="bg-page-background sticky top-0 z-10 flex items-center justify-between border-b border-neutral-800/80 px-5 py-4">
           <h2 className="text-lg font-semibold text-neutral-50">
-            Legg til manuell bestilling
+            {initialData ? "Rediger bestilling" : "Legg til manuell bestilling"}
           </h2>
           <Button
             type="button"
@@ -539,7 +590,11 @@ export function ManualBookingModal({
               disabled={isSubmitting}
               className="flex-1 bg-[#dd7431] text-white hover:bg-[#c9682a]"
             >
-              {isSubmitting ? "Lagrer…" : "Legg til bestilling"}
+              {isSubmitting
+                ? "Lagrer…"
+                : initialData
+                  ? "Lagre endringer"
+                  : "Legg til bestilling"}
             </Button>
           </div>
         </form>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchQuery } from "@/hooks/useSearchQuery";
-import { Download, Loader2, Trash2 } from "lucide-react";
+import { Download, Loader2, Pencil, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
@@ -15,9 +15,11 @@ import {
 import {
   deleteBooking,
   getBookingsPage,
+  updateBooking,
   type BookingWithDetails,
 } from "../actions/bookings";
 import { createBookingFromAdmin } from "@/app/public/tours/[id]/bestill/actions";
+import type { ManualBookingInitialData } from "./ManualBookingModal";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
@@ -41,6 +43,7 @@ type OrderRow = {
   dato: string;
   telefon: string;
   antallDeltakere: number;
+  tour_id?: string | null;
   tourDato?: string;
   tourTotalPlasser?: number;
   tourLedigePlasser?: number;
@@ -48,6 +51,7 @@ type OrderRow = {
   sos_telefon?: string | null;
   betaltBelop?: number | null;
   gjenstaendeBelop?: number | null;
+  notater?: string | null;
   participants?: Array<{
     name: string;
     email: string;
@@ -174,6 +178,7 @@ function mapBookingToOrderRow(booking: BookingWithDetails): OrderRow {
     dato: booking.dato,
     telefon: booking.telefon,
     antallDeltakere: booking.antallDeltakere,
+    tour_id: booking.tour_id ?? null,
     tourDato: booking.tourDato ?? undefined,
     tourTotalPlasser: booking.tourTotalPlasser ?? undefined,
     tourLedigePlasser: booking.tourLedigePlasser ?? undefined,
@@ -181,6 +186,7 @@ function mapBookingToOrderRow(booking: BookingWithDetails): OrderRow {
     sos_telefon,
     betaltBelop,
     gjenstaendeBelop,
+    notater: booking.notater ?? null,
     participants: booking.participants.map((p) => ({
       name: p.name,
       email: p.email,
@@ -188,6 +194,41 @@ function mapBookingToOrderRow(booking: BookingWithDetails): OrderRow {
       sos_navn: p.sos_navn,
       sos_telefon: p.sos_telefon,
     })),
+  };
+}
+
+function orderRowToInitialData(order: OrderRow): ManualBookingInitialData {
+  const dato = new Date(order.dato);
+  return {
+    id: order.id,
+    type: order.type,
+    tour_id: order.tour_id ?? null,
+    navn: order.navn,
+    epost: order.epost,
+    telefon: order.telefon ?? "",
+    dato: Number.isNaN(dato.getTime()) ? new Date() : dato,
+    status: order.status,
+    belop: order.belop,
+    betalt_belop: order.betaltBelop ?? null,
+    notater: order.notater ?? null,
+    participants:
+      order.participants && order.participants.length > 0
+        ? order.participants.map((p) => ({
+            name: p.name,
+            email: p.email,
+            telefon: p.telefon ?? "",
+            sos_navn: p.sos_navn ?? "",
+            sos_telefon: p.sos_telefon ?? "",
+          }))
+        : [
+            {
+              name: order.navn,
+              email: order.epost,
+              telefon: order.telefon ?? "",
+              sos_navn: order.sos_navn ?? "",
+              sos_telefon: order.sos_telefon ?? "",
+            },
+          ],
   };
 }
 
@@ -219,6 +260,7 @@ function OrderTableRow({
   order,
   isExpanded,
   onToggle,
+  onEdit,
   onDelete,
   isDeleting,
   waitlistPosition,
@@ -226,6 +268,7 @@ function OrderTableRow({
   order: OrderRow;
   isExpanded: boolean;
   onToggle: () => void;
+  onEdit: (order: OrderRow) => void;
   onDelete: (id: string) => void;
   isDeleting: boolean;
   waitlistPosition?: number;
@@ -285,16 +328,29 @@ function OrderTableRow({
         <td className="px-4 py-5">
           <StatusBadge status={order.status} />
         </td>
-        <td className="px-4 py-5" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            disabled={isDeleting}
-            onClick={() => onDelete(order.id)}
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
-            aria-label={`Slett bestilling ${order.navn}`}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden />
-          </button>
+        <td
+          className="px-4 py-5 text-left"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="inline-flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => onEdit(order)}
+              className="rounded-md p-1.5 text-neutral-50 hover:bg-neutral-600/50 hover:text-neutral-100"
+              aria-label={`Rediger bestilling ${order.navn}`}
+            >
+              <Pencil className="h-4 w-4" aria-hidden />
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => onDelete(order.id)}
+              className="rounded-md p-1.5 text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
+              aria-label={`Slett bestilling ${order.navn}`}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
         </td>
       </tr>
       {isExpanded && (
@@ -380,11 +436,13 @@ function OrderTableRow({
 /** Kortvisning for én bestilling – brukes kun på mobil (< md). */
 function OrderCard({
   order,
+  onEdit,
   onDelete,
   isDeleting,
   waitlistPosition,
 }: {
   order: OrderRow;
+  onEdit: (order: OrderRow) => void;
   onDelete: (id: string) => void;
   isDeleting: boolean;
   waitlistPosition?: number;
@@ -435,15 +493,25 @@ function OrderCard({
       <p className="text-sm font-medium text-neutral-200 sm:text-base">
         {order.turTittel}
       </p>
-      <button
-        type="button"
-        disabled={isDeleting}
-        onClick={() => onDelete(order.id)}
-        className="mt-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
-        aria-label={`Slett bestilling ${order.navn}`}
-      >
-        <Trash2 className="h-4 w-4" aria-hidden />
-      </button>
+      <div className="mt-1 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onEdit(order)}
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-50 hover:bg-neutral-600/50 hover:text-neutral-100"
+          aria-label={`Rediger bestilling ${order.navn}`}
+        >
+          <Pencil className="h-4 w-4" aria-hidden />
+        </button>
+        <button
+          type="button"
+          disabled={isDeleting}
+          onClick={() => onDelete(order.id)}
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-neutral-50 hover:bg-red-500/20 hover:text-red-100 disabled:opacity-50"
+          aria-label={`Slett bestilling ${order.navn}`}
+        >
+          <Trash2 className="h-4 w-4" aria-hidden />
+        </button>
+      </div>
     </article>
   );
 }
@@ -466,6 +534,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [manualBookingOpen, setManualBookingOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<OrderRow | null>(null);
 
   const searchTerm = useSearchQuery() || undefined;
 
@@ -559,13 +628,32 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
   };
 
   const handleManualBookingSubmit = useCallback(
-    async (data: Parameters<typeof createBookingFromAdmin>[0]) => {
-      const result = await createBookingFromAdmin(data);
-      if (!result.success) throw new Error(result.error);
-      await fetchBookings(1);
+    async (
+      data: Parameters<typeof createBookingFromAdmin>[0],
+      editId?: string,
+    ) => {
+      if (editId) {
+        const result = await updateBooking(editId, data);
+        if (!result.success) throw new Error(result.error);
+        await fetchBookings(currentPage);
+      } else {
+        const result = await createBookingFromAdmin(data);
+        if (!result.success) throw new Error(result.error);
+        await fetchBookings(1);
+      }
     },
-    [fetchBookings],
+    [fetchBookings, currentPage],
   );
+
+  const openManualBookingModal = useCallback((forEdit: OrderRow | null) => {
+    setEditingBooking(forEdit);
+    setManualBookingOpen(true);
+  }, []);
+
+  const closeManualBookingModal = useCallback(() => {
+    setManualBookingOpen(false);
+    setEditingBooking(null);
+  }, []);
 
   const handleDelete = async (id: string) => {
     // Optimistisk oppdatering: fjern bestillingen lokalt med en gang
@@ -670,7 +758,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
             <Button
               type="button"
               className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#dd7431] px-4 py-3 text-sm font-semibold text-white hover:bg-[#c9682a]"
-              onClick={() => setManualBookingOpen(true)}
+              onClick={() => openManualBookingModal(null)}
             >
               <Plus className="h-4 w-4" aria-hidden />
               LEGG TIL MANUELT
@@ -682,7 +770,10 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
         </section>
         <ManualBookingModal
           open={manualBookingOpen}
-          onClose={() => setManualBookingOpen(false)}
+          onClose={closeManualBookingModal}
+          initialData={
+            editingBooking ? orderRowToInitialData(editingBooking) : null
+          }
           onSubmit={handleManualBookingSubmit}
         />
       </>
@@ -701,7 +792,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
         <Button
           type="button"
           className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#dd7431] px-4 py-3 text-sm font-semibold text-white hover:bg-[#c9682a]"
-          onClick={() => setManualBookingOpen(true)}
+          onClick={() => openManualBookingModal(null)}
         >
           <Plus className="h-4 w-4" aria-hidden />
           LEGG TIL MANUELT
@@ -709,7 +800,10 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
       </div>
       <ManualBookingModal
         open={manualBookingOpen}
-        onClose={() => setManualBookingOpen(false)}
+        onClose={closeManualBookingModal}
+        initialData={
+          editingBooking ? orderRowToInitialData(editingBooking) : null
+        }
         onSubmit={handleManualBookingSubmit}
       />
       {filter === "tours" ? (
@@ -808,6 +902,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
                       <OrderCard
                         key={order.id}
                         order={order}
+                        onEdit={openManualBookingModal}
                         onDelete={setPendingDeleteId}
                         isDeleting={deletingIds.has(order.id)}
                         waitlistPosition={waitlistPosition}
@@ -837,6 +932,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
                                 id === order.id ? null : order.id,
                               )
                             }
+                            onEdit={openManualBookingModal}
                             onDelete={setPendingDeleteId}
                             isDeleting={deletingIds.has(order.id)}
                             waitlistPosition={waitlistPosition}
@@ -867,6 +963,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
               <OrderCard
                 key={order.id}
                 order={order}
+                onEdit={openManualBookingModal}
                 onDelete={setPendingDeleteId}
                 isDeleting={deletingIds.has(order.id)}
               />
@@ -887,6 +984,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
                         id === order.id ? null : order.id,
                       )
                     }
+                    onEdit={openManualBookingModal}
                     onDelete={setPendingDeleteId}
                     isDeleting={deletingIds.has(order.id)}
                   />
