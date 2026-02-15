@@ -133,8 +133,8 @@ export function ManualBookingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="border-border bg-card relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border shadow-lg">
-        <div className="bg-card sticky top-0 z-10 flex items-center justify-between border-b border-neutral-800/80 px-5 py-4">
+      <div className="border-border bg-page-background relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border shadow-lg">
+        <div className="bg-page-background sticky top-0 z-10 flex items-center justify-between border-b border-neutral-800/80 px-5 py-4">
           <h2 className="text-lg font-semibold text-neutral-50">
             Legg til manuell bestilling
           </h2>
@@ -168,7 +168,7 @@ export function ManualBookingModal({
                   value={field.value}
                   onValueChange={(v) => field.onChange(v as BookingType)}
                 >
-                  <SelectTrigger className="w-full border-neutral-600 bg-neutral-800">
+                  <SelectTrigger className="border-border bg-card w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent
@@ -202,7 +202,7 @@ export function ManualBookingModal({
                     value={field.value ?? ""}
                     onValueChange={(v) => field.onChange(v || null)}
                   >
-                    <SelectTrigger className="w-full border-neutral-600 bg-neutral-800">
+                    <SelectTrigger className="border-border bg-card w-full">
                       <SelectValue placeholder="Velg tur" />
                     </SelectTrigger>
                     <SelectContent
@@ -233,7 +233,7 @@ export function ManualBookingModal({
               <Input
                 {...register("navn")}
                 placeholder="Fullt navn"
-                className="border-neutral-600 bg-neutral-800"
+                className="border-border bg-card"
               />
               {errors.navn && (
                 <p className="text-sm text-red-400">{errors.navn.message}</p>
@@ -247,7 +247,7 @@ export function ManualBookingModal({
                 {...register("epost")}
                 type="email"
                 placeholder="epost@eksempel.no"
-                className="border-neutral-600 bg-neutral-800"
+                className="border-border bg-card"
               />
               {errors.epost && (
                 <p className="text-sm text-red-400">{errors.epost.message}</p>
@@ -263,7 +263,7 @@ export function ManualBookingModal({
               {...register("telefon")}
               type="tel"
               placeholder="+47 123 45 678"
-              className="border-neutral-600 bg-neutral-800"
+              className="border-border bg-card"
             />
             {errors.telefon && (
               <p className="text-sm text-red-400">{errors.telefon.message}</p>
@@ -281,7 +281,7 @@ export function ManualBookingModal({
                 render={({ field }) => (
                   <Input
                     type="date"
-                    className="border-neutral-600 bg-neutral-800"
+                    className="border-border bg-card"
                     value={
                       field.value instanceof Date
                         ? field.value.toISOString().slice(0, 10)
@@ -306,7 +306,7 @@ export function ManualBookingModal({
                 type="number"
                 min={0}
                 step={1}
-                className="border-neutral-600 bg-neutral-800"
+                className="border-border bg-card"
               />
               {errors.belop && (
                 <p className="text-sm text-red-400">{errors.belop.message}</p>
@@ -326,7 +326,7 @@ export function ManualBookingModal({
                   value={field.value}
                   onValueChange={(v) => field.onChange(v as BookingStatus)}
                 >
-                  <SelectTrigger className="w-full border-neutral-600 bg-neutral-800">
+                  <SelectTrigger className="border-border bg-card w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent
@@ -355,7 +355,7 @@ export function ManualBookingModal({
               {...register("notater")}
               placeholder="Eventuelle kommentarer (f.eks. betalt kontant)"
               rows={3}
-              className="placeholder:text-muted-foreground w-full resize-y rounded-md border border-neutral-600 bg-neutral-800 px-3 py-2 text-sm"
+              className="placeholder:text-muted-foreground border-border bg-card w-full resize-y rounded-md border px-3 py-2 text-sm"
             />
           </div>
 
@@ -368,7 +368,7 @@ export function ManualBookingModal({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                className="bg-[#c9682a]"
                 onClick={() => append({ ...defaultParticipant })}
               >
                 <Plus className="mr-1 h-4 w-4" />
@@ -379,7 +379,7 @@ export function ManualBookingModal({
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="rounded-lg border border-neutral-600 bg-neutral-800/60 p-4"
+                  className="border-border bg-card rounded-lg border p-4"
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-400">
@@ -407,7 +407,7 @@ export function ManualBookingModal({
                         <Input
                           {...register(`participants.${index}.name`)}
                           placeholder="Fullt navn"
-                          className="h-9 border-neutral-600 bg-neutral-800 text-sm"
+                          className="border-border bg-card h-9 text-sm"
                         />
                         {errors.participants?.[index]?.name && (
                           <p className="text-xs text-red-400">
@@ -423,7 +423,7 @@ export function ManualBookingModal({
                           {...register(`participants.${index}.email`)}
                           type="email"
                           placeholder="epost@eksempel.no"
-                          className="h-9 border-neutral-600 bg-neutral-800 text-sm"
+                          className="border-border bg-card h-9 text-sm"
                         />
                         {errors.participants?.[index]?.email && (
                           <p className="text-xs text-red-400">
@@ -440,7 +440,7 @@ export function ManualBookingModal({
                         {...register(`participants.${index}.telefon`)}
                         type="tel"
                         placeholder="+47 123 45 678"
-                        className="h-9 border-neutral-600 bg-neutral-800 text-sm"
+                        className="border-border bg-card h-9 text-sm"
                       />
                       {errors.participants?.[index]?.telefon && (
                         <p className="text-xs text-red-400">
@@ -460,7 +460,7 @@ export function ManualBookingModal({
                           <Input
                             {...register(`participants.${index}.sos_navn`)}
                             placeholder="Kari Nordmann"
-                            className="h-9 border-neutral-600 bg-neutral-800 text-sm"
+                            className="border-border bg-card h-9 text-sm"
                           />
                           {errors.participants?.[index]?.sos_navn && (
                             <p className="text-xs text-red-400">
@@ -476,7 +476,7 @@ export function ManualBookingModal({
                             {...register(`participants.${index}.sos_telefon`)}
                             type="tel"
                             placeholder="+47 987 65 432"
-                            className="h-9 border-neutral-600 bg-neutral-800 text-sm"
+                            className="border-border bg-card h-9 text-sm"
                           />
                           {errors.participants?.[index]?.sos_telefon && (
                             <p className="text-xs text-red-400">
@@ -498,7 +498,7 @@ export function ManualBookingModal({
             <Button
               type="button"
               variant="outline"
-              className="flex-1 border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+              className="text-primary flex-1 border-orange-500 hover:bg-[#c9682a]"
               onClick={onClose}
             >
               Avbryt
