@@ -238,6 +238,11 @@ export async function createBookingFromAdmin(
       ? data.dato.toISOString().slice(0, 10)
       : new Date(data.dato).toISOString().slice(0, 10);
 
+  const betaltBelop =
+    data.status === "delvis_betalt" && data.betalt_belop != null
+      ? data.betalt_belop
+      : null;
+
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")
     .insert({
@@ -246,6 +251,7 @@ export async function createBookingFromAdmin(
       dato: datoStr,
       status: data.status,
       belop: data.belop,
+      betalt_belop: betaltBelop,
       type: data.type ?? "tur",
       tour_id: data.tour_id ?? null,
       telefon: data.telefon.trim(),

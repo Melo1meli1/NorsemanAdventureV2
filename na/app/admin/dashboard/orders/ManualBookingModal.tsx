@@ -72,6 +72,7 @@ export function ManualBookingModal({
       dato: new Date(),
       status: "ikke_betalt",
       belop: 0,
+      betalt_belop: null,
       notater: null,
       participants: [{ ...defaultParticipant }],
     },
@@ -79,6 +80,11 @@ export function ManualBookingModal({
 
   const type = useWatch({ control, name: "type", defaultValue: "tur" });
   const tourId = useWatch({ control, name: "tour_id", defaultValue: null });
+  const status = useWatch({
+    control,
+    name: "status",
+    defaultValue: "ikke_betalt",
+  });
   const { fields, append, remove } = useFieldArray({
     control,
     name: "participants",
@@ -106,6 +112,10 @@ export function ManualBookingModal({
     const tour = tours.find((t) => t.id === tourId);
     if (tour) setValue("belop", tour.price);
   }, [type, tourId, tours, setValue]);
+
+  useEffect(() => {
+    if (status !== "delvis_betalt") setValue("betalt_belop", null);
+  }, [status, setValue]);
 
   const onSubmit = async (data: AdminBookingFormValues) => {
     setSubmitError(null);
@@ -346,6 +356,27 @@ export function ManualBookingModal({
               )}
             />
           </div>
+
+          {status === "delvis_betalt" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-300">
+                Betalt beløp (kr) <span className="text-red-400">*</span>
+              </label>
+              <Input
+                {...register("betalt_belop", { valueAsNumber: true })}
+                type="number"
+                min={0}
+                step={1}
+                placeholder="0"
+                className="border-border bg-card"
+              />
+              {errors.betalt_belop && (
+                <p className="text-sm text-red-400">
+                  {errors.betalt_belop.message}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-300">

@@ -17,6 +17,7 @@ import {
   getBookingsPage,
   type BookingWithDetails,
 } from "../actions/bookings";
+import { createBookingFromAdmin } from "@/app/public/tours/[id]/bestill/actions";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { OrdersFilterTabs, type OrdersFilterValue } from "./OrdersFilterTabs";
@@ -149,9 +150,9 @@ function mapBookingToOrderRow(booking: BookingWithDetails): OrderRow {
     betaltBelop = booking.belop;
     gjenstaendeBelop = 0;
   } else if (booking.status === "delvis_betalt") {
-    // For delvis betalt, estimer 50% betalt (kan endres senere hvis vi lagrer dette i DB)
-    betaltBelop = Math.round(booking.belop * 0.5);
-    gjenstaendeBelop = booking.belop - betaltBelop;
+    betaltBelop = booking.betalt_belop != null ? booking.betalt_belop : null;
+    gjenstaendeBelop =
+      betaltBelop != null ? booking.belop - betaltBelop : booking.belop;
   } else {
     betaltBelop = null;
     gjenstaendeBelop = booking.belop;
@@ -309,27 +310,28 @@ function OrderTableRow({
                 </p>
               </div>
               <div className="space-y-1">
-                {order.betaltBelop != null &&
-                  order.gjenstaendeBelop != null && (
-                    <div className="mt-2 flex flex-wrap gap-3 rounded-lg border border-neutral-700 bg-neutral-800/50 px-3 py-2 text-sm">
-                      <span>
-                        <span className="font-semibold text-neutral-400">
-                          Betalt:{" "}
-                        </span>
-                        <span className="font-bold text-green-200 tabular-nums">
-                          {formatBelop(order.betaltBelop)}
-                        </span>
+                {(order.betaltBelop != null &&
+                  order.gjenstaendeBelop != null) ||
+                order.status === "delvis_betalt" ? (
+                  <div className="mt-2 flex flex-wrap gap-3 rounded-lg border border-neutral-700 bg-neutral-800/50 px-3 py-2 text-sm">
+                    <span>
+                      <span className="font-semibold text-neutral-400">
+                        Betalt:{" "}
                       </span>
-                      <span>
-                        <span className="font-semibold text-neutral-400">
-                          Gjenstår:{" "}
-                        </span>
-                        <span className="font-bold text-amber-200 tabular-nums">
-                          {formatBelop(order.gjenstaendeBelop)}
-                        </span>
+                      <span className="font-bold text-green-200 tabular-nums">
+                        {formatBelop(order.betaltBelop ?? 0)}
                       </span>
-                    </div>
-                  )}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-neutral-400">
+                        Gjenstår:{" "}
+                      </span>
+                      <span className="font-bold text-amber-200 tabular-nums">
+                        {formatBelop(order.gjenstaendeBelop ?? order.belop)}
+                      </span>
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -479,10 +481,15 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
           filter,
         );
         if (result.success) {
+          const safePage = Math.min(page, Math.max(1, result.totalPages));
+          if (result.totalPages >= 1 && page > result.totalPages) {
+            await fetchBookings(safePage);
+            return;
+          }
           const mappedOrders = result.data.map(mapBookingToOrderRow);
           setOrders(mappedOrders);
           setTotalPages(result.totalPages);
-          setCurrentPage(page);
+          setCurrentPage(safePage);
           setHasLoadedOnce(true);
         } else {
           setError("Kunne ikke hente bestillinger. Prøv igjen senere.");
@@ -551,6 +558,15 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
     fetchBookings(page);
   };
 
+  const handleManualBookingSubmit = useCallback(
+    async (data: Parameters<typeof createBookingFromAdmin>[0]) => {
+      const result = await createBookingFromAdmin(data);
+      if (!result.success) throw new Error(result.error);
+      await fetchBookings(1);
+    },
+    [fetchBookings],
+  );
+
   const handleDelete = async (id: string) => {
     // Optimistisk oppdatering: fjern bestillingen lokalt med en gang
     setDeletingIds((prev) => new Set(prev).add(id));
@@ -560,7 +576,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
       const formData = new FormData();
       formData.append("id", id);
       await deleteBooking(formData);
-      // Ingen eksplisitt fetch her – Supabase Realtime vil trigge en oppdatert fetch
+      await fetchBookings(currentPage);
     } catch (err) {
       console.error("Error deleting booking:", err);
       // Ved feil: hent data på nytt for å resynce UI
@@ -667,6 +683,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
         <ManualBookingModal
           open={manualBookingOpen}
           onClose={() => setManualBookingOpen(false)}
+          onSubmit={handleManualBookingSubmit}
         />
       </>
     );
@@ -693,6 +710,7 @@ export function OrdersView({ isActive = true }: OrdersViewProps) {
       <ManualBookingModal
         open={manualBookingOpen}
         onClose={() => setManualBookingOpen(false)}
+        onSubmit={handleManualBookingSubmit}
       />
       {filter === "tours" ? (
         <div className="space-y-6">

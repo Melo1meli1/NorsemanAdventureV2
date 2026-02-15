@@ -89,6 +89,7 @@ export type Database = {
           dato: string;
           status: Database["public"]["Enums"]["booking_status"];
           belop: number;
+          betalt_belop: number | null;
           type: Database["public"]["Enums"]["booking_type"];
           tour_id: string | null;
           telefon: string;
@@ -102,6 +103,7 @@ export type Database = {
           dato: string;
           status: Database["public"]["Enums"]["booking_status"];
           belop: number;
+          betalt_belop?: number | null;
           type?: Database["public"]["Enums"]["booking_type"];
           tour_id?: string | null;
           telefon: string;
@@ -115,6 +117,7 @@ export type Database = {
           dato?: string;
           status?: Database["public"]["Enums"]["booking_status"];
           belop?: number;
+          betalt_belop?: number | null;
           type?: Database["public"]["Enums"]["booking_type"];
           tour_id?: string | null;
           telefon?: string;
