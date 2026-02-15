@@ -137,12 +137,37 @@ export const bookingRecordSchema = z.object({
       },
     ),
   notater: optionalString.nullable(),
+  betalt_belop: z.coerce
+    .number()
+    .min(0, "Betalt beløp kan ikke være negativt.")
+    .optional()
+    .nullable(),
 });
 
 // Admin-skjema: booking-felter + valgfritt antall deltakere / participants
-export const adminBookingFormSchema = bookingRecordSchema.extend({
-  participants: z.array(ParticipantSchema).optional(),
-});
+export const adminBookingFormSchema = bookingRecordSchema
+  .extend({
+    participants: z.array(ParticipantSchema).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status !== "delvis_betalt") return;
+    const paid = data.betalt_belop;
+    if (paid == null || Number.isNaN(paid)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ved delvis betalt må betalt beløp oppgis.",
+        path: ["betalt_belop"],
+      });
+      return;
+    }
+    if (paid > data.belop) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Betalt beløp kan ikke overstige totalbeløp.",
+        path: ["betalt_belop"],
+      });
+    }
+  });
 
 // --- Eksporterte typer ---
 export type ParticipantInput = z.infer<typeof ParticipantSchema>;

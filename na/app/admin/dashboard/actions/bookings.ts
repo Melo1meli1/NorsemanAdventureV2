@@ -7,6 +7,10 @@ import {
   getRemainingSeatsForTours,
 } from "@/lib/bookingUtils";
 import type { Booking, Participant, Tour } from "@/lib/types";
+import {
+  adminBookingFormSchema,
+  type AdminBookingFormValues,
+} from "@/lib/zod/bookingValidation";
 
 export type BookingWithDetails = Booking & {
   tour: Tour | null;
@@ -54,6 +58,102 @@ export async function deleteBooking(formData: FormData) {
   return {
     success: true as const,
   };
+}
+
+export type UpdateBookingResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export async function updateBooking(
+  id: string,
+  input: AdminBookingFormValues,
+): Promise<UpdateBookingResult> {
+  const parsed = adminBookingFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.flatten().formErrors[0] ?? "Ugyldig skjemadata.",
+    };
+  }
+
+  const data = parsed.data;
+  const participants = (data.participants ?? []).filter((p) =>
+    [p.name, p.email, p.telefon, p.sos_navn, p.sos_telefon].every(
+      (s) => typeof s === "string" && s.trim() !== "",
+    ),
+  );
+
+  const supabase = await createClient();
+
+  const datoStr =
+    data.dato instanceof Date
+      ? data.dato.toISOString().slice(0, 10)
+      : new Date(data.dato).toISOString().slice(0, 10);
+
+  const betaltBelop =
+    data.status === "delvis_betalt" && data.betalt_belop != null
+      ? data.betalt_belop
+      : null;
+
+  const { error: updateError } = await supabase
+    .from("bookings")
+    .update({
+      navn: data.navn.trim(),
+      epost: data.epost.trim(),
+      dato: datoStr,
+      status: data.status,
+      belop: data.belop,
+      betalt_belop: betaltBelop,
+      type: data.type ?? "tur",
+      tour_id: data.tour_id ?? null,
+      telefon: data.telefon.trim(),
+      notater: data.notater ?? null,
+    })
+    .eq("id", id);
+
+  if (updateError) {
+    return {
+      success: false,
+      error: updateError.message ?? "Kunne ikke oppdatere bestilling.",
+    };
+  }
+
+  const { error: deletePartsError } = await supabase
+    .from("participants")
+    .delete()
+    .eq("booking_id", id);
+
+  if (deletePartsError) {
+    return {
+      success: false,
+      error: deletePartsError.message ?? "Kunne ikke oppdatere deltakere.",
+    };
+  }
+
+  if (participants.length > 0) {
+    const participantRows = participants.map((p) => ({
+      booking_id: id,
+      name: p.name.trim(),
+      email: p.email.trim(),
+      telefon: p.telefon.trim(),
+      sos_navn: p.sos_navn.trim(),
+      sos_telefon: p.sos_telefon.trim(),
+    }));
+
+    const { error: insertError } = await supabase
+      .from("participants")
+      .insert(participantRows);
+
+    if (insertError) {
+      return {
+        success: false,
+        error: insertError.message ?? "Kunne ikke lagre deltakere.",
+      };
+    }
+  }
+
+  revalidatePath("/admin/dashboard/orders");
+  return { success: true };
 }
 
 const DEFAULT_PAGE_SIZE = 10;
