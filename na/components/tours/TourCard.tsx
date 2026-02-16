@@ -6,8 +6,8 @@ import {
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
-  getVanskelighetsgradLabel,
 } from "@/lib/tourUtils";
+import { DifficultyBadge } from "./DifficultyBadge";
 import { cn } from "@/lib/utils";
 
 type TourCardProps = {
@@ -87,9 +87,6 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
-  const vanskelighetsgradLabel = getVanskelighetsgradLabel(
-    tour.vanskelighetsgrad,
-  );
 
   return (
     <Link
@@ -126,22 +123,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
                 {terrengLabel}
               </span>
             )}
-            {vanskelighetsgradLabel && (
-              <span
-                className={cn(
-                  "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                  tour.vanskelighetsgrad === "nybegynner" &&
-                    "bg-[hsl(140,40%,40%)] text-white",
-                  tour.vanskelighetsgrad === "intermediær" &&
-                    "bg-[hsl(45,70%,45%)] text-[hsl(220,20%,10%)]",
-                  (tour.vanskelighetsgrad === "erfaren" ||
-                    tour.vanskelighetsgrad === "ekspert") &&
-                    "bg-[hsl(25,70%,40%)] text-white",
-                )}
-              >
-                {vanskelighetsgradLabel}
-              </span>
-            )}
+            <DifficultyBadge vanskelighetsgrad={tour.vanskelighetsgrad} />
           </div>
         </div>
 

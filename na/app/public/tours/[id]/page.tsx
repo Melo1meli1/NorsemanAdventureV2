@@ -13,12 +13,12 @@ import {
 import { createClient } from "@/lib/supabase/supabase-server";
 import { Button } from "@/components/ui/button";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
+import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
 import {
   formatStartDate,
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
-  getVanskelighetsgradLabel,
   getSesongLabel,
   parseHoydepunkter,
 } from "@/lib/tourUtils";
@@ -63,9 +63,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
-  const vanskelighetsgradLabel = getVanskelighetsgradLabel(
-    tour.vanskelighetsgrad,
-  );
   const sesongLabel = getSesongLabel(tour.sesong);
   const hoydepunkterList = parseHoydepunkter(tour.hoydepunkter);
 
@@ -115,11 +112,10 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                 {terrengLabel}
               </span>
             )}
-            {vanskelighetsgradLabel && (
-              <span className="rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
-                {vanskelighetsgradLabel}
-              </span>
-            )}
+            <DifficultyBadge
+              vanskelighetsgrad={tour.vanskelighetsgrad}
+              className="border border-white/30 px-3 py-1 text-sm backdrop-blur-sm"
+            />
           </div>
           <h1 className="text-primary max-w-4xl text-3xl font-bold tracking-tight drop-shadow-sm sm:text-4xl md:text-5xl">
             {tour.title}
@@ -208,7 +204,15 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
           {/* Right: Bestill plass */}
           <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-8">
+            <div className="space-y-4 lg:sticky lg:top-8">
+              {tour.vanskelighetsgrad ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <DifficultyBadge
+                    vanskelighetsgrad={tour.vanskelighetsgrad}
+                    className="px-3 py-1 text-sm"
+                  />
+                </div>
+              ) : null}
               <BookSpotCard
                 price={tour.price}
                 initialSeatsAvailable={initialSeatsAvailable}
