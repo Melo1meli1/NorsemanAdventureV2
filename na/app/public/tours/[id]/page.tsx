@@ -9,6 +9,7 @@ import {
   Snowflake,
   Users,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,30 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3 lg:gap-12 xl:gap-16">
           {/* Left: Om turen + Høydepunkter + icon blocks */}
           <article className="space-y-8 lg:col-span-2 lg:space-y-10 xl:space-y-12">
+            {tour.vanskelighetsgrad === "ekspert" ? (
+              <section
+                className="border-primary bg-primary/5 rounded-xl border-2 p-5 sm:p-6"
+                aria-labelledby="ekspert-info-heading"
+              >
+                <h2
+                  id="ekspert-info-heading"
+                  className="text-foreground mb-3 flex items-center gap-2 text-lg font-bold"
+                >
+                  <AlertTriangle
+                    className="text-primary size-5 shrink-0"
+                    aria-hidden
+                  />
+                  Om ekspertnivå
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  Denne turen er merket som <strong>ekspert</strong> og er
+                  krevende. Du bør ha god erfaring med tilsvarende turer, være i
+                  god fysisk form og forstå at forhold og vær kan endre seg
+                  raskt. Les turbeskrivelsen nøye og vurder om du oppfyller
+                  kravene før du bestiller.
+                </p>
+              </section>
+            ) : null}
             <section aria-labelledby="om-turen-heading">
               <h2
                 id="om-turen-heading"
