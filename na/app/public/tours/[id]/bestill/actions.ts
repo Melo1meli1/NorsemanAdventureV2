@@ -24,9 +24,9 @@ export type CreateBookingFromPublicInput = {
   tourId: string;
   participants: BookingFormValues["participants"];
   belop: number;
-  /** Valgfritt: telefon på booking-nivå (f.eks. hovedbestillers telefon). Hvis ikke oppgitt, brukes første deltakers telefon. */
   telefon?: string;
   notater?: string | null;
+  readExpertInfo?: boolean;
 };
 
 export type CreateBookingFromPublicResult =
@@ -78,6 +78,20 @@ export async function createBookingFromPublic(
         remainingSeats <= 0
           ? "Denne turen er dessverre utsolgt. Du kan sette deg på venteliste."
           : `Det er bare ${remainingSeats} plasser igjen.`,
+    };
+  }
+
+  const { data: tour } = await supabase
+    .from("tours")
+    .select("vanskelighetsgrad")
+    .eq("id", input.tourId)
+    .single();
+
+  if (tour?.vanskelighetsgrad === "ekspert" && input.readExpertInfo !== true) {
+    return {
+      success: false,
+      error:
+        "Du må bekrefte at du har lest informasjonen om ekspertnivå før du kan bestille.",
     };
   }
 
