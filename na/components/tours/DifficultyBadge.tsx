@@ -21,9 +21,9 @@ export function DifficultyBadge({
       ? "bg-[hsl(140,40%,40%)] text-white"
       : vanskelighetsgrad === "intermediær"
         ? "bg-[hsl(45,70%,45%)] text-[hsl(220,20%,10%)]"
-        : (vanskelighetsgrad === "erfaren" ||
-            vanskelighetsgrad === "ekspert") &&
-          "bg-[hsl(25,70%,40%)] text-white";
+        : vanskelighetsgrad === "erfaren"
+          ? "bg-[hsl(25,70%,40%)] text-white"
+          : vanskelighetsgrad === "ekspert" && "bg-[hsl(0,65%,30%)] text-white";
 
   return (
     <span
