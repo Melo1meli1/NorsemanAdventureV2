@@ -60,14 +60,16 @@ export const ParticipantSchema = z.object({
   sos_telefon: phoneSchema,
 });
 
-// --- Booking form (offentlig) – kun deltakere; rest settes av server ---
-export const bookingFormSchema = z
-  .object({
-    participants: z
-      .array(ParticipantSchema)
-      .min(1, "Minst én deltaker må oppgis."),
-  })
-  .superRefine((data, ctx) => {
+// --- Booking form (offentlig) – deltakere + valgfritt ekspert-bekreftelse ---
+const bookingFormSchemaBase = z.object({
+  participants: z
+    .array(ParticipantSchema)
+    .min(1, "Minst én deltaker må oppgis."),
+  readExpertInfo: z.boolean().optional(),
+});
+
+export const bookingFormSchema = bookingFormSchemaBase.superRefine(
+  (data, ctx) => {
     const participants = data.participants;
 
     participants.forEach((participant, i) => {
@@ -97,7 +99,17 @@ export const bookingFormSchema = z
         });
       }
     });
+  },
+);
+
+/** Schema for bestilling når turen er ekspertnivå – krever at bruker har bekreftet at de har lest ekspertinfo. */
+export function getBookingFormSchemaForExpert() {
+  return bookingFormSchema.refine((data) => data.readExpertInfo === true, {
+    message:
+      "Du må bekrefte at du har lest informasjonen om ekspertnivå før du kan bestille.",
+    path: ["readExpertInfo"],
   });
+}
 
 // --- Booking record (admin / server) – navn, epost, dato, status, beløp, type, hva de bestilte ---
 const optionalString = z

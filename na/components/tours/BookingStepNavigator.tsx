@@ -25,6 +25,7 @@ type BookingStepNavigatorProps = {
   tourId: string;
   initialCartItems: BookingCartItem[];
   maxAvailableSeats?: number;
+  isExpertTour?: boolean;
   progressBarClassName?: string;
   className?: string;
 };
@@ -33,6 +34,7 @@ export function BookingStepNavigator({
   tourId,
   initialCartItems,
   maxAvailableSeats,
+  isExpertTour,
   progressBarClassName,
   className,
 }: BookingStepNavigatorProps) {
@@ -78,6 +80,7 @@ export function BookingStepNavigator({
           tourId,
           participants: data.participants,
           belop,
+          readExpertInfo: data.readExpertInfo,
         });
         if (!result.success) {
           toast({
@@ -177,6 +180,7 @@ export function BookingStepNavigator({
             participantCount={participantCount}
             informasjonFormRef={informasjonFormRef}
             onInformasjonValid={onInformasjonValid}
+            isExpertTour={isExpertTour}
             className="min-w-0"
           />
           <div className="flex items-center justify-between gap-2 sm:gap-4">

@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Calendar,
@@ -9,16 +8,16 @@ import {
   Snowflake,
   Users,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { Button } from "@/components/ui/button";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
+import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
 import {
   formatStartDate,
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
-  getVanskelighetsgradLabel,
   getSesongLabel,
   parseHoydepunkter,
 } from "@/lib/tourUtils";
@@ -30,14 +29,8 @@ type Props = {
   searchParams: Promise<{ from?: string }>;
 };
 
-export default async function TourDetailPage({ params, searchParams }: Props) {
+export default async function TourDetailPage({ params }: Props) {
   const { id } = await params;
-  const { from } = await searchParams;
-  const backHref = from === "home" ? "/" : "/turer";
-  const backLabel =
-    from === "home"
-      ? "Tilbake til forsiden"
-      : "Tilbake til oversikt over turer";
   const supabase = await createClient();
   const { data: tour, error } = await supabase
     .from("tours")
@@ -63,9 +56,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
-  const vanskelighetsgradLabel = getVanskelighetsgradLabel(
-    tour.vanskelighetsgrad,
-  );
   const sesongLabel = getSesongLabel(tour.sesong);
   const hoydepunkterList = parseHoydepunkter(tour.hoydepunkter);
 
@@ -87,17 +77,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             aria-hidden
           />
         </div>
-        <div className="absolute top-0 left-0 p-4 sm:p-6 md:p-8">
-          <Button
-            variant="secondary"
-            size="sm"
-            asChild
-            className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg bg-black/50 backdrop-blur-sm"
-            aria-label={backLabel}
-          >
-            <Link href={backHref}>← Tilbake</Link>
-          </Button>
-        </div>
         <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 px-6 py-4 sm:px-10 sm:py-6 md:px-14 md:py-8 lg:px-20 lg:py-10 xl:px-24 xl:py-12">
           <div className="flex flex-wrap gap-2">
             {sesongLabel && (
@@ -115,11 +94,10 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                 {terrengLabel}
               </span>
             )}
-            {vanskelighetsgradLabel && (
-              <span className="rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
-                {vanskelighetsgradLabel}
-              </span>
-            )}
+            <DifficultyBadge
+              vanskelighetsgrad={tour.vanskelighetsgrad}
+              className="px-3 py-1 text-sm backdrop-blur-sm"
+            />
           </div>
           <h1 className="text-primary max-w-4xl text-3xl font-bold tracking-tight drop-shadow-sm sm:text-4xl md:text-5xl">
             {tour.title}
@@ -208,13 +186,45 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
 
           {/* Right: Bestill plass */}
           <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-8">
+            <div className="space-y-4 lg:sticky lg:top-8">
+              {tour.vanskelighetsgrad ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <DifficultyBadge
+                    vanskelighetsgrad={tour.vanskelighetsgrad}
+                    className="px-3 py-1 text-sm"
+                  />
+                </div>
+              ) : null}
               <BookSpotCard
                 price={tour.price}
                 initialSeatsAvailable={initialSeatsAvailable}
                 totalSeats={totalSeats}
                 tourId={id}
               />
+              {tour.vanskelighetsgrad === "ekspert" ? (
+                <section
+                  className="border-primary bg-primary/5 rounded-xl border-2 p-5 sm:p-6"
+                  aria-labelledby="ekspert-info-heading"
+                >
+                  <h2
+                    id="ekspert-info-heading"
+                    className="text-foreground mb-3 flex items-center gap-2 text-lg font-bold"
+                  >
+                    <AlertTriangle
+                      className="text-primary size-5 shrink-0"
+                      aria-hidden
+                    />
+                    Om ekspertnivå
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Denne turen er merket som <strong>ekspert</strong> og er
+                    krevende. Du bør ha god erfaring med tilsvarende turer, være
+                    i god fysisk form og forstå at forhold og vær kan endre seg
+                    raskt. Les turbeskrivelsen nøye og vurder om du oppfyller
+                    kravene før du bestiller.
+                  </p>
+                </section>
+              ) : null}
             </div>
           </div>
         </div>
