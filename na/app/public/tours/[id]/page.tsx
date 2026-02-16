@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Calendar,
@@ -12,7 +11,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { Button } from "@/components/ui/button";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
 import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
 import {
@@ -31,14 +29,8 @@ type Props = {
   searchParams: Promise<{ from?: string }>;
 };
 
-export default async function TourDetailPage({ params, searchParams }: Props) {
+export default async function TourDetailPage({ params }: Props) {
   const { id } = await params;
-  const { from } = await searchParams;
-  const backHref = from === "home" ? "/" : "/turer";
-  const backLabel =
-    from === "home"
-      ? "Tilbake til forsiden"
-      : "Tilbake til oversikt over turer";
   const supabase = await createClient();
   const { data: tour, error } = await supabase
     .from("tours")
@@ -84,17 +76,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             className="to-background absolute inset-0 bg-linear-to-b from-transparent via-transparent"
             aria-hidden
           />
-        </div>
-        <div className="absolute top-0 left-0 p-4 sm:p-6 md:p-8">
-          <Button
-            variant="secondary"
-            size="sm"
-            asChild
-            className="border-primary text-foreground hover:border-primary hover:bg-primary/20 rounded-lg bg-black/50 backdrop-blur-sm"
-            aria-label={backLabel}
-          >
-            <Link href={backHref}>← Tilbake</Link>
-          </Button>
         </div>
         <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 px-6 py-4 sm:px-10 sm:py-6 md:px-14 md:py-8 lg:px-20 lg:py-10 xl:px-24 xl:py-12">
           <div className="flex flex-wrap gap-2">
