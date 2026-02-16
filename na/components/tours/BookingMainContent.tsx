@@ -18,12 +18,10 @@ type BookingMainContentProps = {
   currentStep: BookingStepId;
   cartItems: BookingCartItem[];
   onQuantityChange: (tourId: string, delta: number) => void;
-  /** Antall deltakere (sum av quantity i cart). Brukes på informasjon-steget. */
   participantCount?: number;
-  /** Ref til deltaker-skjemaet; brukes for å trigge submit fra «Neste». */
   informasjonFormRef?: React.RefObject<ParticipantBookingFormRef | null>;
-  /** Kalles når deltaker-skjemaet er gyldig og bruker trykker Neste. */
   onInformasjonValid?: (data: BookingFormValues) => void;
+  isExpertTour?: boolean;
   className?: string;
 };
 
@@ -34,6 +32,7 @@ export function BookingMainContent({
   participantCount = 0,
   informasjonFormRef,
   onInformasjonValid,
+  isExpertTour,
   className,
 }: BookingMainContentProps) {
   if (currentStep === "handlekurv") {
@@ -127,6 +126,7 @@ export function BookingMainContent({
           ref={informasjonFormRef ?? undefined}
           participantCount={count}
           onValid={onInformasjonValid}
+          isExpertTour={isExpertTour}
           className="min-w-0"
         />
       </div>

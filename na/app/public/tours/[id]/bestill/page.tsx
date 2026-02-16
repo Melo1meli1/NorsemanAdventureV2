@@ -36,6 +36,7 @@ export default async function TourBookPage({ params }: Props) {
           tourId={id}
           initialCartItems={initialCartItems}
           maxAvailableSeats={tour.seats_available}
+          isExpertTour={tour.vanskelighetsgrad === "ekspert"}
           progressBarClassName="w-full max-w-md"
         />
       </div>
