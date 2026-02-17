@@ -16,8 +16,7 @@ export function isAllowedAdminResetEmail(email: string): boolean {
 }
 
 /**
- * Eksponeres kun for eventuell logging/debug,
- * ikke bruk dette til å vise liste i UI.
+ * Eksponeres kun for eventuell logging/debug
  */
 export function getAllowedAdminResetEmails(): string[] {
   return Array.from(allowedEmailsSet);
