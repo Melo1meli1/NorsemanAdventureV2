@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { loginAction } from "./actions";
-
 export default function AdminLoginForm() {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +182,7 @@ export default function AdminLoginForm() {
           <div className="flex justify-end">
             <button
               type="button"
+              onClick={() => router.push("/admin/login/forgot-password")}
               className="text-xs font-medium text-neutral-400 underline-offset-2 hover:text-neutral-200 hover:underline"
             >
               Glemt passord?
