@@ -185,6 +185,9 @@ export function AdminForgotPasswordForm() {
               Vil du tilbakestille passordet for{" "}
               <span className="font-semibold text-white">{email}</span>?
             </p>
+            {fieldErrors.email && (
+              <p className="text-xs text-red-400">{fieldErrors.email}</p>
+            )}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
