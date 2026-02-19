@@ -31,9 +31,7 @@ export type ManualBookingInitialData = {
 type ManualBookingModalProps = {
   open: boolean;
   onClose: () => void;
-  /** Ved redigering: forhåndsutfylte verdier + booking-id */
   initialData?: ManualBookingInitialData | null;
-  /** (data, editId) – editId satt ved redigering */
   onSubmit?: (
     data: AdminBookingFormValues,
     editId?: string,
@@ -152,7 +150,7 @@ export function ManualBookingModal({
       if (initialData) reset(toFormValues(initialData));
       else reset(emptyDefaultValues);
     }
-  }, [open, reset]);
+  }, [open, reset, initialData]);
 
   useEffect(() => {
     if (type !== "tur") {

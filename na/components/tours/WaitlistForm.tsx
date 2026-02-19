@@ -42,10 +42,14 @@ export function WaitlistForm({
         return;
       }
 
+      const positionText =
+        result.position > 0
+          ? `Du er nummer ${result.position} i køen.`
+          : "Du er satt på venteliste.";
+
       toast({
         title: "Du er satt på venteliste",
-        description:
-          "Vi kontakter deg på e-post dersom det blir ledig plass på turen.",
+        description: `${positionText} Vi kontakter deg på e-post dersom det blir ledig plass på turen.`,
       });
 
       onSuccess?.({ name, email });

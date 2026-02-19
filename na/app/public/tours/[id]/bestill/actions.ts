@@ -11,7 +11,10 @@ import {
   type WaitlistInput,
 } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
-import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
+import {
+  getRemainingSeatsForTour,
+  getWaitlistForTour,
+} from "@/lib/bookingUtils";
 
 /**
  * Server Actions for booking (offentlig + admin).
@@ -167,7 +170,7 @@ export async function createBookingFromPublic(
 export type JoinWaitlistInput = WaitlistInput;
 
 export type JoinWaitlistResult =
-  | { success: true }
+  | { success: true; position: number }
   | { success: false; error: string };
 
 /**
@@ -195,28 +198,46 @@ export async function joinWaitlistFromPublic(
   const status: BookingStatus = "venteliste";
   const type: BookingType = "tur";
 
-  const { error: bookingError } = await supabase.from("bookings").insert({
-    navn: name.trim(),
-    epost: email.trim(),
-    dato,
-    status,
-    belop: 0,
-    type,
-    tour_id: tourId,
-    telefon: "", // Empty string for waitlist since telefon is not collected
-    notater: "Venteliste (offentlig registrering)",
-  });
+  const { data: newBooking, error: bookingError } = await supabase
+    .from("bookings")
+    .insert({
+      navn: name.trim(),
+      epost: email.trim(),
+      dato,
+      status,
+      belop: 0,
+      type,
+      tour_id: tourId,
+      telefon: "", // Empty string for waitlist since telefon is not collected
+      notater: "Venteliste (offentlig registrering)",
+    })
+    .select("id")
+    .single();
 
-  if (bookingError) {
+  if (bookingError || !newBooking) {
     return {
       success: false,
       error:
-        bookingError.message ??
+        bookingError?.message ??
         "Kunne ikke registrere deg på venteliste. Prøv igjen senere.",
     };
   }
 
-  return { success: true };
+  // Hent ventelisten for å beregne posisjon
+  const waitlistResult = await getWaitlistForTour(supabase, tourId);
+  if (!waitlistResult.success) {
+    // Hvis vi ikke kan hente ventelisten, returner suksess uten posisjon
+    // (dette er ikke kritisk for funksjonaliteten)
+    return { success: true, position: 0 };
+  }
+
+  // Finn posisjonen til den nye bookingen i ventelisten
+  const positionIndex = waitlistResult.bookings.findIndex(
+    (booking) => booking.id === newBooking.id,
+  );
+  const position = positionIndex >= 0 ? positionIndex + 1 : 0;
+
+  return { success: true, position };
 }
 
 // --- Admin: manuell bestilling ---
