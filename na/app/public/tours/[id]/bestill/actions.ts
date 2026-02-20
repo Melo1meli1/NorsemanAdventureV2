@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
+import { sendEmail } from "@/lib/mail";
 import {
   adminBookingFormSchema,
   bookingFormSchema,
@@ -11,7 +12,10 @@ import {
   type WaitlistInput,
 } from "@/lib/zod/bookingValidation";
 import type { BookingStatus, BookingType } from "@/lib/types";
-import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
+import {
+  getRemainingSeatsForTour,
+  getWaitlistForTour,
+} from "@/lib/bookingUtils";
 
 /**
  * Server Actions for booking (offentlig + admin).
@@ -159,7 +163,7 @@ export async function createBookingFromPublic(
   }
 
   // Mangler LETSREG_BASE_URL (f.eks. på Vercel uten env): bruk betalingssimulator
-  redirect(`/turer/orders/payment/simulator?ref=${ref}`);
+  redirect(`/public/tours/orders/payment/simulator?ref=${ref}`);
 }
 
 // --- Venteliste (offentlig) ---
@@ -167,7 +171,7 @@ export async function createBookingFromPublic(
 export type JoinWaitlistInput = WaitlistInput;
 
 export type JoinWaitlistResult =
-  | { success: true }
+  | { success: true; position: number }
   | { success: false; error: string };
 
 /**
@@ -191,32 +195,91 @@ export async function joinWaitlistFromPublic(
 
   const supabase = await createClient();
 
+  const { data: tour, error: tourError } = await supabase
+    .from("tours")
+    .select("title")
+    .eq("id", tourId)
+    .eq("status", "published")
+    .single();
+
+  if (tourError || !tour) {
+    return {
+      success: false,
+      error: "Kunne ikke finne turen. Vennligst prøv igjen senere.",
+    };
+  }
+
   const dato = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const status: BookingStatus = "venteliste";
   const type: BookingType = "tur";
 
-  const { error: bookingError } = await supabase.from("bookings").insert({
-    navn: name.trim(),
-    epost: email.trim(),
-    dato,
-    status,
-    belop: 0,
-    type,
-    tour_id: tourId,
-    telefon: "", // Empty string for waitlist since telefon is not collected
-    notater: "Venteliste (offentlig registrering)",
-  });
+  const { data: booking, error: bookingError } = await supabase
+    .from("bookings")
+    .insert({
+      navn: name.trim(),
+      epost: email.trim(),
+      dato,
+      status,
+      belop: 0,
+      type,
+      tour_id: tourId,
+      telefon: "", // Empty string for waitlist since telefon is not collected
+      notater: "Venteliste (offentlig registrering)",
+    })
+    .select("id")
+    .single();
 
-  if (bookingError) {
+  if (bookingError || !booking) {
     return {
       success: false,
       error:
         bookingError.message ??
-        "Kunne ikke registrere deg på venteliste. Prøv igjen senere.",
+        "Kunne ikke legge deg til på ventelisten. Vennligst prøv igjen senere.",
     };
   }
 
-  return { success: true };
+  const waitlist = await getWaitlistForTour(supabase, tourId);
+  if (!waitlist.success) {
+    return { success: false, error: waitlist.error };
+  }
+
+  const index = waitlist.bookings.findIndex((b) => b.id === booking.id);
+  const position = index >= 0 ? index + 1 : waitlist.bookings.length;
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const bookingUrl = baseUrl
+    ? `${baseUrl}/public/tours/${tourId}/bestill`
+    : null;
+
+  if (bookingUrl) {
+    const joinedSubject = `Bekreftelse på venteliste: ${tour.title}`;
+    const joinedHtml = `
+      <p>Hei ${name.trim()},</p>
+      <p>Du er nå lagt til på ventelisten for <strong>${tour.title}</strong>.</p>
+      <p>Din plass i køen er <strong>#${position}</strong>.</p>
+      <p>Vi sender deg e-post når du er først i køen.</p>
+      <p><a href="${bookingUrl}">Gå til bestillingssiden</a></p>
+    `;
+
+    try {
+      await sendEmail(email.trim(), joinedSubject, joinedHtml);
+
+      if (position === 1) {
+        const firstSubject = `Du er først i køen: ${tour.title}`;
+        const firstHtml = `
+          <p>Hei ${name.trim()},</p>
+          <p>Du er nå <strong>først i køen</strong> for <strong>${tour.title}</strong>.</p>
+          <p>Du kan bestille manuelt her:</p>
+          <p><a href="${bookingUrl}">Gå til bestillingssiden</a></p>
+        `;
+        await sendEmail(email.trim(), firstSubject, firstHtml);
+      }
+    } catch {
+      // Do not fail waitlist join if email sending fails.
+    }
+  }
+
+  return { success: true, position };
 }
 
 // --- Admin: manuell bestilling ---
