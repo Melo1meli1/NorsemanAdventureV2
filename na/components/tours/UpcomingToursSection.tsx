@@ -34,7 +34,7 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-8 py-3 text-base font-medium"
               >
-                <Link href="/turer">SE ALLE TURER →</Link>
+                <Link href="/public/tours">SE ALLE TURER →</Link>
               </Button>
             </div>
           </>

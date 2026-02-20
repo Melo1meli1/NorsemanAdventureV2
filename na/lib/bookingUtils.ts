@@ -41,11 +41,30 @@ export async function getRemainingSeatsForTour(
     .eq("tour_id", tourId)
     .in("status", ["betalt", "delvis_betalt"]);
 
+  const { count: activeReservationsCount, error: reservationsError } =
+    await supabase
+      .from("bookings")
+      .select("id", { head: true, count: "exact" })
+      .eq("tour_id", tourId)
+      .eq("status", "ikke_betalt")
+      .gt("reservation_expires_at", new Date().toISOString());
+
   if (bookingsError) {
     console.error("Error fetching bookings for availability", bookingsError);
     return {
       success: false,
       error: "Kunne ikke hente bookinginformasjon. Prøv igjen senere.",
+    };
+  }
+
+  if (reservationsError) {
+    console.error(
+      "Error fetching reservations for availability",
+      reservationsError,
+    );
+    return {
+      success: false,
+      error: "Kunne ikke hente reservasjoner. Prøv igjen senere.",
     };
   }
 
@@ -56,11 +75,13 @@ export async function getRemainingSeatsForTour(
         ? (tour as { seats_available: number }).seats_available
         : totalSeats;
 
+    const reserved = activeReservationsCount ?? 0;
+
     return {
       success: true,
       totalSeats,
       confirmedSeats: 0,
-      remainingSeats,
+      remainingSeats: Math.max(0, remainingSeats - reserved),
     };
   }
 
@@ -83,7 +104,11 @@ export async function getRemainingSeatsForTour(
   }
 
   const confirmedSeats = participantsCount ?? 0;
-  const remainingSeats = Math.max(0, tour.total_seats - confirmedSeats);
+  const reservedSeats = activeReservationsCount ?? 0;
+  const remainingSeats = Math.max(
+    0,
+    tour.total_seats - confirmedSeats - reservedSeats,
+  );
 
   return {
     success: true,
@@ -121,6 +146,13 @@ export async function getRemainingSeatsForTours(
     .in("tour_id", uniqueIds)
     .in("status", ["betalt", "delvis_betalt"]);
 
+  const { data: activeReservations, error: reservationsError } = await supabase
+    .from("bookings")
+    .select("tour_id")
+    .in("tour_id", uniqueIds)
+    .eq("status", "ikke_betalt")
+    .gt("reservation_expires_at", new Date().toISOString());
+
   if (bookingsError || !confirmedBookings?.length) {
     tours.forEach((t) =>
       result.set(
@@ -131,6 +163,20 @@ export async function getRemainingSeatsForTours(
         ),
       ),
     );
+
+    if (!reservationsError && activeReservations?.length) {
+      const reservedByTourId = new Map<string, number>();
+      for (const r of activeReservations) {
+        const tid = (r as { tour_id: string }).tour_id;
+        reservedByTourId.set(tid, (reservedByTourId.get(tid) ?? 0) + 1);
+      }
+      for (const t of tours) {
+        const current = result.get(t.id) ?? 0;
+        const reserved = reservedByTourId.get(t.id) ?? 0;
+        result.set(t.id, Math.max(0, current - reserved));
+      }
+    }
+
     return result;
   }
 
@@ -155,10 +201,19 @@ export async function getRemainingSeatsForTours(
     confirmedByTourId.set(tid, (confirmedByTourId.get(tid) ?? 0) + count);
   }
 
+  const reservedByTourId = new Map<string, number>();
+  if (!reservationsError && activeReservations?.length) {
+    for (const r of activeReservations) {
+      const tid = (r as { tour_id: string }).tour_id;
+      reservedByTourId.set(tid, (reservedByTourId.get(tid) ?? 0) + 1);
+    }
+  }
+
   for (const t of tours) {
     const total = t.total_seats;
     const confirmed = confirmedByTourId.get(t.id) ?? 0;
-    result.set(t.id, Math.max(0, total - confirmed));
+    const reserved = reservedByTourId.get(t.id) ?? 0;
+    result.set(t.id, Math.max(0, total - confirmed - reserved));
   }
   uniqueIds.forEach((id) => {
     if (!result.has(id)) result.set(id, 0);

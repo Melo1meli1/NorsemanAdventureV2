@@ -83,7 +83,9 @@ function UsersIcon({ className }: { className?: string }) {
 
 export function TourCard({ tour, className, fromPage }: TourCardProps) {
   const detailHref =
-    fromPage === "home" ? `/turer/${tour.id}?from=home` : `/turer/${tour.id}`;
+    fromPage === "home"
+      ? `/public/tours/${tour.id}?from=home`
+      : `/public/tours/${tour.id}`;
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);

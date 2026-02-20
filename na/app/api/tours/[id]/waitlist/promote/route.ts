@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/supabase-server";
-import {
-  getFirstWaitlistEntryForTour,
-  getRemainingSeatsForTour,
-} from "@/lib/bookingUtils";
+import { promoteWaitlistOnceForTour } from "@/lib/waitlist/promoteWaitlist";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -14,78 +11,39 @@ export async function POST(_request: Request, context: RouteContext) {
 
   const supabase = await createClient();
 
-  // Sjekk om det finnes ledige plasser.
-  const availability = await getRemainingSeatsForTour(supabase, id);
-  if (!availability.success) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? null;
+  const result = await promoteWaitlistOnceForTour({
+    supabase,
+    tourId: id,
+    siteUrl,
+  });
+
+  if (!result.promoted) {
+    if (result.reason === "no_remaining_seats") {
+      return NextResponse.json(
+        { promoted: false, reason: "Ingen ledige plasser på turen." },
+        { status: 200 },
+      );
+    }
+
+    if (result.reason === "no_waitlist") {
+      return NextResponse.json(
+        { promoted: false, reason: "Ingen på ventelisten for denne turen." },
+        { status: 200 },
+      );
+    }
+
     return NextResponse.json(
-      { promoted: false, error: availability.error },
+      { promoted: false, error: result.error ?? "Kunne ikke promotere." },
       { status: 400 },
     );
-  }
-
-  if (availability.remainingSeats <= 0) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        reason: "Ingen ledige plasser på turen.",
-      },
-      { status: 200 },
-    );
-  }
-
-  // Finn første i venteliste-køen for turen.
-  const firstResult = await getFirstWaitlistEntryForTour(supabase, id);
-  if (!firstResult.success) {
-    return NextResponse.json(
-      { promoted: false, error: firstResult.error },
-      { status: 400 },
-    );
-  }
-
-  const booking = firstResult.booking;
-  if (!booking) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        reason: "Ingen på ventelisten for denne turen.",
-      },
-      { status: 200 },
-    );
-  }
-
-  // Oppdater status fra venteliste til ikke_betalt (klar til videre prosess).
-  const { error: updateError } = await supabase
-    .from("bookings")
-    .update({ status: "ikke_betalt" })
-    .eq("id", booking.id);
-
-  if (updateError) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        error:
-          updateError.message ??
-          "Kunne ikke flytte bruker fra venteliste til aktiv plass.",
-      },
-      { status: 500 },
-    );
-  }
-
-  // Re-beregn availability og oppdater seats_available slik som i webhooken.
-  const updatedAvailability = await getRemainingSeatsForTour(supabase, id);
-  if (updatedAvailability.success) {
-    await supabase
-      .from("tours")
-      .update({ seats_available: updatedAvailability.remainingSeats })
-      .eq("id", id);
   }
 
   return NextResponse.json(
     {
       promoted: true,
-      bookingId: booking.id,
-      navn: booking.navn,
-      epost: booking.epost,
+      bookingId: result.promotedBookingId,
+      notifiedNewFirst: result.notifiedNewFirst,
     },
     { status: 200 },
   );
