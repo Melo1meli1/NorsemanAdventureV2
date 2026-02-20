@@ -193,7 +193,10 @@ export const waitlistSchema = z.object({
   name: z
     .string({ message: "Navn er påkrevd." })
     .trim()
-    .min(1, "Navn er påkrevd."),
+    .min(1, "Navn er påkrevd.")
+    .refine(hasAtLeastTwoWords, {
+      message: "Skriv fullt navn (fornavn og etternavn).",
+    }),
   email: z
     .string({ message: "E-post er påkrevd." })
     .trim()

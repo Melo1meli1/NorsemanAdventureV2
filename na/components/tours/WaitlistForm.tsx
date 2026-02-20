@@ -23,8 +23,19 @@ export function WaitlistForm({
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
+  const isFullName = name.trim().split(/\s+/).filter(Boolean).length >= 2;
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!isFullName) {
+      toast({
+        variant: "destructive",
+        title: "Skriv fullt navn",
+        description: "Oppgi fornavn og etternavn.",
+      });
+      return;
+    }
 
     startTransition(async () => {
       const result = await joinWaitlistFromPublic({
@@ -66,13 +77,15 @@ export function WaitlistForm({
       <div className="text-muted-foreground flex items-center gap-2 text-xs">
         <Clock className="size-4" aria-hidden />
         <span>
-          Turen er utsolgt. Fyll inn navn og e-post for å sette deg på
+          Turen er utsolgt. Fyll inn fullt navn og e-post for å sette deg på
           venteliste (1 plass).
         </span>
       </div>
       <div className="grid gap-2 text-sm">
         <label className="flex flex-col gap-1">
-          <span className="text-foreground text-xs font-medium">Navn *</span>
+          <span className="text-foreground text-xs font-medium">
+            Fullt navn *
+          </span>
           <input
             type="text"
             value={name}
