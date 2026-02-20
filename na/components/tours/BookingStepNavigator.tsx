@@ -192,7 +192,7 @@ export function BookingStepNavigator({
                 asChild
                 aria-label="Tilbake til turen"
               >
-                <Link href={`/turer/${tourId}`}>
+                <Link href={`/public/tours/${tourId}`}>
                   <ArrowLeft className="size-5" aria-hidden />
                   Tilbake
                 </Link>
