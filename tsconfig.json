@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["na/*"]
+    }
+  },
+  "include": ["na/**/*.ts", "na/**/*.tsx", "na/**/*.mts", "na/next-env.d.ts"],
+  "exclude": ["node_modules"]
+}
