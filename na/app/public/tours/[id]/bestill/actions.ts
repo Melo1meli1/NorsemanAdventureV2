@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { sendEmail } from "@/lib/mail";
 import {
+  buildFirstInLineEmail,
+  buildWaitlistConfirmationEmail,
+} from "@/lib/norsemanEmailTemplates";
+import {
   adminBookingFormSchema,
   bookingFormSchema,
   waitlistSchema,
@@ -252,26 +256,26 @@ export async function joinWaitlistFromPublic(
     : null;
 
   if (bookingUrl) {
-    const joinedSubject = `Bekreftelse på venteliste: ${tour.title}`;
-    const joinedHtml = `
-      <p>Hei ${name.trim()},</p>
-      <p>Du er nå lagt til på ventelisten for <strong>${tour.title}</strong>.</p>
-      <p>Din plass i køen er <strong>#${position}</strong>.</p>
-      <p>Vi sender deg e-post når du er først i køen.</p>
-      <p><a href="${bookingUrl}">Gå til bestillingssiden</a></p>
-    `;
+    const { subject: joinedSubject, html: joinedHtml } =
+      buildWaitlistConfirmationEmail({
+        siteUrl: baseUrl,
+        name,
+        tourTitle: tour.title,
+        position,
+        bookingUrl,
+      });
 
     try {
       await sendEmail(email.trim(), joinedSubject, joinedHtml);
 
       if (position === 1) {
-        const firstSubject = `Du er først i køen: ${tour.title}`;
-        const firstHtml = `
-          <p>Hei ${name.trim()},</p>
-          <p>Du er nå <strong>først i køen</strong> for <strong>${tour.title}</strong>.</p>
-          <p>Du kan bestille manuelt her:</p>
-          <p><a href="${bookingUrl}">Gå til bestillingssiden</a></p>
-        `;
+        const { subject: firstSubject, html: firstHtml } =
+          buildFirstInLineEmail({
+            siteUrl: baseUrl,
+            name,
+            tourTitle: tour.title,
+            bookingUrl,
+          });
         await sendEmail(email.trim(), firstSubject, firstHtml);
       }
     } catch {

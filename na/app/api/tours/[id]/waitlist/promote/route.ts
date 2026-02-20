@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { sendEmail } from "@/lib/mail";
+import { buildFirstInLineEmail } from "@/lib/norsemanEmailTemplates";
 import {
   getFirstWaitlistEntryForTour,
   getRemainingSeatsForTour,
@@ -92,13 +93,12 @@ export async function POST(_request: Request, context: RouteContext) {
   const bookingUrl = baseUrl ? `${baseUrl}/public/tours/${id}/bestill` : null;
 
   if (nextFirst.success && nextFirst.booking && tour?.title && bookingUrl) {
-    const subject = `Du er først i køen: ${tour.title}`;
-    const html = `
-      <p>Hei ${nextFirst.booking.navn},</p>
-      <p>Du er nå <strong>først i køen</strong> for <strong>${tour.title}</strong>.</p>
-      <p>Du kan bestille manuelt her:</p>
-      <p><a href="${bookingUrl}">Gå til bestillingssiden</a></p>
-    `;
+    const { subject, html } = buildFirstInLineEmail({
+      siteUrl: baseUrl,
+      name: nextFirst.booking.navn,
+      tourTitle: tour.title,
+      bookingUrl,
+    });
 
     try {
       await sendEmail(nextFirst.booking.epost, subject, html);
