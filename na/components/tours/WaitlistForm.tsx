@@ -44,8 +44,7 @@ export function WaitlistForm({
 
       toast({
         title: "Du er satt på venteliste",
-        description:
-          "Vi kontakter deg på e-post dersom det blir ledig plass på turen.",
+        description: `Din plass i køen er #${result.position}. Vi sender deg e-post hvis det blir en ledig plass.`,
       });
 
       onSuccess?.({ name, email });

@@ -1,14 +1,15 @@
-// na/lib/mail.ts
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const SENDER_EMAIL = "no-reply@norsemanadventure.no";
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("Resend API key mangler, logger e-post:", { to, subject });
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log("Resend API key is missing; skipping email:", { to, subject });
     return;
   }
+
+  const resend = new Resend(apiKey);
 
   try {
     await resend.emails.send({
@@ -18,6 +19,6 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
       html,
     });
   } catch (error) {
-    console.error("Feil ved sending av e-post:", error);
+    console.error("Failed to send email:", error);
   }
 };
