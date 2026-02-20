@@ -94,6 +94,8 @@ export type Database = {
           tour_id: string | null;
           telefon: string;
           notater: string | null;
+          reservation_expires_at: string | null;
+          reservation_notified_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -108,6 +110,8 @@ export type Database = {
           tour_id?: string | null;
           telefon: string;
           notater?: string | null;
+          reservation_expires_at?: string | null;
+          reservation_notified_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -122,6 +126,8 @@ export type Database = {
           tour_id?: string | null;
           telefon?: string;
           notater?: string | null;
+          reservation_expires_at?: string | null;
+          reservation_notified_at?: string | null;
           created_at?: string;
         };
         Relationships: [

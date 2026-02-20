@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { sendEmail } from "@/lib/mail";
-import { buildFirstInLineEmail } from "@/lib/norsemanEmailTemplates";
-import {
-  getFirstWaitlistEntryForTour,
-  getRemainingSeatsForTour,
-} from "@/lib/bookingUtils";
+import { promoteWaitlistOnceForTour } from "@/lib/waitlist/promoteWaitlist";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -16,103 +11,39 @@ export async function POST(_request: Request, context: RouteContext) {
 
   const supabase = await createClient();
 
-  // Sjekk om det finnes ledige plasser.
-  const availability = await getRemainingSeatsForTour(supabase, id);
-  if (!availability.success) {
-    return NextResponse.json(
-      { promoted: false, error: availability.error },
-      { status: 400 },
-    );
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? null;
+  const result = await promoteWaitlistOnceForTour({
+    supabase,
+    tourId: id,
+    siteUrl,
+  });
 
-  if (availability.remainingSeats <= 0) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        reason: "Ingen ledige plasser på turen.",
-      },
-      { status: 200 },
-    );
-  }
-
-  // Finn første i venteliste-køen for turen.
-  const firstResult = await getFirstWaitlistEntryForTour(supabase, id);
-  if (!firstResult.success) {
-    return NextResponse.json(
-      { promoted: false, error: firstResult.error },
-      { status: 400 },
-    );
-  }
-
-  const booking = firstResult.booking;
-  if (!booking) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        reason: "Ingen på ventelisten for denne turen.",
-      },
-      { status: 200 },
-    );
-  }
-
-  const { data: tour } = await supabase
-    .from("tours")
-    .select("title")
-    .eq("id", id)
-    .single();
-
-  // Oppdater status fra venteliste til ikke_betalt (klar til videre prosess).
-  const { error: updateError } = await supabase
-    .from("bookings")
-    .update({ status: "ikke_betalt" })
-    .eq("id", booking.id);
-
-  if (updateError) {
-    return NextResponse.json(
-      {
-        promoted: false,
-        error:
-          updateError.message ??
-          "Kunne ikke flytte bruker fra venteliste til aktiv plass.",
-      },
-      { status: 500 },
-    );
-  }
-
-  // Re-beregn availability og oppdater seats_available slik som i webhooken.
-  const updatedAvailability = await getRemainingSeatsForTour(supabase, id);
-  if (updatedAvailability.success) {
-    await supabase
-      .from("tours")
-      .update({ seats_available: updatedAvailability.remainingSeats })
-      .eq("id", id);
-  }
-
-  const nextFirst = await getFirstWaitlistEntryForTour(supabase, id);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const bookingUrl = baseUrl ? `${baseUrl}/public/tours/${id}/bestill` : null;
-
-  if (nextFirst.success && nextFirst.booking && tour?.title && bookingUrl) {
-    const { subject, html } = buildFirstInLineEmail({
-      siteUrl: baseUrl,
-      name: nextFirst.booking.navn,
-      tourTitle: tour.title,
-      bookingUrl,
-    });
-
-    try {
-      await sendEmail(nextFirst.booking.epost, subject, html);
-    } catch {
-      // Do not fail promote if email sending fails.
+  if (!result.promoted) {
+    if (result.reason === "no_remaining_seats") {
+      return NextResponse.json(
+        { promoted: false, reason: "Ingen ledige plasser på turen." },
+        { status: 200 },
+      );
     }
+
+    if (result.reason === "no_waitlist") {
+      return NextResponse.json(
+        { promoted: false, reason: "Ingen på ventelisten for denne turen." },
+        { status: 200 },
+      );
+    }
+
+    return NextResponse.json(
+      { promoted: false, error: result.error ?? "Kunne ikke promotere." },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json(
     {
       promoted: true,
-      bookingId: booking.id,
-      navn: booking.navn,
-      epost: booking.epost,
+      bookingId: result.promotedBookingId,
+      notifiedNewFirst: result.notifiedNewFirst,
     },
     { status: 200 },
   );

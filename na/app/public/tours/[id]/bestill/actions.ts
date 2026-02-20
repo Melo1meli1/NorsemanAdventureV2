@@ -3,10 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { sendEmail } from "@/lib/mail";
-import {
-  buildFirstInLineEmail,
-  buildWaitlistConfirmationEmail,
-} from "@/lib/norsemanEmailTemplates";
+import { buildWaitlistConfirmationEmail } from "@/lib/norsemanEmailTemplates";
 import {
   adminBookingFormSchema,
   bookingFormSchema,
@@ -267,17 +264,6 @@ export async function joinWaitlistFromPublic(
 
     try {
       await sendEmail(email.trim(), joinedSubject, joinedHtml);
-
-      if (position === 1) {
-        const { subject: firstSubject, html: firstHtml } =
-          buildFirstInLineEmail({
-            siteUrl: baseUrl,
-            name,
-            tourTitle: tour.title,
-            bookingUrl,
-          });
-        await sendEmail(email.trim(), firstSubject, firstHtml);
-      }
     } catch {
       // Do not fail waitlist join if email sending fails.
     }
