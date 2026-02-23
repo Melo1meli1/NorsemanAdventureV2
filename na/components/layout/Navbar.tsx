@@ -22,19 +22,19 @@ export function Navbar() {
 
   return (
     <header className="border-border bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl"
+          className="flex shrink-0 items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl"
           aria-label="Norseman Adventures - Forside"
         >
           <Image
             src="/logonew.png"
             alt="Norseman Adventures logo"
-            width={36}
-            height={36}
-            className="h-9 w-9"
+            width={40}
+            height={40}
+            className="h-10 w-10"
             priority
           />
           <span className="text-white">NORSEMAN</span>
@@ -48,7 +48,7 @@ export function Navbar() {
               <Link
                 href={item.href}
                 className={cn(
-                  "text-foreground/90 rounded-md px-3 py-2 text-sm font-medium",
+                  "text-foreground/90 text-m font-medium/80 rounded-md px-3 py-2",
                   "hover:bg-secondary hover:text-foreground transition-colors",
                   "focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
                 )}
