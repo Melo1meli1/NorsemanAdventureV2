@@ -9,7 +9,7 @@ type UpcomingToursSectionProps = {
 
 export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
   return (
-    <section className="bg-background w-full py-16 md:py-24">
+    <section className="bg-card/50 w-full py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <header className="mb-12 text-center">
           <h2 className="text-primary mb-3 text-3xl font-bold tracking-tight md:text-4xl">
@@ -25,14 +25,19 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {tours.map((tour) => (
-                <TourCard key={tour.id} tour={tour} fromPage="home" />
+                <TourCard
+                  key={tour.id}
+                  tour={tour}
+                  fromPage="home"
+                  className="bg-background/80"
+                />
               ))}
             </div>
             <div className="mt-12 flex justify-center">
               <Button
                 asChild
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-8 py-3 text-base font-medium"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium/80 rounded-lg px-8 py-3 text-base"
               >
                 <Link href="/public/tours">SE ALLE TURER →</Link>
               </Button>

@@ -13,11 +13,11 @@ const FEATURES = [
 
 export function WhoAreWeSection() {
   return (
-    <section className="bg-background w-full py-20 md:py-28">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:gap-16">
+    <section className="bg-background w-full py-14 md:py-20">
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1fr_1fr] lg:gap-16 lg:pl-0">
         {/* Left – Image with overlapping badge */}
         <div className="relative">
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-lg">
+          <div className="relative mt-8 aspect-video w-full max-w-md overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/5 lg:max-w-none lg:rounded-l-none">
             <Image
               src="/tour-summer.jpg"
               alt="Motorsykkelgruppe kjører langs norsk fjordlandskap"
@@ -27,20 +27,10 @@ export function WhoAreWeSection() {
               quality={85}
             />
           </div>
-
-          {/* Overlapping badge */}
-          <div className="bg-card/90 border-border absolute right-4 -bottom-8 rounded-lg border px-6 py-4 shadow-lg backdrop-blur-sm sm:right-8 sm:-bottom-10 sm:px-8 sm:py-5">
-            <span className="text-primary block text-3xl font-bold sm:text-4xl">
-              10+
-            </span>
-            <span className="text-muted-foreground text-sm sm:text-base">
-              års erfaring med motorsykkelturer
-            </span>
-          </div>
         </div>
 
         {/* Right – Content */}
-        <div className="flex flex-col justify-center pt-8 lg:pt-0">
+        <div className="flex flex-col justify-center">
           <span className="text-muted-foreground mb-2 text-sm font-medium tracking-widest uppercase">
             HVEM ER VI
           </span>

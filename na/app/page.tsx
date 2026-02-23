@@ -15,8 +15,8 @@ export default async function Home() {
   return (
     <main className="bg-background min-h-screen">
       <HeroCarousel />
-      <WhoAreWeSection />
       <UpcomingToursSection tours={tours ?? []} />
+      <WhoAreWeSection />
     </main>
   );
 }
