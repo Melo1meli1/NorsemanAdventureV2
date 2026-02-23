@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/supabase-server";
 import { UpcomingToursSection } from "@/components/tours/UpcomingToursSection";
+import { HeroCarousel } from "@/components/HeroCarousel";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -12,6 +13,7 @@ export default async function Home() {
 
   return (
     <main className="bg-background min-h-screen">
+      <HeroCarousel />
       <UpcomingToursSection tours={tours ?? []} />
     </main>
   );
