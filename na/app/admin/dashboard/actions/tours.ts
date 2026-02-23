@@ -267,7 +267,7 @@ export async function setTourCoverImage(
   }
 
   revalidatePath("/");
-  revalidatePath("/turer");
+  revalidatePath("/public/tours");
   revalidatePath("/admin/dashboard");
   return { success: true };
 }

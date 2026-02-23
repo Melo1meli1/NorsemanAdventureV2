@@ -188,7 +188,7 @@ export function BookingMainContent({
           En bekreftelse har blitt sendt til din e-post.
         </p>
         <Button size="lg" className="w-full sm:w-auto" asChild>
-          <Link href="/turer">Se flere turer</Link>
+          <Link href="/public/tours">Se flere turer</Link>
         </Button>
       </div>
     );

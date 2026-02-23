@@ -45,7 +45,7 @@ export default async function BookingSuccessPage({
               </p>
             )}
             <Button size="lg" className="w-full sm:w-auto" asChild>
-              <Link href="/turer">Se flere turer</Link>
+              <Link href="/public/tours">Se flere turer</Link>
             </Button>
           </div>
         </div>

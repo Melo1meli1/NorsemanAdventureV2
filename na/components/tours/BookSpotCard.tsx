@@ -154,7 +154,7 @@ export function BookSpotCard({
             aria-label="Bestill nå"
             asChild
           >
-            <Link href={`/turer/${tourId}/bestill`}>
+            <Link href={`/public/tours/${tourId}/bestill`}>
               <ShoppingCart className="size-5" aria-hidden />
               Bestill nå
             </Link>
