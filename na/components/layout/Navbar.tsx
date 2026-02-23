@@ -22,7 +22,7 @@ export function Navbar() {
 
   return (
     <header className="border-border bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-1 py-4">
         {/* Logo */}
         <Link
           href="/"
