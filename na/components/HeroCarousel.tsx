@@ -58,7 +58,12 @@ function SlideContent({ slide }: { slide: Slide }) {
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/20"
+        className={cn(
+          "absolute inset-0 bg-linear-to-t",
+          slide.image === "/winter-sports.jpg"
+            ? "from-black/90 via-black/60 to-black/30"
+            : "from-black/80 via-black/40 to-black/20",
+        )}
       />
       <div className="absolute inset-0 flex flex-col justify-end px-6 pb-28 sm:px-12 md:px-20 lg:px-28 lg:pb-32">
         <div className="mb-40 flex flex-col">
@@ -175,7 +180,12 @@ export function HeroCarousel() {
 
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/20"
+                  className={cn(
+                    "absolute inset-0 bg-linear-to-t",
+                    slide.image === "/winter-sports.jpg"
+                      ? "from-black/90 via-black/60 to-black/30"
+                      : "from-black/80 via-black/40 to-black/20",
+                  )}
                 />
 
                 {/* Slide text – smooth fade */}
