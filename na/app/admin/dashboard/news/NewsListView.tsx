@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import NewsFormModal from "./NewsFormModal";
 import { Pagination } from "@/components/ui/pagination";
+import { SearchInput } from "@/components/common/SearchInput";
+import { useFilteredBySearch } from "@/hooks/useSearchQuery";
 
 type NewsListViewProps = {
   news: News[];
@@ -24,13 +26,22 @@ function formatDate(iso: string | null): string {
 
 export function NewsListView({ news }: NewsListViewProps) {
   const router = useRouter();
+  const newsSearchKeys = useMemo(
+    () => ["title", "short_description"] as const,
+    [],
+  );
+  const [newsSearchTerm, setNewsSearchTerm] = useState("");
+  const filteredNews = useFilteredBySearch(news, newsSearchKeys, {
+    overrideQuery: newsSearchTerm,
+  });
+
   const [pendingDelete, setPendingDelete] = useState<News | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const NEWS_PER_PAGE = 6;
 
-  const totalPages = Math.ceil(news.length / NEWS_PER_PAGE) || 1;
+  const totalPages = Math.ceil(filteredNews.length / NEWS_PER_PAGE) || 1;
   const displayPage = Math.min(currentPage, totalPages);
 
   function resolveImageSrc(imageUrl: string | null) {
@@ -75,11 +86,11 @@ export function NewsListView({ news }: NewsListViewProps) {
   }
 
   const paginatedNews = useMemo(() => {
-    if (news.length === 0) return [];
+    if (filteredNews.length === 0) return [];
     const startIndex = (displayPage - 1) * NEWS_PER_PAGE;
     const endIndex = startIndex + NEWS_PER_PAGE;
-    return news.slice(startIndex, endIndex);
-  }, [news, displayPage]);
+    return filteredNews.slice(startIndex, endIndex);
+  }, [filteredNews, displayPage]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -88,8 +99,17 @@ export function NewsListView({ news }: NewsListViewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header: New News button */}
-      <div className="flex items-center justify-end">
+      {/* Header: Search and New News button */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <SearchInput
+          placeholder="Søk i nyheter..."
+          syncToUrl={false}
+          onChange={(value) => {
+            setNewsSearchTerm(value);
+            setCurrentPage(1);
+          }}
+          className="w-full sm:max-w-xs"
+        />
         <Button
           type="button"
           onClick={handleOpenNewNews}
@@ -102,9 +122,11 @@ export function NewsListView({ news }: NewsListViewProps) {
 
       {/* News list */}
       <ul className="flex flex-col gap-4">
-        {news.length === 0 ? (
+        {filteredNews.length === 0 ? (
           <li className="rounded-lg border border-neutral-800 bg-[#161920] px-6 py-12 text-center text-sm text-neutral-400">
-            Ingen nyheter ennå. Opprett en nyhet for å komme i gang.
+            {news.length === 0
+              ? "Ingen nyheter ennå. Opprett en nyhet for å komme i gang."
+              : "Ingen nyheter funnet som matcher søket."}
           </li>
         ) : (
           paginatedNews.map((item: News) => {
