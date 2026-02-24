@@ -3,6 +3,8 @@ import { getAllPublicGalleryImages } from "@/app/admin/dashboard/actions/gallery
 import { getPublicGalleryImageUrl } from "@/lib/galleryPublic";
 import { GalleryPageClient } from "./GalleryPageClient";
 
+export const revalidate = 60;
+
 export default async function GalleriPage() {
   const supabase = await createClient();
   const { data: tours } = await supabase

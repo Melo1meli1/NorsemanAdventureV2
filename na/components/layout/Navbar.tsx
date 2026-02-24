@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { label: "Forside", href: "/" },
   { label: "Turer", href: "/public/tours" },
-  { label: "Nyheter", href: "#" },
+  { label: "Nyheter", href: "/public/news" },
   { label: "Bildegalleri", href: "/galleri" },
   { label: "Om oss", href: "/om-oss" },
 ];

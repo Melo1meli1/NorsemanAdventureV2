@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Calendar, MapPin, Users } from "lucide-react";
 import type { Tour } from "@/lib/types";
 import {
   formatPrice,
@@ -13,73 +14,8 @@ import { cn } from "@/lib/utils";
 type TourCardProps = {
   tour: Tour;
   className?: string;
-  /** Set "home" when card is on homepage so "Tilbake" on detail page goes to /. Set "turer" when on /turer so Tilbake goes to /turer. */
   fromPage?: "home" | "turer";
 };
-
-function CalendarIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn("shrink-0", className)}
-    >
-      <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-      <line x1="16" x2="16" y1="2" y2="6" />
-      <line x1="8" x2="8" y1="2" y2="6" />
-      <line x1="3" x2="21" y1="10" y2="10" />
-    </svg>
-  );
-}
-
-function MapPinIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn("shrink-0", className)}
-    >
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-
-function UsersIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn("shrink-0", className)}
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
 
 export function TourCard({ tour, className, fromPage }: TourCardProps) {
   const detailHref =
@@ -94,11 +30,11 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
     <Link
       href={detailHref}
       aria-label={`Les mer om ${tour.title}`}
-      className="focus-visible:ring-primary focus-visible:ring-offset-background block rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      className="focus-visible:ring-primary focus-visible:ring-offset-background hover:border-primary/50 block rounded-xl transition-all hover:shadow-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       <article
         className={cn(
-          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl shadow-lg transition-shadow hover:shadow-xl sm:max-w-md md:h-96 md:max-w-none lg:h-134",
+          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-transparent shadow-lg sm:max-w-md md:h-96 md:max-w-none lg:h-134",
           className,
         )}
       >
@@ -141,19 +77,19 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
 
           <div className="text-muted-foreground mb-4 grid grid-cols-2 gap-x-4 gap-y-5 text-sm">
             <div className="flex items-center gap-2">
-              <CalendarIcon />
+              <Calendar className="h-4 w-4 shrink-0" />
               <span>{days} dager</span>
             </div>
             {tour.sted ? (
               <div className="flex items-center gap-2">
-                <MapPinIcon />
+                <MapPin className="h-4 w-4 shrink-0" />
                 <span>{tour.sted}</span>
               </div>
             ) : (
               <div />
             )}
             <div className="flex items-center gap-2">
-              <UsersIcon />
+              <Users className="h-4 w-4 shrink-0" />
               <span>
                 {tour.seats_available} av{" "}
                 {(tour as { total_seats?: number }).total_seats ??
