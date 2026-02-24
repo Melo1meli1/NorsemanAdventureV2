@@ -159,7 +159,6 @@ export async function createTour(formData: FormData) {
     price: d.price ?? 0,
     seats_available: d.seats_available ?? 0,
     total_seats: d.total_seats ?? 0,
-    sesong: (d.sesong ?? null) as TourInsert["sesong"],
     short_description: d.short_description ?? null,
     start_date: d.start_date ?? new Date(),
     sted: d.sted ?? null,
@@ -222,7 +221,6 @@ export async function updateTour(formData: FormData) {
     start_date: rest.start_date instanceof Date ? rest.start_date : undefined,
     vanskelighetsgrad: (rest.vanskelighetsgrad ??
       undefined) as TourUpdate["vanskelighetsgrad"],
-    sesong: (rest.sesong ?? undefined) as TourUpdate["sesong"],
     terreng: (rest.terreng ?? undefined) as TourUpdate["terreng"],
   });
 
