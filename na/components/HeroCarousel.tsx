@@ -22,7 +22,7 @@ const SLIDES: Slide[] = [
     image: "/tour-summer.jpg",
     alt: "Motorsykler kjører langs norsk fjordlandskap om sommeren",
     title: "UTFORSK NORGES\nSKJØNNHET",
-    description: "Fra fjord til fjell - opplev Norge på den beste måten",
+    description: "Fra fjord til fjell - opplev Norge på den beste måten!",
     ctaLabel: "SOMMERTURER",
     ctaHref: "/public/tours",
   },
