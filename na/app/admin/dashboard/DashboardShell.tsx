@@ -29,6 +29,8 @@ import { GalleryView } from "./gallery/GalleryView";
 import { GalleryDetailView } from "./gallery/GalleryDetailView";
 import { OrdersView } from "./orders/OrdersView";
 import { GalleryOnlyView } from "./gallery/GalleryOnlyView";
+import { NewsListView } from "./news/NewsListView";
+import type { News } from "@/lib/types/news";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -40,9 +42,10 @@ const navItems = [
 
 type DashboardShellProps = {
   tours?: Tour[];
+  news?: News[];
 };
 
-export function DashboardShell({ tours = [] }: DashboardShellProps) {
+export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const validSections = [
@@ -526,13 +529,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             />
           )}
 
-          {activeSection === "news" && (
-            <div>
-              <p className="text-sm text-neutral-400">
-                Nyheter-seksjon. NewsList / NewsView kan kobles inn her.
-              </p>
-            </div>
-          )}
+          {activeSection === "news" && <NewsListView news={news} />}
 
           {/* Hold OrdersView mounted men skjult når inaktiv, så state (bestillinger) bevares ved tab-bytt. isActive=false hindrer fetch når bruker søker på Turer. */}
           <div
