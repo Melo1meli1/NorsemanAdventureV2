@@ -14,6 +14,28 @@ export function formatStartDate(dateString: string): string {
   return `${day}.${month}.${year}`;
 }
 
+/** Sluttdato formatert for visning (dd.MM.åååå) */
+export function formatEndDate(dateString: string): string {
+  const d = new Date(dateString);
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+/** Tidsperiode formatert som "start - end" (dd.MM.åååå - dd.MM.åååå) */
+export function formatDateRange(
+  startDateString: string,
+  endDateString?: string,
+): string {
+  const start = formatStartDate(startDateString);
+  if (endDateString) {
+    const end = formatEndDate(endDateString);
+    return `${start} - ${end}`;
+  }
+  return start;
+}
+
 /** Antall dager mellom start_date og end_date */
 export function getTourDays(
   tour: Pick<Tour, "start_date" | "end_date">,

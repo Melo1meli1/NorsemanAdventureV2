@@ -14,12 +14,12 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
 import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
 import {
-  formatStartDate,
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
   getSesongLabel,
   parseHoydepunkter,
+  formatDateRange,
 } from "@/lib/tourUtils";
 import { cn } from "@/lib/utils";
 import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
@@ -178,8 +178,8 @@ export default async function TourDetailPage({ params }: Props) {
               />
               <InfoBlock
                 icon={<Clock className="text-primary size-5" aria-hidden />}
-                label="Startdato"
-                value={formatStartDate(tour.start_date)}
+                label="Tidsperiode"
+                value={formatDateRange(tour.start_date, tour.end_date)}
               />
             </section>
           </article>
