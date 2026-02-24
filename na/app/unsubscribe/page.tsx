@@ -10,11 +10,12 @@ import {
 import { Mail } from "lucide-react";
 import Link from "next/link";
 
-export default function UnsubscribePage({
+export default async function UnsubscribePage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
+  const params = await searchParams;
   return (
     <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -29,9 +30,9 @@ export default function UnsubscribePage({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {searchParams?.error && (
+          {params?.error && (
             <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">
-              {searchParams.error}
+              {params.error}
             </div>
           )}
           <form action={unsubscribeFromNewsletter} className="space-y-4">
