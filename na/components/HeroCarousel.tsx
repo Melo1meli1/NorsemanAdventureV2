@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     alt: "Motorsykler kjører langs norsk fjordlandskap om sommeren",
     title: "UTFORSK NORGES\nSKJØNNHET",
     description: "Fra fjord til fjell - opplev Norge på den beste måten",
-    ctaLabel: "SOMMERTURER",
+    ctaLabel: "INNENLANDSTURER",
     ctaHref: "/public/tours",
   },
   {
@@ -31,7 +31,7 @@ const SLIDES: Slide[] = [
     alt: "Skiløper på vei opp snødekt fjelltopp i Norge",
     title: "VINTERSPORT &\nAKTIVITETER",
     description: "Ski, toppturer og vinteropplevelser i verdensklasse",
-    ctaLabel: "VINTERSPORT",
+    ctaLabel: "UTENLANDSTURER",
     ctaHref: "/public/tours",
   },
   {
