@@ -27,7 +27,7 @@ export function NewsCard({ news, className }: NewsCardProps) {
       {/* Text — left side */}
       <div className="flex flex-1 flex-col justify-between p-8 sm:p-10">
         <div>
-          <div className="text-muted-foreground mb-3 flex items-center gap-2 text-sm">
+          <div className="text-primary mb-3 flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 shrink-0" />
             <span>{formattedDate}</span>
           </div>
@@ -52,14 +52,14 @@ export function NewsCard({ news, className }: NewsCardProps) {
       </div>
 
       {/* Image container — right side */}
-      <div className="border-l border-neutral-800 p-4 sm:p-6">
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl sm:aspect-auto sm:w-56 md:w-72 lg:w-80">
+      <div className="border-t border-neutral-800 sm:border-t-0 sm:border-l">
+        <div className="relative h-56 w-full sm:h-full sm:w-56 md:w-72 lg:w-80">
           <Image
             src={imageUrl}
             alt={news.title}
             fill
             className="object-cover"
-            sizes="(max-width: 640px) 100vw, 320px"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 224px, (max-width: 1024px) 288px, 320px"
           />
         </div>
       </div>

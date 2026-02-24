@@ -18,9 +18,9 @@ export default function NewsLoading() {
                 <div className="animate-shimmer h-4 w-full rounded bg-neutral-800" />
                 <div className="animate-shimmer h-4 w-2/3 rounded bg-neutral-800" />
               </div>
-              {/* Image container skeleton */}
-              <div className="bg-neutral-900/50 p-4 sm:p-6">
-                <div className="animate-shimmer aspect-video w-full overflow-hidden rounded-xl bg-neutral-800 sm:aspect-auto sm:w-56 md:w-72 lg:w-80" />
+              {/* Image skeleton */}
+              <div className="border-t border-neutral-800 sm:border-t-0 sm:border-l">
+                <div className="animate-shimmer h-56 w-full bg-neutral-800 sm:h-full sm:w-56 md:w-72 lg:w-80" />
               </div>
             </div>
           ))}
