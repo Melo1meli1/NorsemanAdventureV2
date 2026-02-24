@@ -37,8 +37,10 @@ export function Navbar() {
             className="h-10 w-10"
             priority
           />
-          <span className="text-white">NORSEMAN</span>
-          <span className="text-primary">ADVENTURES</span>
+          <div>
+            <span className="text-white">NORSEMAN</span>
+            <span className="text-primary">ADVENTURES</span>
+          </div>
         </Link>
 
         {/* Desktop nav */}
