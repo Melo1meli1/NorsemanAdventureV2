@@ -3,6 +3,8 @@ import { UpcomingToursSection } from "@/components/tours/UpcomingToursSection";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { WhoAreWeSection } from "@/components/WhoAreWeSection";
 
+export const revalidate = 60;
+
 export default async function Home() {
   const supabase = await createClient();
   const { data: tours } = await supabase

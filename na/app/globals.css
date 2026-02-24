@@ -215,3 +215,26 @@ body {
   opacity: 0.8;
   cursor: pointer;
 }
+
+/* Smooth shimmer animation for loading skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(215 28% 17%) 0%,
+    hsl(215 28% 20%) 25%,
+    hsl(215 28% 17%) 50%,
+    hsl(215 28% 20%) 75%,
+    hsl(215 28% 17%) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}

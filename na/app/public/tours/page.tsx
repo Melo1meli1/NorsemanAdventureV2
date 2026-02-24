@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import { Button } from "@/components/ui/button";
 import { ToursListWithPagination } from "@/components/tours/ToursListWithPagination";
 
+export const revalidate = 60;
+
 export default async function TurerPage() {
   const supabase = await createClient();
   const { data: tours } = await supabase

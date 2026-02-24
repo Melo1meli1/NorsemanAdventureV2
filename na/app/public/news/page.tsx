@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/supabase-server";
 import { Button } from "@/components/ui/button";
 import { NewsListWithPagination } from "@/components/news/NewsListWithPagination";
 
+export const revalidate = 60;
+
 export default async function NewsPage() {
   const supabase = await createClient();
   const { data: news } = await supabase
