@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { label: "Turer", href: "/public/tours" },
   { label: "Nyheter", href: "#" },
   { label: "Bildegalleri", href: "/galleri" },
-  { label: "Om oss", href: "#" },
+  { label: "Om oss", href: "/om-oss" },
 ];
 
 export function Navbar() {
