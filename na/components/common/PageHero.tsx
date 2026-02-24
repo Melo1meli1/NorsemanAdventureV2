@@ -1,0 +1,50 @@
+import Image from "next/image";
+
+type PageHeroProps = {
+  title: string;
+  subtitle: string;
+  image: string;
+  imageAlt?: string;
+};
+
+export function PageHero({
+  title,
+  subtitle,
+  image,
+  imageAlt = "",
+}: PageHeroProps) {
+  return (
+    <section
+      className="relative -mt-20 min-h-[65vh] w-full overflow-hidden pt-20"
+      aria-labelledby="page-hero-heading"
+    >
+      <Image
+        src={image}
+        alt={imageAlt}
+        fill
+        className="object-cover object-[50%_60%]"
+        sizes="100vw"
+        priority
+      />
+      <div
+        className="absolute inset-0 bg-linear-to-b from-black/70 via-black/40 to-black/70"
+        aria-hidden
+      />
+      <div
+        className="from-background via-background/80 absolute right-0 bottom-0 left-0 h-1/2 bg-linear-to-t to-transparent"
+        aria-hidden
+      />
+      <div className="absolute inset-0 flex flex-col justify-end px-6 pb-28 sm:px-10 sm:pb-32 md:px-14 md:pb-36 lg:px-20 lg:pb-40">
+        <h1
+          id="page-hero-heading"
+          className="text-primary text-4xl font-bold tracking-tight drop-shadow-sm sm:text-5xl md:text-6xl"
+        >
+          {title}
+        </h1>
+        <p className="text-foreground/95 mt-2 text-lg drop-shadow-sm sm:text-xl">
+          {subtitle}
+        </p>
+      </div>
+    </section>
+  );
+}

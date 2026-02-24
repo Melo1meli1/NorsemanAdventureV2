@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export function AboutSection() {
   return (
-    <section className="bg-background w-full py-16 md:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2 lg:gap-16">
+    <section className="relative z-10 -mt-16 w-full px-6 pt-4 pb-8 sm:px-8 md:px-10 lg:px-20">
+      <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
         {/* Left – Text */}
         <div className="flex flex-col justify-center">
           <h2 className="mb-8 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -31,7 +31,7 @@ export function AboutSection() {
 
         {/* Right – Image */}
         <div className="relative">
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/5">
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/5">
             <Image
               src="/tour-summer.jpg"
               alt="Motorsykkelgruppe kjører langs norsk fjordlandskap"
