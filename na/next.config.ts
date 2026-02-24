@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+    qualities: [70, 75, 80, 85],
   },
 };
 

@@ -69,7 +69,7 @@ export function WhoAreWeSection() {
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
-              href="/kontakt"
+              href="/om-oss"
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground inline-block rounded border-2 px-6 py-3 text-sm font-semibold tracking-wider uppercase transition-colors sm:px-8 sm:text-base"
             >
               KONTAKT OSS

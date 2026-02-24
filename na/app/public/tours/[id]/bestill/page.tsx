@@ -30,13 +30,12 @@ export default async function TourBookPage({ params }: Props) {
   ];
 
   return (
-    <main className="bg-background min-h-screen">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-24 sm:px-6 sm:pt-28">
+    <main className="bg-background flex min-h-screen flex-col">
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 pt-24 sm:px-6 sm:pt-28">
         <BookingStepNavigator
           tourId={id}
           initialCartItems={initialCartItems}
           maxAvailableSeats={tour.seats_available}
-          isExpertTour={tour.vanskelighetsgrad === "ekspert"}
           progressBarClassName="w-full max-w-md"
         />
       </div>

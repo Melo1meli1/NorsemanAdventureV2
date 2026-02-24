@@ -18,8 +18,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  bookingFormSchema,
-  getBookingFormSchemaForExpert,
+  getBookingFormSchemaWithTerms,
   type BookingFormValues,
 } from "@/lib/zod/bookingValidation";
 import { cn } from "@/lib/utils";
@@ -32,7 +31,6 @@ export type ParticipantBookingFormRef = {
 type ParticipantBookingFormProps = {
   participantCount: number;
   onValid?: (data: BookingFormValues) => void;
-  isExpertTour?: boolean;
   className?: string;
 };
 
@@ -172,27 +170,22 @@ function ParticipantFields({
   );
 }
 
-const EXPERT_INFO_TEXT =
-  "Denne turen er merket som ekspert og er krevende. Du bør ha god erfaring med tilsvarende turer, være i god fysisk form og forstå at forhold og vær kan endre seg raskt. Les turbeskrivelsen nøye og vurder om du oppfyller kravene før du bestiller.";
-
 export const ParticipantBookingForm = forwardRef<
   ParticipantBookingFormRef,
   ParticipantBookingFormProps
 >(function ParticipantBookingForm(
-  { participantCount, onValid, isExpertTour, className },
+  { participantCount, onValid, className },
   ref,
 ) {
   const submitRef = useRef<HTMLFormElement>(null);
 
   const {
     register,
-    control,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<BookingFormValues>({
-    resolver: zodResolver(
-      isExpertTour ? getBookingFormSchemaForExpert() : bookingFormSchema,
-    ),
+    resolver: zodResolver(getBookingFormSchemaWithTerms()),
     defaultValues: {
       participants: Array.from({ length: participantCount }, () => ({
         name: "",
@@ -201,7 +194,7 @@ export const ParticipantBookingForm = forwardRef<
         sos_navn: "",
         sos_telefon: "",
       })),
-      readExpertInfo: false,
+      acceptedTerms: false,
     },
   });
 
@@ -281,52 +274,51 @@ export const ParticipantBookingForm = forwardRef<
         )}
       </div>
 
-      {isExpertTour ? (
-        <section
-          className="border-primary bg-primary/5 rounded-xl border-2 p-4 sm:p-5"
-          aria-labelledby="ekspert-bekreft-heading"
-        >
-          <h3
-            id="ekspert-bekreft-heading"
-            className="text-foreground mb-2 flex items-center gap-2 text-base font-bold"
-          >
-            <AlertTriangle
-              className="text-primary size-4 shrink-0"
-              aria-hidden
+      {/* Vilkår og betingelser */}
+      <section className="border-border rounded-xl border p-3 sm:p-4">
+        <h3 className="text-foreground mb-2 flex items-center gap-2 text-sm font-semibold">
+          <AlertTriangle className="text-primary size-4 shrink-0" aria-hidden />
+          Vilkår og betingelser
+        </h3>
+        <p className="text-muted-foreground mb-3 text-xs leading-relaxed">
+          Før du kan fullføre bestillingen må du lese og godkjenne våre vilkår
+          og betingelser.
+        </p>
+        <div className="flex flex-col gap-2">
+          <label className="text-foreground flex cursor-pointer items-start gap-3 text-xs">
+            <input
+              type="checkbox"
+              className="border-border mt-0.5 size-4 shrink-0 rounded"
+              {...register("acceptedTerms")}
+              aria-invalid={Boolean(errors.acceptedTerms)}
+              aria-describedby={
+                errors.acceptedTerms ? "acceptedTerms-error" : undefined
+              }
             />
-            Om ekspertnivå
-          </h3>
-          <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-            {EXPERT_INFO_TEXT}
-          </p>
-          <div className="flex flex-col gap-2">
-            <label className="text-foreground flex cursor-pointer items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="border-border mt-1 size-4 shrink-0 rounded"
-                {...register("readExpertInfo")}
-                aria-invalid={Boolean(errors.readExpertInfo)}
-                aria-describedby={
-                  errors.readExpertInfo ? "readExpertInfo-error" : undefined
-                }
-              />
-              <span>
-                Jeg har lest informasjonen om ekspertnivå og bekrefter at jeg
-                oppfyller kravene.
-              </span>
-            </label>
-            {errors.readExpertInfo ? (
-              <p
-                id="readExpertInfo-error"
-                className="text-destructive text-sm"
-                role="alert"
+            <span>
+              Jeg har lest og godkjenner{" "}
+              <a
+                href="/Bacheloringeniørfag_data_forkurs_V2026.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
               >
-                {errors.readExpertInfo.message}
-              </p>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
+                vilkårene og betingelsene
+              </a>{" "}
+              for denne bestillingen.
+            </span>
+          </label>
+          {errors.acceptedTerms ? (
+            <p
+              id="acceptedTerms-error"
+              className="text-destructive text-xs"
+              role="alert"
+            >
+              {errors.acceptedTerms.message}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       {/* Hidden submit used when parent triggers submit via ref */}
       <button type="submit" className="sr-only" tabIndex={-1} aria-hidden>

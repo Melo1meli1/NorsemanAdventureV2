@@ -29,10 +29,6 @@ const phoneSchema = z
     message: "Telefonnummer må ha minst 8 siffer.",
   });
 
-function normalizePhone(str: string): string {
-  return (str.match(/\d/g) ?? []).join("");
-}
-
 // --- Participant (deltaker) – gruppebestilling, offentlig flyt ---
 // Vanlig deltaker: navn (fullt navn), e-post, telefonnummer.
 // Kontaktperson ved nødstilfeller (SOS): navn og telefon.
@@ -60,54 +56,63 @@ export const ParticipantSchema = z.object({
   sos_telefon: phoneSchema,
 });
 
-// --- Booking form (offentlig) – deltakere + valgfritt ekspert-bekreftelse ---
+// --- Booking form (offentlig) – deltakere + vilkår-bekreftelse ---
 const bookingFormSchemaBase = z.object({
   participants: z
     .array(ParticipantSchema)
     .min(1, "Minst én deltaker må oppgis."),
-  readExpertInfo: z.boolean().optional(),
+  acceptedTerms: z.boolean().optional(),
 });
 
 export const bookingFormSchema = bookingFormSchemaBase.superRefine(
   (data, ctx) => {
-    const participants = data.participants;
-
-    participants.forEach((participant, i) => {
-      const sosName = participant.sos_navn.trim().toLowerCase();
-      const sosPhone = normalizePhone(participant.sos_telefon);
-
-      const isSosSameAsAnyParticipant = participants.some((other) => {
-        const otherName = other.name.trim().toLowerCase();
-        const otherPhone = normalizePhone(other.telefon);
-
-        // Ikke tillat at nødkontakt er samme som noen deltaker (inkl. seg selv)
-        return sosName === otherName && sosPhone === otherPhone;
-      });
-
-      if (isSosSameAsAnyParticipant) {
+    // Validering av deltakere
+    for (const [index, participant] of data.participants.entries()) {
+      if (!participant.name.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message:
-            "Nødkontakt kan ikke være en av deltakerne. Oppgi en annen person.",
-          path: ["participants", i, "sos_navn"],
-        });
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "Nødkontakt kan ikke være en av deltakerne. Oppgi en annen person.",
-          path: ["participants", i, "sos_telefon"],
+          message: "Navn er påkrevd.",
+          path: ["participants", index, "name"],
         });
       }
-    });
+      if (!participant.email.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "E-post er påkrevd.",
+          path: ["participants", index, "email"],
+        });
+      }
+      if (!participant.telefon.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Telefon er påkrevd.",
+          path: ["participants", index, "telefon"],
+        });
+      }
+      if (!participant.sos_navn.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Navn på SOS-kontakt er påkrevd.",
+          path: ["participants", index, "sos_navn"],
+        });
+      }
+      if (!participant.sos_telefon.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Telefon til SOS-kontakt er påkrevd.",
+          path: ["participants", index, "sos_telefon"],
+        });
+      }
+    }
   },
 );
 
-/** Schema for bestilling når turen er ekspertnivå – krever at bruker har bekreftet at de har lest ekspertinfo. */
-export function getBookingFormSchemaForExpert() {
-  return bookingFormSchema.refine((data) => data.readExpertInfo === true, {
+/** Schema for bestilling – krever at bruker har bekreftet vilkårene. */
+export function getBookingFormSchemaWithTerms() {
+  return bookingFormSchema.refine((data) => data.acceptedTerms === true, {
     message:
-      "Du må bekrefte at du har lest informasjonen om ekspertnivå før du kan bestille.",
-    path: ["readExpertInfo"],
+      "Du må bekrefte at du har lest og godkjent vilkårene før du kan bestille.",
+    path: ["acceptedTerms"],
   });
 }
 

@@ -3,7 +3,6 @@ import { Constants } from "@/lib/database.types";
 
 const tourStatusEnum = z.enum(Constants.public.Enums.tour_status);
 const vanskelighetsgradEnum = z.enum(Constants.public.Enums.vanskelighetsgrad);
-const sesongEnum = z.enum(Constants.public.Enums.sesong);
 const terrengEnum = z.enum(Constants.public.Enums.terreng);
 
 const nullableString = z
@@ -57,7 +56,6 @@ export const draftTourSchema = z.object({
   hoydepunkter: nullableString,
   sted: z.string().trim().default(""),
   vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
-  sesong: optionalEnumField(sesongEnum),
   terreng: optionalEnumField(terrengEnum),
   price: z.coerce.number().nonnegative().default(0),
   start_date: z
@@ -94,7 +92,6 @@ export const baseTourSchema = z.object({
     .trim()
     .min(1, "Sted er påkrevd."),
   vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
-  sesong: optionalEnumField(sesongEnum),
   terreng: optionalEnumField(terrengEnum),
   price: z.coerce
     .number({

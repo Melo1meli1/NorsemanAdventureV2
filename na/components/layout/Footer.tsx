@@ -11,6 +11,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { useState } from "react";
+import { subscribeToNewsletter } from "@/app/actions/subscribers";
 
 const NAV_LINKS = [
   { label: "Våre Turer", href: "/public/tours" },
@@ -20,7 +21,11 @@ const NAV_LINKS = [
 ] as const;
 
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "#", label: "Facebook" },
+  {
+    icon: Facebook,
+    href: "https://www.facebook.com/norseman.adventures?mibextid=wwXIfr&rdid=7MlJOe9Mhv9bkoR5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17vdLqFNXh%2F%3Fmibextid%3DwwXIfr%26ref%3D1",
+    label: "Facebook",
+  },
   { icon: Instagram, href: "#", label: "Instagram" },
   { icon: Youtube, href: "#", label: "YouTube" },
 ] as const;
@@ -38,6 +43,11 @@ const CONTACT_INFO = [
 export function Footer() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitMessageType, setSubmitMessageType] = useState<
+    "success" | "error"
+  >("success");
 
   const validateEmail = (value: string) => {
     if (!value) {
@@ -53,12 +63,35 @@ export function Footer() {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateEmail(email)) {
-      // TODO: Implement newsletter subscription
-      console.log("Newsletter subscription:", email);
-      setEmail("");
+    setSubmitMessage("");
+
+    if (!validateEmail(email)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await subscribeToNewsletter(email);
+
+      if (result.success) {
+        setSubmitMessage(
+          "Takk for din påmelding! Du vil motta nyhetsbrev fra oss.",
+        );
+        setSubmitMessageType("success");
+        setEmail("");
+        setEmailError("");
+      } else {
+        setSubmitMessage(result.error);
+        setSubmitMessageType("error");
+      }
+    } catch {
+      setSubmitMessage("En uventet feil oppstod. Vennligst prøv igjen.");
+      setSubmitMessageType("error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -159,16 +192,29 @@ export function Footer() {
                     if (emailError) validateEmail(e.target.value);
                   }}
                   className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary flex-1 rounded border px-4 py-2.5 text-sm focus:ring-1 focus:outline-none"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="submit"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-4 py-2.5 text-sm font-semibold tracking-wider whitespace-nowrap uppercase transition-colors"
+                  disabled={isSubmitting}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-4 py-2.5 text-sm font-semibold tracking-wider whitespace-nowrap uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Send
+                  {isSubmitting ? "Sender..." : "Send"}
                 </button>
               </div>
               {emailError && (
                 <p className="text-destructive text-xs">{emailError}</p>
+              )}
+              {submitMessage && (
+                <p
+                  className={`text-xs ${
+                    submitMessageType === "success"
+                      ? "text-green-600"
+                      : "text-destructive"
+                  }`}
+                >
+                  {submitMessage}
+                </p>
               )}
             </form>
           </div>
