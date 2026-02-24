@@ -23,12 +23,24 @@ export async function getNews(): Promise<
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("news")
-    .select("*")
+    .select(
+      `
+      id,
+      title,
+      short_description,
+      image_url,
+      status,
+      published_at,
+      created_at,
+      updated_at
+    `,
+    )
     .order("created_at", { ascending: false });
 
   if (error) {
     return { success: false, error: error.message, data: null };
   }
+
   return { success: true, data: data as News[], error: null };
 }
 
