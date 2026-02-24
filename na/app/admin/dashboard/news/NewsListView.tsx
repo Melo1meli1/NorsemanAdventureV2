@@ -93,7 +93,7 @@ export function NewsListView({ news }: NewsListViewProps) {
         <Button
           type="button"
           onClick={handleOpenNewNews}
-          className="h-11 gap-2 px-5 font-semibold uppercase"
+          className="h-11 w-full gap-2 px-5 font-semibold uppercase sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           NY NYHET
@@ -121,7 +121,7 @@ export function NewsListView({ news }: NewsListViewProps) {
                     handleOpenEditNews(item);
                   }
                 }}
-                className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer items-center gap-4 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none"
+                className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer flex-col gap-3 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none sm:flex-row sm:items-center sm:gap-4"
               >
                 {/* Thumbnail */}
                 <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-neutral-800">
@@ -171,32 +171,32 @@ export function NewsListView({ news }: NewsListViewProps) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex shrink-0 gap-3">
+                <div className="flex shrink-0 gap-2 self-end sm:gap-3 sm:self-center">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
                       handleOpenEditNews(item);
                     }}
                     aria-label={`Rediger ${item.title}`}
                   >
-                    <Pencil className="h-5 w-5 text-current" />
+                    <Pencil className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
                       setPendingDelete(item);
                     }}
                     aria-label={`Slett ${item.title}`}
                   >
-                    <Trash2 className="h-5 w-5 text-current" />
+                    <Trash2 className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               </li>

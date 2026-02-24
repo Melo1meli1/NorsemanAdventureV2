@@ -125,7 +125,7 @@ export function TourListView({
   return (
     <div className="flex flex-col gap-6">
       {/* Header: New Tour button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchInput
           placeholder="Søk etter tur"
           className="w-full sm:max-w-xs"
@@ -135,7 +135,7 @@ export function TourListView({
         <Button
           type="button"
           onClick={handleOpenNewTour}
-          className="h-11 gap-2 px-5 font-semibold uppercase"
+          className="h-11 w-full gap-2 px-5 font-semibold uppercase sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           NY TUR
@@ -165,7 +165,7 @@ export function TourListView({
                     handleOpenEditTour(tour);
                   }
                 }}
-                className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer items-center gap-4 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none"
+                className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer flex-col gap-3 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none sm:flex-row sm:items-center sm:gap-4"
               >
                 {/* Thumbnail */}
                 <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg bg-neutral-800">
@@ -220,47 +220,47 @@ export function TourListView({
                 </div>
 
                 {/* Actions */}
-                <div className="flex shrink-0 gap-3">
+                <div className="flex shrink-0 gap-2 self-end sm:gap-3 sm:self-center">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
                       handleOpenEditTour(tour);
                     }}
                     aria-label={`Rediger ${tour.title}`}
                   >
-                    <Pencil className="h-5 w-5 text-current" />
+                    <Pencil className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
                   {onOpenGalleryForTour && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                       onClick={(event) => {
                         event.stopPropagation();
                         onOpenGalleryForTour(tour);
                       }}
                       aria-label={`Åpne galleri for ${tour.title}`}
                     >
-                      <ImageIcon className="h-5 w-5 text-current" />
+                      <ImageIcon className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                     </Button>
                   )}
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-11 w-11 border-2 bg-transparent"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
                       handleRequestDelete(tour);
                     }}
                     aria-label={`Slett ${tour.title}`}
                   >
-                    <Trash2 className="h-5 w-5 text-current" />
+                    <Trash2 className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               </li>
