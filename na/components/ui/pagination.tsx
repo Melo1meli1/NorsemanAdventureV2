@@ -25,11 +25,20 @@ export function Pagination({
 
   const goToPrevious = () => {
     if (currentPage <= 1) return;
+    window.scrollTo(0, 0);
     onPageChange(currentPage - 1);
   };
 
   const goToNext = () => {
+    console.log(
+      "goToNext called, currentPage:",
+      currentPage,
+      "computedHasNextPage:",
+      computedHasNextPage,
+    );
     if (!computedHasNextPage) return;
+    console.log("Scrolling to top and going to next page");
+    window.scrollTo(0, 0);
     onPageChange(currentPage + 1);
   };
 
