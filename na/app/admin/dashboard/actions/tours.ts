@@ -46,7 +46,6 @@ function mapCreateInputToInsert(
     hoydepunkter: string | null | undefined;
     sted: string | null | undefined;
     vanskelighetsgrad: TourInsert["vanskelighetsgrad"];
-    sesong: TourInsert["sesong"];
     terreng: TourInsert["terreng"];
     price: number;
     start_date: Date;
@@ -64,7 +63,6 @@ function mapCreateInputToInsert(
     hoydepunkter: input.hoydepunkter ?? null,
     sted: input.sted ?? null,
     vanskelighetsgrad: input.vanskelighetsgrad ?? null,
-    sesong: input.sesong ?? null,
     terreng: input.terreng ?? null,
     price: input.price,
     start_date: input.start_date.toISOString(),
@@ -84,7 +82,6 @@ function mapUpdateInputToUpdate(
     hoydepunkter: string | null | undefined;
     sted: string | null | undefined;
     vanskelighetsgrad: TourUpdate["vanskelighetsgrad"];
-    sesong: TourUpdate["sesong"];
     terreng: TourUpdate["terreng"];
     price: number;
     start_date: Date;
@@ -107,7 +104,6 @@ function mapUpdateInputToUpdate(
   if (input.sted !== undefined) update.sted = input.sted;
   if (input.vanskelighetsgrad !== undefined)
     update.vanskelighetsgrad = input.vanskelighetsgrad;
-  if (input.sesong !== undefined) update.sesong = input.sesong;
   if (input.terreng !== undefined) update.terreng = input.terreng;
   if (input.price !== undefined) update.price = input.price;
   if (input.start_date !== undefined)
@@ -131,7 +127,6 @@ export async function createTour(formData: FormData) {
     hoydepunkter: formData.get("hoydepunkter") ?? "",
     sted: formData.get("sted") ?? "",
     vanskelighetsgrad: formData.get("vanskelighetsgrad") ?? "",
-    sesong: formData.get("sesong") ?? "",
     terreng: formData.get("terreng") ?? "",
     price: formData.get("price"),
     start_date: formData.get("start_date"),
@@ -164,7 +159,6 @@ export async function createTour(formData: FormData) {
     price: d.price ?? 0,
     seats_available: d.seats_available ?? 0,
     total_seats: d.total_seats ?? 0,
-    sesong: (d.sesong ?? null) as TourInsert["sesong"],
     short_description: d.short_description ?? null,
     start_date: d.start_date ?? new Date(),
     sted: d.sted ?? null,
@@ -227,7 +221,6 @@ export async function updateTour(formData: FormData) {
     start_date: rest.start_date instanceof Date ? rest.start_date : undefined,
     vanskelighetsgrad: (rest.vanskelighetsgrad ??
       undefined) as TourUpdate["vanskelighetsgrad"],
-    sesong: (rest.sesong ?? undefined) as TourUpdate["sesong"],
     terreng: (rest.terreng ?? undefined) as TourUpdate["terreng"],
   });
 

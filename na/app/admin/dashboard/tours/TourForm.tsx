@@ -28,13 +28,12 @@ type Mode = "create" | "edit";
  *  Enum fields use "" for empty select; zod transforms to null on submit. */
 type TourFormValues = Omit<
   CreateDraftTourInput,
-  "start_date" | "end_date" | "vanskelighetsgrad" | "sesong" | "terreng"
+  "start_date" | "end_date" | "vanskelighetsgrad" | "terreng"
 > & {
   start_date: string;
   end_date: string;
   id?: string;
   vanskelighetsgrad?: string;
-  sesong?: string;
   terreng?: string;
 };
 
@@ -91,7 +90,6 @@ export default function TourForm({
             hoydepunkter: initialTour.hoydepunkter ?? "",
             sted: initialTour.sted ?? "",
             vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",
-            sesong: initialTour.sesong ?? "",
             terreng: initialTour.terreng ?? "",
             price: initialTour.price,
             start_date: toDateInputValue(initialTour.start_date),
@@ -165,7 +163,6 @@ export default function TourForm({
     formData.set("hoydepunkter", data.hoydepunkter ?? "");
     formData.set("sted", data.sted ?? "");
     formData.set("vanskelighetsgrad", data.vanskelighetsgrad ?? "");
-    formData.set("sesong", data.sesong ?? "");
     formData.set("terreng", data.terreng ?? "");
     formData.set("price", String(data.price ?? 0));
     formData.set(
@@ -282,8 +279,8 @@ export default function TourForm({
         )}
       </div>
 
-      {/* Sted, vanskelighetsgrad, sesong, terreng – 2x2 grid */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Sted, vanskelighetsgrad, terreng – 3 columns grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="sted"
@@ -325,27 +322,6 @@ export default function TourForm({
             <p className="text-xs text-red-400">
               {errors.vanskelighetsgrad.message}
             </p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="sesong"
-            className="text-sm font-medium text-neutral-200"
-          >
-            Sesong
-          </label>
-          <select
-            id="sesong"
-            className="h-11 w-full rounded-lg border border-neutral-700 bg-neutral-900/70 px-3 text-sm text-neutral-50 focus:border-(--accent) focus:ring-1 focus:ring-(--accent) focus:outline-none"
-            style={{ "--accent": accentOrange } as React.CSSProperties}
-            {...register("sesong")}
-          >
-            <option value="">Velg</option>
-            <option value="sommer">Sommer</option>
-            <option value="vinter">Vinter</option>
-          </select>
-          {errors.sesong && (
-            <p className="text-xs text-red-400">{errors.sesong.message}</p>
           )}
         </div>
         <div className="flex flex-col gap-1.5">

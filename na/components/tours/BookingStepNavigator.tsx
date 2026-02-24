@@ -25,7 +25,6 @@ type BookingStepNavigatorProps = {
   tourId: string;
   initialCartItems: BookingCartItem[];
   maxAvailableSeats?: number;
-  isExpertTour?: boolean;
   progressBarClassName?: string;
   className?: string;
 };
@@ -34,7 +33,6 @@ export function BookingStepNavigator({
   tourId,
   initialCartItems,
   maxAvailableSeats,
-  isExpertTour,
   progressBarClassName,
   className,
 }: BookingStepNavigatorProps) {
@@ -80,7 +78,7 @@ export function BookingStepNavigator({
           tourId,
           participants: data.participants,
           belop,
-          readExpertInfo: data.readExpertInfo,
+          acceptedTerms: data.acceptedTerms ?? false,
         });
         if (!result.success) {
           toast({
@@ -89,7 +87,6 @@ export function BookingStepNavigator({
             description: result.error,
           });
         } else {
-          // Når informasjonen er gyldig og lagret, gå videre til betalingssteget
           setCurrentStep("betaling");
         }
       } finally {
@@ -137,9 +134,9 @@ export function BookingStepNavigator({
   }));
 
   return (
-    <div className={cn("flex w-full flex-col gap-8", className)}>
+    <div className={cn("flex w-full flex-col", className)}>
       {/* Progress bar: egen smal seksjon, uavhengig av innholdet under */}
-      <div className="flex w-full justify-center">
+      <div className="mb-8 flex w-full justify-center">
         <BookingProgressBar
           currentStep={currentStep}
           className={progressBarClassName}
@@ -170,9 +167,10 @@ export function BookingStepNavigator({
           }}
         />
       </div>
+
       {/* Informasjonskomponent + ordresammendrag: bredere enn progress bar */}
       <div className="grid w-full max-w-7xl grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_auto]">
-        <div className="grid gap-4">
+        <div className="flex flex-col gap-4">
           <BookingMainContent
             currentStep={currentStep}
             cartItems={cartItems}
@@ -180,10 +178,10 @@ export function BookingStepNavigator({
             participantCount={participantCount}
             informasjonFormRef={informasjonFormRef}
             onInformasjonValid={onInformasjonValid}
-            isExpertTour={isExpertTour}
             className="min-w-0"
           />
-          <div className="flex items-center justify-between gap-2 sm:gap-4">
+          {/* Navigation buttons directly below the form */}
+          <div className="flex items-center justify-between gap-2 pb-8 sm:gap-4">
             {isFirstStep ? (
               <Button
                 variant="outline"

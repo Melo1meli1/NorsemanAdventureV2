@@ -1,25 +1,15 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  Calendar,
-  Check,
-  MapPin,
-  Sun,
-  Snowflake,
-  Users,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import { Calendar, Check, MapPin, Users, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
 import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
 import {
-  formatStartDate,
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
-  getSesongLabel,
   parseHoydepunkter,
+  formatDateRange,
 } from "@/lib/tourUtils";
 import { cn } from "@/lib/utils";
 import { getRemainingSeatsForTour } from "@/lib/bookingUtils";
@@ -56,7 +46,6 @@ export default async function TourDetailPage({ params }: Props) {
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
-  const sesongLabel = getSesongLabel(tour.sesong);
   const hoydepunkterList = parseHoydepunkter(tour.hoydepunkter);
 
   return (
@@ -79,16 +68,6 @@ export default async function TourDetailPage({ params }: Props) {
         </div>
         <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 px-6 py-4 sm:px-10 sm:py-6 md:px-14 md:py-8 lg:px-20 lg:py-10 xl:px-24 xl:py-12">
           <div className="flex flex-wrap gap-2">
-            {sesongLabel && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
-                {tour.sesong === "sommer" ? (
-                  <Sun className="size-4" aria-hidden />
-                ) : (
-                  <Snowflake className="size-4" aria-hidden />
-                )}
-                {sesongLabel}
-              </span>
-            )}
             {terrengLabel && (
               <span className="rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
                 {terrengLabel}
@@ -178,8 +157,8 @@ export default async function TourDetailPage({ params }: Props) {
               />
               <InfoBlock
                 icon={<Clock className="text-primary size-5" aria-hidden />}
-                label="Startdato"
-                value={formatStartDate(tour.start_date)}
+                label="Tidsperiode"
+                value={formatDateRange(tour.start_date, tour.end_date)}
               />
             </section>
           </article>
@@ -201,30 +180,6 @@ export default async function TourDetailPage({ params }: Props) {
                 totalSeats={totalSeats}
                 tourId={id}
               />
-              {tour.vanskelighetsgrad === "ekspert" ? (
-                <section
-                  className="border-primary bg-primary/5 rounded-xl border-2 p-5 sm:p-6"
-                  aria-labelledby="ekspert-info-heading"
-                >
-                  <h2
-                    id="ekspert-info-heading"
-                    className="text-foreground mb-3 flex items-center gap-2 text-lg font-bold"
-                  >
-                    <AlertTriangle
-                      className="text-primary size-5 shrink-0"
-                      aria-hidden
-                    />
-                    Om ekspertnivå
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Denne turen er merket som <strong>ekspert</strong> og er
-                    krevende. Du bør ha god erfaring med tilsvarende turer, være
-                    i god fysisk form og forstå at forhold og vær kan endre seg
-                    raskt. Les turbeskrivelsen nøye og vurder om du oppfyller
-                    kravene før du bestiller.
-                  </p>
-                </section>
-              ) : null}
             </div>
           </div>
         </div>

@@ -43,18 +43,18 @@ export function GalleryPageClient({ images, tours }: GalleryPageClientProps) {
           className="absolute right-0 bottom-0 left-0 h-1/3 bg-linear-to-t from-black/90 to-transparent"
           aria-hidden
         />
-        <div className="absolute inset-0 flex flex-col justify-end px-6 pb-28 sm:px-10 sm:pb-32 md:px-14 md:pb-36 lg:px-20 lg:pb-40">
+        <div className="absolute inset-0 flex flex-col justify-end px-4 pb-40 sm:px-10 sm:pb-32 md:px-14 md:pb-36 lg:px-20 lg:pb-40">
           <h1
             id="galleri-hero-heading"
-            className="text-primary text-4xl font-bold tracking-tight drop-shadow-sm sm:text-5xl md:text-6xl"
+            className="text-primary text-3xl font-bold tracking-tight drop-shadow-sm sm:text-5xl md:text-6xl"
           >
             BILDEGALLERI
           </h1>
-          <p className="text-foreground/95 mt-2 text-lg drop-shadow-sm sm:text-xl">
+          <p className="text-foreground/95 mt-2 hidden text-lg drop-shadow-sm sm:block sm:text-xl">
             Opplevelser fra våre turer
           </p>
         </div>
-        <div className="border-border bg-card absolute right-0 bottom-4 left-0 flex border-t px-6 pt-4 pb-5 shadow-sm sm:px-10 sm:pt-5 sm:pb-6 md:px-14 md:pt-6 md:pb-8 lg:px-20 lg:pt-8 lg:pb-10">
+        <div className="border-border bg-card absolute right-0 bottom-4 left-0 flex border-t px-6 pt-4 pb-8 shadow-sm sm:px-10 sm:pt-5 sm:pb-8 md:px-14 md:pt-6 md:pb-10 lg:px-20 lg:pt-8 lg:pb-12">
           <div className="w-full">
             <GalleryFilterBar
               tours={tours}

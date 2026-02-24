@@ -17,11 +17,10 @@ import type { BookingFormValues } from "@/lib/zod/bookingValidation";
 type BookingMainContentProps = {
   currentStep: BookingStepId;
   cartItems: BookingCartItem[];
-  onQuantityChange: (tourId: string, delta: number) => void;
+  onQuantityChange: (id: string, quantity: number) => void;
   participantCount?: number;
   informasjonFormRef?: React.RefObject<ParticipantBookingFormRef | null>;
   onInformasjonValid?: (data: BookingFormValues) => void;
-  isExpertTour?: boolean;
   className?: string;
 };
 
@@ -32,7 +31,6 @@ export function BookingMainContent({
   participantCount = 0,
   informasjonFormRef,
   onInformasjonValid,
-  isExpertTour,
   className,
 }: BookingMainContentProps) {
   if (currentStep === "handlekurv") {
@@ -126,7 +124,6 @@ export function BookingMainContent({
           ref={informasjonFormRef ?? undefined}
           participantCount={count}
           onValid={onInformasjonValid}
-          isExpertTour={isExpertTour}
           className="min-w-0"
         />
       </div>

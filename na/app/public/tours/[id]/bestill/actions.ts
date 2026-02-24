@@ -26,9 +26,10 @@ export type CreateBookingFromPublicInput = {
   tourId: string;
   participants: BookingFormValues["participants"];
   belop: number;
+  acceptedTerms: boolean;
+  readExpertInfo?: boolean;
   telefon?: string;
   notater?: string | null;
-  readExpertInfo?: boolean;
 };
 
 export type CreateBookingFromPublicResult =
@@ -44,6 +45,7 @@ export async function createBookingFromPublic(
 ): Promise<CreateBookingFromPublicResult> {
   const parsed = bookingFormSchema.safeParse({
     participants: input.participants,
+    acceptedTerms: input.acceptedTerms,
   });
   if (!parsed.success) {
     return {
@@ -256,7 +258,6 @@ export async function joinWaitlistFromPublic(
         siteUrl: baseUrl,
         name,
         tourTitle: tour.title,
-        position,
         bookingUrl,
       });
 
