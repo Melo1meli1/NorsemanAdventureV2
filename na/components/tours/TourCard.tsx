@@ -30,11 +30,11 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
     <Link
       href={detailHref}
       aria-label={`Les mer om ${tour.title}`}
-      className="focus-visible:ring-primary focus-visible:ring-offset-background block rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      className="focus-visible:ring-primary focus-visible:ring-offset-background hover:border-primary/50 block rounded-xl transition-all hover:shadow-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       <article
         className={cn(
-          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl shadow-lg transition-shadow hover:shadow-xl sm:max-w-md md:h-96 md:max-w-none lg:h-134",
+          "bg-card text-card-foreground mx-auto flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-transparent shadow-lg sm:max-w-md md:h-96 md:max-w-none lg:h-134",
           className,
         )}
       >
