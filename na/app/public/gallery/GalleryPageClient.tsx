@@ -54,7 +54,7 @@ export function GalleryPageClient({ images, tours }: GalleryPageClientProps) {
             Opplevelser fra våre turer
           </p>
         </div>
-        <div className="border-border bg-card absolute right-0 bottom-4 left-0 flex border-t px-6 pt-4 pb-5 shadow-sm sm:px-10 sm:pt-5 sm:pb-6 md:px-14 md:pt-6 md:pb-8 lg:px-20 lg:pt-8 lg:pb-10">
+        <div className="border-border bg-card absolute right-0 bottom-4 left-0 flex border-t px-6 pt-4 pb-8 shadow-sm sm:px-10 sm:pt-5 sm:pb-8 md:px-14 md:pt-6 md:pb-10 lg:px-20 lg:pt-8 lg:pb-12">
           <div className="w-full">
             <GalleryFilterBar
               tours={tours}

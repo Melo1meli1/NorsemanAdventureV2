@@ -24,13 +24,13 @@ export function GalleryFilterBar({
   onValueChange,
 }: GalleryFilterBarProps) {
   return (
-    <div className="flex w-full flex-wrap items-start gap-3">
-      <div className="flex -translate-y-4 items-center gap-4">
+    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <Button
           type="button"
           size="default"
           variant={value === null ? "default" : "outline"}
-          className="font-semibold uppercase"
+          className="w-full font-semibold uppercase sm:w-auto"
           onClick={() => onValueChange(null)}
         >
           ALLE BILDER
@@ -40,7 +40,7 @@ export function GalleryFilterBar({
           onValueChange={(v) => onValueChange(v || null)}
         >
           <SelectTrigger
-            className="bg-background border-border min-w-[280px] flex-1"
+            className="bg-background border-border w-full sm:min-w-[200px] lg:min-w-[280px]"
             aria-label="Velg tur for å filtrere bilder"
           >
             <SelectValue placeholder="Velg en tur…" />
@@ -48,7 +48,7 @@ export function GalleryFilterBar({
           <SelectContent
             position="popper"
             align="start"
-            className="bg-background border-border w-[max(280px,var(--radix-select-trigger-width))]"
+            className="bg-background border-border w-full sm:w-[max(200px,var(--radix-select-trigger-width))] lg:w-[max(280px,var(--radix-select-trigger-width))]"
           >
             {tours.map((tour) => (
               <SelectItem key={tour.id} value={tour.id}>
