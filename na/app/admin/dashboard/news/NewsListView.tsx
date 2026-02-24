@@ -1,10 +1,10 @@
 "use client";
 
-import { deleteNews } from "../actions/news";
+import { deleteNews, sendNewsletter } from "../actions/news";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
+import { Calendar, ImageIcon, Pencil, Plus, Trash2, Send } from "lucide-react";
 import type { News } from "@/lib/types/news";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
@@ -12,6 +12,7 @@ import NewsFormModal from "./NewsFormModal";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchInput } from "@/components/common/SearchInput";
 import { useFilteredBySearch } from "@/hooks/useSearchQuery";
+import { useToast } from "@/hooks/use-toast";
 
 type NewsListViewProps = {
   news: News[];
@@ -26,6 +27,7 @@ function formatDate(iso: string | null): string {
 
 export function NewsListView({ news }: NewsListViewProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const newsSearchKeys = useMemo(
     () => ["title", "short_description"] as const,
     [],
@@ -39,6 +41,9 @@ export function NewsListView({ news }: NewsListViewProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sendingNewsletter, setSendingNewsletter] = useState<string | null>(
+    null,
+  );
   const NEWS_PER_PAGE = 6;
 
   const totalPages = Math.ceil(filteredNews.length / NEWS_PER_PAGE) || 1;
@@ -83,6 +88,35 @@ export function NewsListView({ news }: NewsListViewProps) {
     }
 
     setPendingDelete(null);
+  }
+
+  async function handleSendNewsletter(newsId: string) {
+    setSendingNewsletter(newsId);
+
+    try {
+      const result = await sendNewsletter(newsId);
+
+      if (result.success) {
+        toast({
+          title: "Nyhetsbrev sendt!",
+          description: result.message || `Nyhetsbrev sendt til abonnenter.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Feil ved sending",
+          description: result.error || "Kunne ikke sende nyhetsbrev.",
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Uventet feil",
+        description: "En uventet feil oppstod under sending.",
+      });
+    } finally {
+      setSendingNewsletter(null);
+    }
   }
 
   const paginatedNews = useMemo(() => {
@@ -194,6 +228,26 @@ export function NewsListView({ news }: NewsListViewProps) {
 
                 {/* Actions */}
                 <div className="flex shrink-0 gap-2 self-end sm:gap-3 sm:self-center">
+                  {item.status === "published" && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 border-2 border-green-500 bg-transparent text-green-500 hover:bg-green-500 hover:text-green-50 sm:h-11 sm:w-11"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSendNewsletter(item.id);
+                      }}
+                      disabled={sendingNewsletter === item.id}
+                      aria-label={`Send nyhetsbrev for ${item.title}`}
+                    >
+                      <Send
+                        className={`h-4 w-4 text-current sm:h-5 sm:w-5 ${
+                          sendingNewsletter === item.id ? "animate-pulse" : ""
+                        }`}
+                      />
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
