@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition, type FormEvent } from "react";
 import {
   Mail,
   Phone,
@@ -10,6 +10,7 @@ import {
   Youtube,
   Send,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const CONTACT_INFO = [
   {
@@ -38,66 +39,104 @@ const SOCIAL_LINKS = [
   { icon: Youtube, href: "#", label: "YouTube" },
 ] as const;
 
-type FormData = {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-};
-
-type FormErrors = Partial<Record<keyof FormData, string>>;
-
 export function ContactSection() {
-  const [form, setForm] = useState<FormData>({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
-  const validate = (): boolean => {
-    const newErrors: FormErrors = {};
+  const isFullName = name.trim().split(/\s+/).filter(Boolean).length >= 2;
 
-    if (!form.name.trim()) {
-      newErrors.name = "Navn er påkrevd";
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // Validate full name
+    if (!isFullName) {
+      toast({
+        variant: "destructive",
+        title: "Skriv fullt navn",
+        description: "Oppgi fornavn og etternavn.",
+      });
+      return;
     }
 
-    if (!form.email.trim()) {
-      newErrors.email = "E-post er påkrevd";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = "Ugyldig e-postadresse";
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        variant: "destructive",
+        title: "Ugyldig e-postadresse",
+        description: "Sjekk at e-posten er korrekt.",
+      });
+      return;
     }
 
-    if (!form.subject.trim()) {
-      newErrors.subject = "Emne er påkrevd";
+    // Validate other fields
+    if (!subject.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Emne er påkrevd",
+        description: "Skriv et emne for meldingen.",
+      });
+      return;
     }
 
-    if (!form.message.trim()) {
-      newErrors.message = "Melding er påkrevd";
+    if (!message.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Melding er påkrevd",
+        description: "Skriv en melding.",
+      });
+      return;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+            subject: subject.trim(),
+            message: message.trim(),
+          }),
+        });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
+        const result = await response.json();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      // TODO: Implement contact form submission
-      console.log("Contact form:", form);
-      setForm({ name: "", email: "", subject: "", message: "" });
-    }
+        if (!response.ok) {
+          toast({
+            variant: "destructive",
+            title: "Kunne ikke sende melding",
+            description: result.error || "Prøv igjen senere.",
+          });
+          return;
+        }
+
+        toast({
+          title: "Melding sendt!",
+          description: "Vi kontakter deg så snart som mulig.",
+        });
+
+        // Reset form
+        setName("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+      } catch (error) {
+        console.error("Contact form error:", error);
+        toast({
+          variant: "destructive",
+          title: "Kunne ikke sende melding",
+          description: "Prøv igjen senere.",
+        });
+      }
+    });
   };
 
   return (
@@ -174,16 +213,11 @@ export function ContactSection() {
                     id="contact-name"
                     name="name"
                     type="text"
-                    value={form.name}
-                    onChange={handleChange}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary w-full rounded border px-4 py-2.5 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Ditt navn"
                   />
-                  {errors.name && (
-                    <p className="text-destructive mt-1 text-xs">
-                      {errors.name}
-                    </p>
-                  )}
                 </div>
 
                 {/* Email */}
@@ -198,16 +232,11 @@ export function ContactSection() {
                     id="contact-email"
                     name="email"
                     type="email"
-                    value={form.email}
-                    onChange={handleChange}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary w-full rounded border px-4 py-2.5 text-sm focus:ring-1 focus:outline-none"
                     placeholder="din@epost.no"
                   />
-                  {errors.email && (
-                    <p className="text-destructive mt-1 text-xs">
-                      {errors.email}
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -223,16 +252,11 @@ export function ContactSection() {
                   id="contact-subject"
                   name="subject"
                   type="text"
-                  value={form.subject}
-                  onChange={handleChange}
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
                   className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary w-full rounded border px-4 py-2.5 text-sm focus:ring-1 focus:outline-none"
                   placeholder="Hva gjelder henvendelsen?"
                 />
-                {errors.subject && (
-                  <p className="text-destructive mt-1 text-xs">
-                    {errors.subject}
-                  </p>
-                )}
               </div>
 
               {/* Message */}
@@ -247,21 +271,17 @@ export function ContactSection() {
                   id="contact-message"
                   name="message"
                   rows={5}
-                  value={form.message}
-                  onChange={handleChange}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary w-full resize-y rounded border px-4 py-2.5 text-sm focus:ring-1 focus:outline-none"
                   placeholder="Skriv din melding her..."
                 />
-                {errors.message && (
-                  <p className="text-destructive mt-1 text-xs">
-                    {errors.message}
-                  </p>
-                )}
               </div>
 
               <button
                 type="submit"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded px-6 py-3 text-sm font-semibold tracking-wider uppercase transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded px-6 py-3 text-sm font-semibold tracking-wider uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isPending}
               >
                 <Send className="h-4 w-4" />
                 Send Melding
