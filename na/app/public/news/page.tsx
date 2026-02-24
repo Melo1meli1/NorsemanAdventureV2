@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { Button } from "@/components/ui/button";
 import { NewsListWithPagination } from "@/components/news/NewsListWithPagination";
 
 export const revalidate = 60;
@@ -15,17 +13,24 @@ export default async function NewsPage() {
 
   return (
     <main className="bg-background min-h-screen py-12">
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 md:px-10">
-        <div className="mb-8 flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/">← Tilbake</Link>
-          </Button>
+      <div className="mx-auto max-w-6xl px-8 sm:px-12 md:px-16">
+        {/* Page header */}
+        <div className="mb-12 text-center">
+          <h1 className="text-foreground mb-4 text-4xl font-bold sm:text-5xl">
+            Nyheter
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg">
+            Hold deg oppdatert med de siste nyhetene, tips og oppdateringer fra
+            NorseMan Adventures.
+          </p>
         </div>
-        <h1 className="text-primary mb-8 text-3xl font-bold">Nyheter</h1>
+
         {news && news.length > 0 ? (
           <NewsListWithPagination news={news} />
         ) : (
-          <p className="text-muted-foreground">Ingen publiserte nyheter.</p>
+          <p className="text-muted-foreground text-center">
+            Ingen publiserte nyheter for øyeblikket.
+          </p>
         )}
       </div>
     </main>

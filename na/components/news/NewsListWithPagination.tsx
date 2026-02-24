@@ -13,16 +13,16 @@ export function NewsListWithPagination({ news }: NewsListWithPaginationProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [newsPerPage, setNewsPerPage] = useState(() => {
     if (typeof window === "undefined") {
-      return 6;
+      return 3;
     }
-    return window.matchMedia("(max-width: 767px)").matches ? 3 : 6;
+    return window.matchMedia("(max-width: 767px)").matches ? 2 : 3;
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const handleChange = (event: MediaQueryListEvent) => {
-      setNewsPerPage(event.matches ? 3 : 6);
+      setNewsPerPage(event.matches ? 2 : 3);
       setCurrentPage(1);
     };
 
@@ -57,7 +57,7 @@ export function NewsListWithPagination({ news }: NewsListWithPaginationProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-col gap-6">
         {paginatedNews.map((newsItem) => (
           <NewsCard key={newsItem.id} news={newsItem} />
         ))}
