@@ -187,9 +187,20 @@ export function TourListView({
 
                 {/* Info */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-semibold text-white">
-                    {tour.title}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-base font-semibold text-white">
+                      {tour.title}
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        tour.status === "published"
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-neutral-700/60 text-neutral-400"
+                      }`}
+                    >
+                      {tour.status === "published" ? "Publisert" : "Utkast"}
+                    </span>
+                  </div>
                   <div className="mt-2 flex flex-wrap items-center gap-x-7 gap-y-2 text-[13px] text-neutral-400">
                     <span className="flex items-center gap-1.5">
                       <Calendar className="h-4 w-4" aria-hidden />
