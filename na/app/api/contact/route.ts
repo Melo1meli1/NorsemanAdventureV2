@@ -42,9 +42,8 @@ export async function POST(request: NextRequest) {
       </p>
     `;
 
-    // Send email to info@norsemanadventures.com
     await sendEmail(
-      "info@norsemanadventures.com",
+      "post@norsemanadventure.no",
       `Kontaktskjema: ${subject}`,
       emailHtml,
     );

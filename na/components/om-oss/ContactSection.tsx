@@ -16,14 +16,14 @@ const CONTACT_INFO = [
   {
     icon: Mail,
     label: "E-post",
-    value: "info@norsemanadventures.com",
-    href: "mailto:info@norsemanadventures.com",
+    value: "post@norsemanadventure.no",
+    href: "mailto:post@norsemanadventure.no",
   },
   {
     icon: Phone,
     label: "Telefon",
-    value: "+47 123 45 678",
-    href: "tel:+4712345678",
+    value: "+47 484 88 898",
+    href: "tel:+47 48488898",
   },
   {
     icon: MapPin,
@@ -207,7 +207,7 @@ export function ContactSection() {
                     htmlFor="contact-name"
                     className="text-foreground mb-1.5 block text-sm font-medium"
                   >
-                    Navn <span className="text-primary">*</span>
+                    Fullt Navn <span className="text-primary">*</span>
                   </label>
                   <input
                     id="contact-name"

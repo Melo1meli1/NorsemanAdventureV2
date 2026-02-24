@@ -28,10 +28,10 @@ const SOCIAL_LINKS = [
 const CONTACT_INFO = [
   {
     icon: Mail,
-    text: "info@norsemanadventures.com",
-    href: "mailto:info@norsemanadventures.com",
+    text: "post@norsemanadventure.no",
+    href: "mailto:post@norsemanadventure.no",
   },
-  { icon: Phone, text: "+47 123 45 678", href: "tel:+4712345678" },
+  { icon: Phone, text: "+47 484 88 898 ", href: "tel:+47 484 88 898" },
   { icon: MapPin, text: "Norge", href: "#" },
 ] as const;
 
