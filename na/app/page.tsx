@@ -11,7 +11,7 @@ export default async function Home() {
     .from("tours")
     .select("*")
     .eq("status", "published")
-    .order("created_at", { ascending: false })
+    .order("start_date", { ascending: true })
     .limit(3);
 
   return (

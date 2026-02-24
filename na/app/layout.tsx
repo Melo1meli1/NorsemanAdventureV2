@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NorsemanAdventures",
   description: "Opplevelser og eventyrreiser",
+  icons: {
+    icon: "/logonew.png",
+  },
 };
 
 export default function RootLayout({
