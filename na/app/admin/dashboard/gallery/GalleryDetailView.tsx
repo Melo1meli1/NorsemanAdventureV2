@@ -26,6 +26,7 @@ import {
 } from "../actions/gallery";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
 import { Pagination } from "@/components/ui/pagination";
+import { FileDropZone } from "@/components/ui/file-drop-zone";
 
 const IMAGES_PER_PAGE = 12;
 
@@ -267,10 +268,7 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     setTogglingPublicPath(null);
   };
 
-  const handleFilesSelected = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = Array.from(event.target.files ?? []);
+  const processFiles = async (files: File[]) => {
     if (files.length === 0) {
       return;
     }
@@ -358,8 +356,15 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
     } finally {
       setUploadProgress(null);
       setIsUploading(false);
-      event.target.value = "";
     }
+  };
+
+  const handleFilesSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files ?? []);
+    await processFiles(files);
+    event.target.value = "";
   };
 
   useEffect(() => {
@@ -403,66 +408,125 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
         </p>
       ) : null}
 
-      <Card className="bg-card border-primary/20 rounded-[18px] border">
-        <CardContent className="space-y-8 px-6 pt-4 pb-8">
-          <div className="space-y-2">
-            <CardTitle className="text-xl text-neutral-50">
-              {tour.title} - Bilder
-            </CardTitle>
-            <p className="text-sm text-neutral-400">
-              Administrer bildene for denne turen. Stjerne = hovedbilde. Globus
-              = vises i offentlig galleri på nettsiden.
-            </p>
-          </div>
-
-          {images.length === 0 ? (
-            <div className="rounded-[18px] border border-neutral-800 bg-neutral-900/40 px-6 py-10 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-800/70 text-neutral-300">
-                <ImageIcon className="h-6 w-6" aria-hidden />
-              </div>
-              <h3 className="mt-4 text-base font-semibold text-neutral-50">
-                Ingen bilder enda
-              </h3>
-              <p className="mt-2 text-sm text-neutral-400">
-                Dra og slipp bilder her, eller klikk for å laste opp
+      <FileDropZone
+        onDrop={(files) => processFiles(files)}
+        accept={{ "image/*": [] }}
+      >
+        <Card className="bg-card border-primary/20 rounded-[18px] border">
+          <CardContent className="space-y-8 px-6 pt-4 pb-8">
+            <div className="space-y-2">
+              <CardTitle className="text-xl text-neutral-50">
+                {tour.title} - Bilder
+              </CardTitle>
+              <p className="text-sm text-neutral-400">
+                Administrer bildene for denne turen. Stjerne = hovedbilde.
+                Globus = vises i offentlig galleri på nettsiden.
               </p>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-primary/40 text-primary hover:bg-primary/10 mt-5"
-                onClick={openFilePicker}
-                disabled={isUploading}
-              >
-                Velg filer
-              </Button>
             </div>
-          ) : (
-            <>
-              <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-160">
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                  {images.map((image) => {
-                    const filePath = `${tour.id}/${image.name}`;
-                    const isInPublicGallery = publicGalleryPaths.has(filePath);
-                    const isToggling = togglingPublicPath === filePath;
-                    return (
-                      <div
-                        key={image.name}
-                        className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
-                      >
-                        <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
-                          <Image
-                            src={image.url}
-                            alt={image.name}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            className="object-cover"
-                          />
-                          <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
-                            {coverImageUrl === image.url ? (
-                              <span className="bg-primary/90 text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold shadow-sm">
-                                Hovedbilde
-                              </span>
-                            ) : (
+
+            {images.length === 0 ? (
+              <div className="rounded-[18px] border border-neutral-800 bg-neutral-900/40 px-6 py-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-800/70 text-neutral-300">
+                  <ImageIcon className="h-6 w-6" aria-hidden />
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-neutral-50">
+                  Ingen bilder enda
+                </h3>
+                <p className="mt-2 text-sm text-neutral-400">
+                  Dra og slipp bilder her, eller klikk for å laste opp
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-primary/40 text-primary hover:bg-primary/10 mt-5"
+                  onClick={openFilePicker}
+                  disabled={isUploading}
+                >
+                  Velg filer
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="h-88 min-h-0 overflow-x-hidden overflow-y-auto md:h-96 lg:h-160">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    {images.map((image) => {
+                      const filePath = `${tour.id}/${image.name}`;
+                      const isInPublicGallery =
+                        publicGalleryPaths.has(filePath);
+                      const isToggling = togglingPublicPath === filePath;
+                      return (
+                        <div
+                          key={image.name}
+                          className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
+                        >
+                          <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
+                            <Image
+                              src={image.url}
+                              alt={image.name}
+                              fill
+                              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                              className="object-cover"
+                            />
+                            <div className="absolute right-2 bottom-2 flex flex-wrap items-center gap-1.5">
+                              {coverImageUrl === image.url ? (
+                                <span className="bg-primary/90 text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold shadow-sm">
+                                  Hovedbilde
+                                </span>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  size="icon-sm"
+                                  variant="secondary"
+                                  className="h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSetCoverImage(image.url, image.name);
+                                  }}
+                                  disabled={
+                                    settingCoverImageName === image.name
+                                  }
+                                  aria-label={`Sett ${image.name} som hovedbilde`}
+                                  title="Sett som hovedbilde for turen"
+                                >
+                                  <Star className="h-3.5 w-3.5" aria-hidden />
+                                </Button>
+                              )}
+
+                              <Button
+                                type="button"
+                                size="icon-sm"
+                                variant="secondary"
+                                className={
+                                  isInPublicGallery
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
+                                    : "h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTogglePublicGallery(image.name);
+                                }}
+                                disabled={isToggling}
+                                aria-label={
+                                  isInPublicGallery
+                                    ? `Fjern ${image.name} fra offentlig galleri`
+                                    : `Legg ${image.name} til i offentlig galleri`
+                                }
+                                title={
+                                  isInPublicGallery
+                                    ? "Fjern fra offentlig galleri"
+                                    : "Legg til i offentlig galleri"
+                                }
+                              >
+                                {isInPublicGallery ? (
+                                  <Globe className="h-3.5 w-3.5" aria-hidden />
+                                ) : (
+                                  <GlobeLock
+                                    className="h-3.5 w-3.5"
+                                    aria-hidden
+                                  />
+                                )}
+                              </Button>
+
                               <Button
                                 type="button"
                                 size="icon-sm"
@@ -470,85 +534,34 @@ export function GalleryDetailView({ tour, onBack }: GalleryDetailViewProps) {
                                 className="h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleSetCoverImage(image.url, image.name);
+                                  setImageToDelete(image.name);
                                 }}
-                                disabled={settingCoverImageName === image.name}
-                                aria-label={`Sett ${image.name} som hovedbilde`}
-                                title="Sett som hovedbilde for turen"
+                                disabled={deletingImageName === image.name}
+                                aria-label={`Slett ${image.name}`}
                               >
-                                <Star className="h-3.5 w-3.5" aria-hidden />
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden />
                               </Button>
-                            )}
-
-                            <Button
-                              type="button"
-                              size="icon-sm"
-                              variant="secondary"
-                              className={
-                                isInPublicGallery
-                                  ? "bg-primary text-primary-foreground hover:bg-primary/90 h-7 w-7 rounded-md"
-                                  : "h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleTogglePublicGallery(image.name);
-                              }}
-                              disabled={isToggling}
-                              aria-label={
-                                isInPublicGallery
-                                  ? `Fjern ${image.name} fra offentlig galleri`
-                                  : `Legg ${image.name} til i offentlig galleri`
-                              }
-                              title={
-                                isInPublicGallery
-                                  ? "Fjern fra offentlig galleri"
-                                  : "Legg til i offentlig galleri"
-                              }
-                            >
-                              {isInPublicGallery ? (
-                                <Globe className="h-3.5 w-3.5" aria-hidden />
-                              ) : (
-                                <GlobeLock
-                                  className="h-3.5 w-3.5"
-                                  aria-hidden
-                                />
-                              )}
-                            </Button>
-
-                            <Button
-                              type="button"
-                              size="icon-sm"
-                              variant="secondary"
-                              className="h-7 w-7 rounded-md bg-black text-neutral-200 hover:bg-black/80"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setImageToDelete(image.name);
-                              }}
-                              disabled={deletingImageName === image.name}
-                              aria-label={`Slett ${image.name}`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                            </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                hasNextPage={hasNextPage}
-                onPageChange={goToPage}
-              />
-            </>
-          )}
-          {isLoadingImages ? (
-            <p className="text-xs text-neutral-400">Laster bilder...</p>
-          ) : null}
-        </CardContent>
-      </Card>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  hasNextPage={hasNextPage}
+                  onPageChange={goToPage}
+                />
+              </>
+            )}
+            {isLoadingImages ? (
+              <p className="text-xs text-neutral-400">Laster bilder...</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </FileDropZone>
       <input
         ref={fileInputRef}
         type="file"

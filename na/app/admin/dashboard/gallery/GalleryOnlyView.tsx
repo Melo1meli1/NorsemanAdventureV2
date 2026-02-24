@@ -14,6 +14,7 @@ import {
   removeFromPublicGallery,
 } from "../actions/gallery";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
+import { FileDropZone } from "@/components/ui/file-drop-zone";
 
 const STORAGE_PREFIX = "_gallery";
 
@@ -125,10 +126,7 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
       handleDelete(itemToDelete.file_path, itemToDelete.tour_id);
   };
 
-  const handleFilesSelected = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = Array.from(event.target.files ?? []);
+  const processFiles = async (files: File[]) => {
     if (files.length === 0) return;
 
     setIsUploading(true);
@@ -223,8 +221,15 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
     } finally {
       setUploadProgress(null);
       setIsUploading(false);
-      event.target.value = "";
     }
+  };
+
+  const handleFilesSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files ?? []);
+    await processFiles(files);
+    event.target.value = "";
   };
 
   return (
@@ -260,98 +265,103 @@ export function GalleryOnlyView({ onBack }: GalleryOnlyViewProps) {
         </p>
       )}
 
-      <Card className="bg-card border-primary/20 rounded-[18px] border">
-        <CardContent className="space-y-6 px-6 pt-4 pb-8">
-          <div className="space-y-2">
-            <CardTitle className="text-xl text-neutral-50">
-              Offentlige bilder
-            </CardTitle>
-            <p className="text-sm text-neutral-400">
-              Alle bilder som vises her vises på den offentlige galleri-siden.
-              Inkluderer bilder fra turer (når du har trykket globus) og bilder
-              lastet opp uten tur.
-            </p>
-          </div>
-
-          {isLoading ? (
-            <p className="text-sm text-neutral-400">Laster bilder...</p>
-          ) : images.length === 0 ? (
-            <div className="rounded-[18px] border border-neutral-800 bg-neutral-900/40 px-6 py-10 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-800/70 text-neutral-300">
-                <ImageIcon className="h-6 w-6" aria-hidden />
-              </div>
-              <h3 className="mt-4 text-base font-semibold text-neutral-50">
-                Ingen offentlige bilder
-              </h3>
-              <p className="mt-2 text-sm text-neutral-400">
-                Legg bilder til fra en tur (globus-knappen) eller last opp her
-                uten å knytte til tur.
+      <FileDropZone
+        onDrop={(files) => processFiles(files)}
+        accept={{ "image/*": [] }}
+      >
+        <Card className="bg-card border-primary/20 rounded-[18px] border">
+          <CardContent className="space-y-6 px-6 pt-4 pb-8">
+            <div className="space-y-2">
+              <CardTitle className="text-xl text-neutral-50">
+                Offentlige bilder
+              </CardTitle>
+              <p className="text-sm text-neutral-400">
+                Alle bilder som vises her vises på den offentlige galleri-siden.
+                Inkluderer bilder fra turer (når du har trykket globus) og
+                bilder lastet opp uten tur.
               </p>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-primary/40 text-primary hover:bg-primary/10 mt-5"
-                onClick={openFilePicker}
-                disabled={isUploading}
-              >
-                Velg filer
-              </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {images.map((img) => (
-                <div
-                  key={img.id || img.file_path}
-                  className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
+
+            {isLoading ? (
+              <p className="text-sm text-neutral-400">Laster bilder...</p>
+            ) : images.length === 0 ? (
+              <div className="rounded-[18px] border border-neutral-800 bg-neutral-900/40 px-6 py-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-800/70 text-neutral-300">
+                  <ImageIcon className="h-6 w-6" aria-hidden />
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-neutral-50">
+                  Ingen offentlige bilder
+                </h3>
+                <p className="mt-2 text-sm text-neutral-400">
+                  Legg bilder til fra en tur (globus-knappen) eller last opp her
+                  uten å knytte til tur.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-primary/40 text-primary hover:bg-primary/10 mt-5"
+                  onClick={openFilePicker}
+                  disabled={isUploading}
                 >
-                  <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
-                    <Image
-                      src={img.url}
-                      alt={img.file_path}
-                      fill
-                      sizes="(max-width: 768px) 50vw, 33vw, 25vw"
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 left-2">
-                      <span
-                        className="rounded-md bg-black/80 px-2 py-1 text-xs text-neutral-200"
-                        title={
-                          img.tour_id
-                            ? `Fra tur: ${img.tour_title ?? ""}`
-                            : "Uten tur"
-                        }
-                      >
-                        {img.tour_title ? `${img.tour_title}` : "Uten tur"}
-                      </span>
-                    </div>
-                    <div className="absolute right-2 bottom-2">
-                      <Button
-                        type="button"
-                        size="icon-sm"
-                        className="h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
-                        onClick={() =>
-                          setItemToDelete({
-                            file_path: img.file_path,
-                            tour_id: img.tour_id,
-                          })
-                        }
-                        disabled={deletingPath === img.file_path}
-                        aria-label={
-                          img.tour_id
-                            ? "Fjern fra offentlig galleri"
-                            : `Slett ${img.file_path}`
-                        }
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                      </Button>
+                  Velg filer
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {images.map((img) => (
+                  <div
+                    key={img.id || img.file_path}
+                    className="rounded-[18px] border border-neutral-800 bg-neutral-900/50 p-2"
+                  >
+                    <div className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] bg-neutral-900">
+                      <Image
+                        src={img.url}
+                        alt={img.file_path}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw, 25vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute top-2 left-2">
+                        <span
+                          className="rounded-md bg-black/80 px-2 py-1 text-xs text-neutral-200"
+                          title={
+                            img.tour_id
+                              ? `Fra tur: ${img.tour_title ?? ""}`
+                              : "Uten tur"
+                          }
+                        >
+                          {img.tour_title ? `${img.tour_title}` : "Uten tur"}
+                        </span>
+                      </div>
+                      <div className="absolute right-2 bottom-2">
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          className="h-7 w-7 rounded-md bg-black/60 text-neutral-200 hover:bg-black/80"
+                          onClick={() =>
+                            setItemToDelete({
+                              file_path: img.file_path,
+                              tour_id: img.tour_id,
+                            })
+                          }
+                          disabled={deletingPath === img.file_path}
+                          aria-label={
+                            img.tour_id
+                              ? "Fjern fra offentlig galleri"
+                              : `Slett ${img.file_path}`
+                          }
+                        >
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </FileDropZone>
 
       <input
         ref={fileInputRef}
