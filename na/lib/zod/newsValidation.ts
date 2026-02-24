@@ -17,7 +17,7 @@ export const createNewsSchema = z.object({
     .max(10000, "Maks 10 000 tegn")
     .optional()
     .or(z.literal("")),
-  image_url: z.string().url("Ugyldig URL").optional().or(z.literal("")),
+  image_url: z.string().optional().or(z.literal("")),
   status: newsStatusEnum.default("draft"),
   published_at: z.coerce.date().optional().nullable(),
 });
@@ -39,7 +39,7 @@ export const updateNewsSchema = z.object({
     .max(10000, "Maks 10 000 tegn")
     .optional()
     .or(z.literal("")),
-  image_url: z.string().url("Ugyldig URL").optional().or(z.literal("")),
+  image_url: z.string().optional().or(z.literal("")),
   status: newsStatusEnum.optional(),
   published_at: z.coerce.date().optional().nullable(),
 });

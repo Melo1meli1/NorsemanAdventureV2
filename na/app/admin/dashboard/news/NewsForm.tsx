@@ -12,6 +12,7 @@ import { createNews, updateNews } from "../actions/news";
 import type { News } from "@/lib/types/news";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/common/ImageUpload";
 
 const accentOrange = "#ef5b25";
 
@@ -84,6 +85,10 @@ export default function NewsForm({
     name: "status",
     defaultValue: "draft",
   });
+
+  const handleImageChange = (urls: string[]) => {
+    setValue("image_url", urls[0] || "");
+  };
 
   async function onSubmit(data: CreateNewsInput | UpdateNewsInput) {
     const formData = new FormData();
@@ -194,22 +199,22 @@ export default function NewsForm({
         )}
       </div>
 
-      {/* Bilde-URL og Publiseringsdato – 2-kolonne grid */}
+      {/* Bildeopplasting og Publiseringsdato – 2-kolonne grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="image_url"
-            className="text-sm font-medium text-neutral-200"
-          >
-            Bilde-URL
-          </label>
-          <Input
-            id="image_url"
-            type="text"
-            placeholder="https://..."
-            className={inputClassName}
-            {...register("image_url")}
+          <label className="text-sm font-medium text-neutral-200">Bilde</label>
+
+          <ImageUpload
+            bucket="news-images"
+            pathPrefix="news"
+            value={initialNews?.image_url ? [initialNews.image_url] : []}
+            onChange={handleImageChange}
+            multiple={false}
+            height={128}
+            uploadText="Klikk for å laste opp bilde"
           />
+
+          <input type="hidden" {...register("image_url")} />
           {errors.image_url && (
             <p className="text-xs text-red-400">{errors.image_url.message}</p>
           )}
