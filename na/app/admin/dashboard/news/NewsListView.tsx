@@ -1,30 +1,18 @@
 "use client";
-import { deleteTour } from "../actions/tours";
+
+import { deleteNews } from "../actions/news";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFilteredBySearch } from "@/hooks/useSearchQuery";
 import Image from "next/image";
-import {
-  Calendar,
-  ImageIcon,
-  MapPin,
-  Pencil,
-  Plus,
-  Trash2,
-  Users,
-} from "lucide-react";
-import type { Tour } from "@/lib/types";
+import { Calendar, ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
+import type { News } from "@/lib/types/news";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "../utils/ConfirmDialog";
-import TourFormModal from "./TourFormModal";
+import NewsFormModal from "./NewsFormModal";
 import { Pagination } from "@/components/ui/pagination";
-import { SearchInput } from "@/components/common/SearchInput";
 
-type TourListViewProps = {
-  tours: Tour[];
-  onEdit?: (tour: Tour) => void;
-  onNewTour?: () => void;
-  onOpenGalleryForTour?: (tour: Tour) => void;
+type NewsListViewProps = {
+  news: News[];
 };
 
 function formatDate(iso: string | null): string {
@@ -34,30 +22,19 @@ function formatDate(iso: string | null): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function TourListView({
-  tours,
-  onEdit,
-  onNewTour,
-  onOpenGalleryForTour,
-}: TourListViewProps) {
+export function NewsListView({ news }: NewsListViewProps) {
   const router = useRouter();
-  const tourSearchKeys = useMemo(() => ["title", "sted"] as const, []);
-  const [tourSearchTerm, setTourSearchTerm] = useState("");
-  const filteredTours = useFilteredBySearch(tours, tourSearchKeys, {
-    overrideQuery: tourSearchTerm,
-  });
-  const [pendingDelete, setPendingDelete] = useState<Tour | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<News | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingTour, setEditingTour] = useState<Tour | null>(null);
+  const [editingNews, setEditingNews] = useState<News | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const TOURS_PER_PAGE = 6;
+  const NEWS_PER_PAGE = 6;
 
-  const totalPages = Math.ceil(filteredTours.length / TOURS_PER_PAGE) || 1;
+  const totalPages = Math.ceil(news.length / NEWS_PER_PAGE) || 1;
   const displayPage = Math.min(currentPage, totalPages);
 
   function resolveImageSrc(imageUrl: string | null) {
     if (!imageUrl) return null;
-
     if (imageUrl.startsWith("http")) {
       return { src: imageUrl, unoptimized: true as const };
     }
@@ -67,41 +44,28 @@ export function TourListView({
     return { src: `/${imageUrl}`, unoptimized: false as const };
   }
 
-  function handleRequestDelete(tour: Tour) {
-    setPendingDelete(tour);
-  }
-
-  function handleOpenNewTour() {
-    if (onNewTour) {
-      onNewTour();
-      return;
-    }
-    setEditingTour(null);
+  function handleOpenNewNews() {
+    setEditingNews(null);
     setIsFormOpen(true);
   }
 
-  function handleOpenEditTour(tour: Tour) {
-    if (onEdit) {
-      onEdit(tour);
-      return;
-    }
-    setEditingTour(tour);
+  function handleOpenEditNews(item: News) {
+    setEditingNews(item);
     setIsFormOpen(true);
   }
 
   function handleCloseForm() {
     setIsFormOpen(false);
-    setEditingTour(null);
+    setEditingNews(null);
   }
 
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
 
-    console.log("Deleting tour:", pendingDelete.id);
     const formData = new FormData();
     formData.append("id", String(pendingDelete.id));
 
-    const result = await deleteTour(formData);
+    const result = await deleteNews(formData);
 
     if (result?.success) {
       router.refresh();
@@ -110,12 +74,12 @@ export function TourListView({
     setPendingDelete(null);
   }
 
-  const paginatedTours = useMemo(() => {
-    if (filteredTours.length === 0) return [];
-    const startIndex = (displayPage - 1) * TOURS_PER_PAGE;
-    const endIndex = startIndex + TOURS_PER_PAGE;
-    return filteredTours.slice(startIndex, endIndex);
-  }, [filteredTours, displayPage]);
+  const paginatedNews = useMemo(() => {
+    if (news.length === 0) return [];
+    const startIndex = (displayPage - 1) * NEWS_PER_PAGE;
+    const endIndex = startIndex + NEWS_PER_PAGE;
+    return news.slice(startIndex, endIndex);
+  }, [news, displayPage]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -124,45 +88,37 @@ export function TourListView({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header: New Tour button */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <SearchInput
-          placeholder="Søk etter tur"
-          className="w-full sm:max-w-xs"
-          syncToUrl={false}
-          onChange={setTourSearchTerm}
-        />
+      {/* Header: New News button */}
+      <div className="flex items-center justify-end">
         <Button
           type="button"
-          onClick={handleOpenNewTour}
+          onClick={handleOpenNewNews}
           className="h-11 w-full gap-2 px-5 font-semibold uppercase sm:w-auto"
         >
           <Plus className="h-4 w-4" />
-          NY TUR
+          NY NYHET
         </Button>
       </div>
 
-      {/* Tour list */}
+      {/* News list */}
       <ul className="flex flex-col gap-4">
-        {filteredTours.length === 0 ? (
+        {news.length === 0 ? (
           <li className="rounded-lg border border-neutral-800 bg-[#161920] px-6 py-12 text-center text-sm text-neutral-400">
-            {tours.length === 0
-              ? "Ingen turer ennå. Opprett en tur for å komme i gang."
-              : "Ingen turer matcher søket."}
+            Ingen nyheter ennå. Opprett en nyhet for å komme i gang.
           </li>
         ) : (
-          paginatedTours.map((tour) => {
-            const imageConfig = resolveImageSrc(tour.image_url);
+          paginatedNews.map((item: News) => {
+            const imageConfig = resolveImageSrc(item.image_url);
             return (
               <li
-                key={tour.id}
+                key={item.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => handleOpenEditTour(tour)}
+                onClick={() => handleOpenEditNews(item)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    handleOpenEditTour(tour);
+                    handleOpenEditNews(item);
                   }
                 }}
                 className="hover:border-primary/60 focus-visible:ring-primary/70 flex cursor-pointer flex-col gap-3 rounded-lg border border-neutral-800 bg-[#161920] p-4 transition hover:-translate-y-0.5 hover:bg-[#191d28] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090b10] focus-visible:outline-none sm:flex-row sm:items-center sm:gap-4"
@@ -172,7 +128,7 @@ export function TourListView({
                   {imageConfig ? (
                     <Image
                       src={imageConfig.src}
-                      alt={tour.title}
+                      alt={item.title}
                       fill
                       className="object-cover"
                       sizes="72px"
@@ -189,32 +145,27 @@ export function TourListView({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="truncate text-base font-semibold text-white">
-                      {tour.title}
+                      {item.title}
                     </p>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        tour.status === "published"
+                        item.status === "published"
                           ? "bg-green-500/20 text-green-400"
                           : "bg-neutral-700/60 text-neutral-400"
                       }`}
                     >
-                      {tour.status === "published" ? "Publisert" : "Utkast"}
+                      {item.status === "published" ? "Publisert" : "Utkast"}
                     </span>
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-7 gap-y-2 text-[13px] text-neutral-400">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-7 gap-y-2 text-[13px] text-neutral-400">
+                    {item.short_description && (
+                      <span className="line-clamp-1 max-w-xs">
+                        {item.short_description}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1.5">
                       <Calendar className="h-4 w-4" aria-hidden />
-                      {formatDate(tour.start_date)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Users className="h-4 w-4" aria-hidden />
-                      {(tour as { total_seats?: number }).total_seats != null
-                        ? `${(tour as { total_seats: number }).total_seats - tour.seats_available}/${(tour as { total_seats: number }).total_seats}`
-                        : `0/${tour.seats_available}`}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" aria-hidden />
-                      {tour.sted ?? "–"}
+                      {formatDate(item.published_at ?? item.created_at)}
                     </span>
                   </div>
                 </div>
@@ -228,27 +179,12 @@ export function TourListView({
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
-                      handleOpenEditTour(tour);
+                      handleOpenEditNews(item);
                     }}
-                    aria-label={`Rediger ${tour.title}`}
+                    aria-label={`Rediger ${item.title}`}
                   >
                     <Pencil className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
-                  {onOpenGalleryForTour && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenGalleryForTour(tour);
-                      }}
-                      aria-label={`Åpne galleri for ${tour.title}`}
-                    >
-                      <ImageIcon className="h-4 w-4 text-current sm:h-5 sm:w-5" />
-                    </Button>
-                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -256,9 +192,9 @@ export function TourListView({
                     className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 w-9 border-2 bg-transparent sm:h-11 sm:w-11"
                     onClick={(event) => {
                       event.stopPropagation();
-                      handleRequestDelete(tour);
+                      setPendingDelete(item);
                     }}
-                    aria-label={`Slett ${tour.title}`}
+                    aria-label={`Slett ${item.title}`}
                   >
                     <Trash2 className="h-4 w-4 text-current sm:h-5 sm:w-5" />
                   </Button>
@@ -277,8 +213,8 @@ export function TourListView({
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
-        title="Slett tur"
-        description="Er du sikker på at du vil slette denne turen? Denne handlingen kan ikke angres."
+        title="Slett nyhet"
+        description="Er du sikker på at du vil slette denne nyheten? Denne handlingen kan ikke angres."
         onClose={() => setPendingDelete(null)}
         onConfirm={() => {
           handleConfirmDelete();
@@ -287,10 +223,10 @@ export function TourListView({
         cancelLabel="Avbryt"
       />
 
-      <TourFormModal
+      <NewsFormModal
         open={isFormOpen}
-        mode={editingTour ? "edit" : "create"}
-        initialTour={editingTour}
+        mode={editingNews ? "edit" : "create"}
+        initialNews={editingNews}
         onClose={handleCloseForm}
         onSuccess={() => router.refresh()}
       />

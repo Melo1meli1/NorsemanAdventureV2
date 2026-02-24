@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { getTours } from "./actions/tours";
+import { getNews } from "./actions/news";
 import { DashboardShell } from "./DashboardShell";
 
 export default async function AdminDashboardPage() {
@@ -13,8 +14,10 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const result = await getTours();
-  const tours = result?.success && result.data ? result.data : [];
+  const [toursResult, newsResult] = await Promise.all([getTours(), getNews()]);
+  const tours =
+    toursResult?.success && toursResult.data ? toursResult.data : [];
+  const news = newsResult?.success && newsResult.data ? newsResult.data : [];
 
-  return <DashboardShell tours={tours} />;
+  return <DashboardShell tours={tours} news={news} />;
 }

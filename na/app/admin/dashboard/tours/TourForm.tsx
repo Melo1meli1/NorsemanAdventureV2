@@ -4,12 +4,13 @@ import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createTourSchema,
-  type CreateTourInput,
-} from "@/lib/zod/tourValidation";
-
-import {
+  createDraftTourSchema,
   updateTourSchema,
+  updateDraftTourSchema,
+  type CreateTourInput,
   type UpdateTourInput,
+  type CreateDraftTourInput,
+  type UpdateDraftTourInput,
 } from "@/lib/zod/tourValidation";
 import { createTour, updateTour } from "../actions/tours";
 import type { Tour } from "@/lib/types";
@@ -26,7 +27,7 @@ type Mode = "create" | "edit";
 /** Form state uses string dates (HTML date inputs); zod coerces to Date on submit.
  *  Enum fields use "" for empty select; zod transforms to null on submit. */
 type TourFormValues = Omit<
-  CreateTourInput,
+  CreateDraftTourInput,
   "start_date" | "end_date" | "vanskelighetsgrad" | "sesong" | "terreng"
 > & {
   start_date: string;
@@ -36,6 +37,12 @@ type TourFormValues = Omit<
   sesong?: string;
   terreng?: string;
 };
+
+type TourFormOutput =
+  | CreateTourInput
+  | UpdateTourInput
+  | CreateDraftTourInput
+  | UpdateDraftTourInput;
 
 type TourFormProps = {
   mode: Mode;
@@ -61,19 +68,19 @@ export default function TourForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
     setError,
     setValue,
     control,
-  } = useForm<TourFormValues, object, CreateTourInput | UpdateTourInput>({
+  } = useForm<TourFormValues, object, TourFormOutput>({
     mode: "onChange",
     resolver: zodResolver(
-      (isEdit ? updateTourSchema : createTourSchema) as typeof createTourSchema,
-    ) as unknown as Resolver<
-      TourFormValues,
-      object,
-      CreateTourInput | UpdateTourInput
-    >,
+      (isEdit
+        ? updateDraftTourSchema
+        : createDraftTourSchema) as unknown as Parameters<
+        typeof zodResolver
+      >[0],
+    ) as unknown as Resolver<TourFormValues, object, TourFormOutput>,
     defaultValues:
       isEdit && initialTour
         ? {
@@ -133,7 +140,24 @@ export default function TourForm({
     return days === 1 ? "1 dag" : `${days} dager`;
   })();
 
-  async function onSubmit(data: CreateTourInput | UpdateTourInput) {
+  async function onSubmit(data: TourFormOutput) {
+    const status = data.status ?? "draft";
+
+    // If publishing, validate with the strict schema
+    if (status === "published") {
+      const strictSchema = isEdit ? updateTourSchema : createTourSchema;
+      const strictResult = strictSchema.safeParse(data);
+      if (!strictResult.success) {
+        for (const issue of strictResult.error.issues) {
+          const field = issue.path[0] as keyof TourFormValues;
+          if (field) {
+            setError(field, { message: issue.message });
+          }
+        }
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.set("title", data.title ?? "");
     formData.set("short_description", data.short_description ?? "");
@@ -159,7 +183,7 @@ export default function TourForm({
     formData.set("seats_available", String(data.seats_available ?? 0));
     formData.set("total_seats", String(data.total_seats ?? 0));
     formData.set("image_url", isEdit ? (initialTour?.image_url ?? "") : "");
-    formData.set("status", data.status ?? "draft");
+    formData.set("status", status);
 
     if (isEdit && "id" in data && data.id) {
       formData.set("id", data.id);
@@ -506,7 +530,7 @@ export default function TourForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || !isValid}
+          disabled={isSubmitting}
           className="flex-1 font-semibold uppercase"
         >
           {isSubmitting

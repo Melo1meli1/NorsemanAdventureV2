@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { createTourSchema, updateTourSchema } from "@/lib/zod/tourValidation";
+import {
+  createTourSchema,
+  createDraftTourSchema,
+  updateTourSchema,
+  updateDraftTourSchema,
+} from "@/lib/zod/tourValidation";
 import type { TablesInsert, TablesUpdate } from "@/lib/database.types";
 
 type TourInsert = TablesInsert<"tours">;
@@ -137,7 +142,9 @@ export async function createTour(formData: FormData) {
     status: formData.get("status") ?? undefined,
   };
 
-  const parsed = createTourSchema.safeParse(rawData);
+  const isDraft = rawData.status === "draft" || !rawData.status;
+  const schema = isDraft ? createDraftTourSchema : createTourSchema;
+  const parsed = schema.safeParse(rawData);
 
   if (!parsed.success) {
     return {
@@ -148,22 +155,24 @@ export async function createTour(formData: FormData) {
 
   const supabase = await createClient();
 
+  const d = parsed.data;
   const insertPayload = mapCreateInputToInsert({
-    end_date: parsed.data.end_date ?? null,
-    hoydepunkter: parsed.data.hoydepunkter ?? null,
-    image_url: parsed.data.image_url ?? null,
-    long_description: parsed.data.long_description ?? null,
-    price: parsed.data.price,
-    seats_available: parsed.data.seats_available,
-    total_seats: parsed.data.total_seats,
-    sesong: parsed.data.sesong ?? null,
-    short_description: parsed.data.short_description ?? null,
-    start_date: parsed.data.start_date,
-    sted: parsed.data.sted ?? null,
-    status: parsed.data.status,
-    terreng: parsed.data.terreng ?? null,
-    title: parsed.data.title,
-    vanskelighetsgrad: parsed.data.vanskelighetsgrad ?? null,
+    end_date: d.end_date ?? null,
+    hoydepunkter: d.hoydepunkter ?? null,
+    image_url: d.image_url ?? null,
+    long_description: d.long_description ?? null,
+    price: d.price ?? 0,
+    seats_available: d.seats_available ?? 0,
+    total_seats: d.total_seats ?? 0,
+    sesong: (d.sesong ?? null) as TourInsert["sesong"],
+    short_description: d.short_description ?? null,
+    start_date: d.start_date ?? new Date(),
+    sted: d.sted ?? null,
+    status: d.status ?? "draft",
+    terreng: (d.terreng ?? null) as TourInsert["terreng"],
+    title: d.title ?? "",
+    vanskelighetsgrad: (d.vanskelighetsgrad ??
+      null) as TourInsert["vanskelighetsgrad"],
   });
 
   const { error } = await supabase.from("tours").insert(insertPayload);
@@ -201,7 +210,9 @@ export async function updateTour(formData: FormData) {
     status: formData.get("status") ?? undefined,
   };
 
-  const parsed = updateTourSchema.safeParse(rawData);
+  const isDraft = rawData.status === "draft" || !rawData.status;
+  const schema = isDraft ? updateDraftTourSchema : updateTourSchema;
+  const parsed = schema.safeParse(rawData);
 
   if (!parsed.success) {
     return {
@@ -211,7 +222,14 @@ export async function updateTour(formData: FormData) {
   }
 
   const { id, ...rest } = parsed.data;
-  const updatePayload = mapUpdateInputToUpdate(rest);
+  const updatePayload = mapUpdateInputToUpdate({
+    ...rest,
+    start_date: rest.start_date instanceof Date ? rest.start_date : undefined,
+    vanskelighetsgrad: (rest.vanskelighetsgrad ??
+      undefined) as TourUpdate["vanskelighetsgrad"],
+    sesong: (rest.sesong ?? undefined) as TourUpdate["sesong"],
+    terreng: (rest.terreng ?? undefined) as TourUpdate["terreng"],
+  });
 
   if (Object.keys(updatePayload).length === 0) {
     return {

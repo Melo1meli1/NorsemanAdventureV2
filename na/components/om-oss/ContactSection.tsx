@@ -28,7 +28,7 @@ const CONTACT_INFO = [
   {
     icon: MapPin,
     label: "Lokasjon",
-    value: "Oslo, Norge",
+    value: "Drammen, Norge",
     href: "#",
   },
 ] as const;

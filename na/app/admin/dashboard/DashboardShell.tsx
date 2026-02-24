@@ -29,6 +29,8 @@ import { GalleryView } from "./gallery/GalleryView";
 import { GalleryDetailView } from "./gallery/GalleryDetailView";
 import { OrdersView } from "./orders/OrdersView";
 import { GalleryOnlyView } from "./gallery/GalleryOnlyView";
+import { NewsListView } from "./news/NewsListView";
+import type { News } from "@/lib/types/news";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -40,9 +42,10 @@ const navItems = [
 
 type DashboardShellProps = {
   tours?: Tour[];
+  news?: News[];
 };
 
-export function DashboardShell({ tours = [] }: DashboardShellProps) {
+export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const validSections = [
@@ -177,7 +180,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
   }, [activeSection, fetchStats]);
 
   return (
-    <main className="bg-page-background flex min-h-screen text-neutral-50">
+    <main className="bg-page-background flex min-h-screen overflow-x-hidden text-neutral-50">
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
         <Link
@@ -484,15 +487,15 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
                           key={order.id}
                           className="flex items-center justify-between px-5 py-3"
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-medium text-neutral-50">
+                          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span className="truncate font-medium text-neutral-50">
                               {order.navn}
                             </span>
-                            <span className="text-sm text-neutral-400">
+                            <span className="truncate text-sm text-neutral-400">
                               {order.turTittel}
                             </span>
                           </div>
-                          <span className="text-xs font-medium">
+                          <span className="shrink-0 text-xs font-medium">
                             {isBekreftet ? (
                               <span className="bg-primary/20 text-primary rounded-full px-2 py-1">
                                 {statusLabel}
@@ -526,13 +529,7 @@ export function DashboardShell({ tours = [] }: DashboardShellProps) {
             />
           )}
 
-          {activeSection === "news" && (
-            <div>
-              <p className="text-sm text-neutral-400">
-                Nyheter-seksjon. NewsList / NewsView kan kobles inn her.
-              </p>
-            </div>
-          )}
+          {activeSection === "news" && <NewsListView news={news} />}
 
           {/* Hold OrdersView mounted men skjult når inaktiv, så state (bestillinger) bevares ved tab-bytt. isActive=false hindrer fetch når bruker søker på Turer. */}
           <div

@@ -41,6 +41,37 @@ const endDateSchema = z
   .nullable()
   .optional();
 
+// ── Shared enum/select fields ──
+const optionalEnumField = (enumSchema: z.ZodEnum<[string, ...string[]]>) =>
+  z
+    .union([enumSchema, z.literal("")])
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .optional();
+
+// ── Draft schema: very lenient, almost nothing required ──
+export const draftTourSchema = z.object({
+  title: z.string().trim().default(""),
+  short_description: z.string().trim().default(""),
+  long_description: nullableString,
+  hoydepunkter: nullableString,
+  sted: z.string().trim().default(""),
+  vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
+  sesong: optionalEnumField(sesongEnum),
+  terreng: optionalEnumField(terrengEnum),
+  price: z.coerce.number().nonnegative().default(0),
+  start_date: z
+    .union([startDateSchema, z.literal("").transform(() => null), z.null()])
+    .nullable()
+    .optional(),
+  end_date: endDateSchema,
+  seats_available: z.coerce.number().int().min(0).default(0),
+  total_seats: z.coerce.number().int().min(0).default(0),
+  image_url: nullableString,
+  status: tourStatusEnum.default("draft"),
+});
+
+// ── Published schema: strict, all mandatory fields required ──
 export const baseTourSchema = z.object({
   title: z
     .string({
@@ -62,21 +93,9 @@ export const baseTourSchema = z.object({
     })
     .trim()
     .min(1, "Sted er påkrevd."),
-  vanskelighetsgrad: z
-    .union([vanskelighetsgradEnum, z.literal("")])
-    .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .optional(),
-  sesong: z
-    .union([sesongEnum, z.literal("")])
-    .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .optional(),
-  terreng: z
-    .union([terrengEnum, z.literal("")])
-    .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .optional(),
+  vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
+  sesong: optionalEnumField(sesongEnum),
+  terreng: optionalEnumField(terrengEnum),
   price: z.coerce
     .number({
       message: "Pris må være et tall.",
@@ -119,6 +138,8 @@ export const createTourSchema = baseTourSchema
     }
   });
 
+export const createDraftTourSchema = draftTourSchema;
+
 export const updateTourSchema = baseTourSchema
   .partial()
   .extend({
@@ -157,5 +178,17 @@ export const updateTourSchema = baseTourSchema
     }
   });
 
+export const updateDraftTourSchema = draftTourSchema.extend({
+  id: z
+    .string({
+      message: "ID er påkrevd.",
+    })
+    .uuid({
+      message: "Ugyldig tur-id.",
+    }),
+});
+
 export type CreateTourInput = z.infer<typeof createTourSchema>;
+export type CreateDraftTourInput = z.infer<typeof createDraftTourSchema>;
 export type UpdateTourInput = z.infer<typeof updateTourSchema>;
+export type UpdateDraftTourInput = z.infer<typeof updateDraftTourSchema>;
