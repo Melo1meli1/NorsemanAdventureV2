@@ -4,8 +4,6 @@ import {
   Calendar,
   Check,
   MapPin,
-  Sun,
-  Snowflake,
   Users,
   Clock,
   AlertTriangle,
@@ -17,7 +15,6 @@ import {
   getTourDays,
   getTourImageUrl,
   getTerrengLabel,
-  getSesongLabel,
   parseHoydepunkter,
   formatDateRange,
 } from "@/lib/tourUtils";
@@ -56,7 +53,6 @@ export default async function TourDetailPage({ params }: Props) {
   const imageUrl = getTourImageUrl(tour);
   const days = getTourDays(tour);
   const terrengLabel = getTerrengLabel(tour.terreng);
-  const sesongLabel = getSesongLabel(tour.sesong);
   const hoydepunkterList = parseHoydepunkter(tour.hoydepunkter);
 
   return (
@@ -79,16 +75,6 @@ export default async function TourDetailPage({ params }: Props) {
         </div>
         <div className="absolute right-0 bottom-0 left-0 flex flex-col gap-4 px-6 py-4 sm:px-10 sm:py-6 md:px-14 md:py-8 lg:px-20 lg:py-10 xl:px-24 xl:py-12">
           <div className="flex flex-wrap gap-2">
-            {sesongLabel && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
-                {tour.sesong === "sommer" ? (
-                  <Sun className="size-4" aria-hidden />
-                ) : (
-                  <Snowflake className="size-4" aria-hidden />
-                )}
-                {sesongLabel}
-              </span>
-            )}
             {terrengLabel && (
               <span className="rounded-full border border-white/30 bg-black/40 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
                 {terrengLabel}
