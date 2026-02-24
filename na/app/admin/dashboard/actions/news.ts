@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { createNewsSchema, updateNewsSchema } from "@/lib/zod/newsValidation";
+import { getActiveSubscribers } from "@/app/actions/subscribers";
+import { sendEmail } from "@/lib/mail";
+import { buildNewsletterEmail } from "@/lib/norsemanEmailTemplates";
 import type { News } from "@/lib/types/news";
 
 function extractFirstErrorMessage(error: unknown): string {
@@ -169,4 +172,78 @@ export async function deleteNews(formData: FormData) {
 
   revalidatePath("/admin/dashboard");
   return { success: true as const };
+}
+
+export async function sendNewsletter(newsId: string) {
+  if (typeof newsId !== "string" || newsId.length === 0) {
+    return { success: false as const, error: "Ugyldig nyhets-id." };
+  }
+
+  const supabase = await createClient();
+
+  // Get the news article
+  const { data: news, error: newsError } = await supabase
+    .from("news")
+    .select("*")
+    .eq("id", newsId)
+    .eq("status", "published")
+    .single();
+
+  if (newsError || !news) {
+    return {
+      success: false as const,
+      error: "Fant ikke publisert nyhetsartikkel.",
+    };
+  }
+
+  // Get active subscribers
+  const subscribersResult = await getActiveSubscribers();
+
+  if (!subscribersResult.success || !subscribersResult.data) {
+    return {
+      success: false as const,
+      error: "Kunne ikke hente abonnenter.",
+    };
+  }
+
+  const subscribers = subscribersResult.data;
+
+  if (subscribers.length === 0) {
+    return {
+      success: false as const,
+      error: "Ingen aktive abonnenter å sende til.",
+    };
+  }
+
+  try {
+    const emailAddresses = subscribers.map((subscriber) => subscriber.email);
+
+    const newsletterData = {
+      title: news.title,
+      short_description: news.short_description || "",
+      content: news.content,
+      image_url: news.image_url,
+      published_at: news.published_at || news.created_at,
+    };
+
+    const { subject, html } = buildNewsletterEmail({
+      siteUrl: process.env.NEXT_PUBLIC_BASE_URL,
+      data: newsletterData,
+    });
+
+    // Send emails to all subscribers
+    await Promise.all(
+      emailAddresses.map((email) => sendEmail(email, subject, html)),
+    );
+
+    return {
+      success: true as const,
+      message: `Nyhetsbrev sendt til ${subscribers.length} abonnenter.`,
+    };
+  } catch {
+    return {
+      success: false as const,
+      error: "Kunne ikke sende nyhetsbrev. Vennligst prøv igjen.",
+    };
+  }
 }
