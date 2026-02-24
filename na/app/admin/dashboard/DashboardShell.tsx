@@ -24,6 +24,8 @@ import {
   type BookingStats,
 } from "./actions/bookings";
 import { LogoutButton } from "./utils/LogoutButton";
+import { IdleWarningDialog } from "./utils/IdleWarningDialog";
+import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { TourListView } from "./tours/TourListView";
 import { GalleryView } from "./gallery/GalleryView";
 import { GalleryDetailView } from "./gallery/GalleryDetailView";
@@ -45,9 +47,21 @@ type DashboardShellProps = {
   news?: News[];
 };
 
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
 export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showIdleWarning, setShowIdleWarning] = useState(false);
+
+  useIdleTimer({
+    idleTimeout: IDLE_TIMEOUT_MS,
+    onIdle: () => setShowIdleWarning(true),
+  });
+
+  const handleStillWorking = useCallback(() => {
+    setShowIdleWarning(false);
+  }, []);
   const validSections = [
     "overview",
     "tours",
@@ -181,6 +195,11 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
 
   return (
     <main className="bg-page-background flex min-h-screen overflow-x-hidden text-neutral-50">
+      <IdleWarningDialog
+        open={showIdleWarning}
+        onStillWorking={handleStillWorking}
+      />
+
       {/* Sidebar */}
       <aside className="bg-card hidden w-64 flex-col border-r border-neutral-800 md:flex">
         <Link
