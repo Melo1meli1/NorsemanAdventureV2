@@ -1,13 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  Calendar,
-  Check,
-  MapPin,
-  Users,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import { Calendar, Check, MapPin, Users, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/supabase-server";
 import { BookSpotCard } from "@/components/tours/BookSpotCard";
 import { DifficultyBadge } from "@/components/tours/DifficultyBadge";
@@ -187,30 +180,6 @@ export default async function TourDetailPage({ params }: Props) {
                 totalSeats={totalSeats}
                 tourId={id}
               />
-              {tour.vanskelighetsgrad === "ekspert" ? (
-                <section
-                  className="border-primary bg-primary/5 rounded-xl border-2 p-5 sm:p-6"
-                  aria-labelledby="ekspert-info-heading"
-                >
-                  <h2
-                    id="ekspert-info-heading"
-                    className="text-foreground mb-3 flex items-center gap-2 text-lg font-bold"
-                  >
-                    <AlertTriangle
-                      className="text-primary size-5 shrink-0"
-                      aria-hidden
-                    />
-                    Om ekspertnivå
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Denne turen er merket som <strong>ekspert</strong> og er
-                    krevende. Du bør ha god erfaring med tilsvarende turer, være
-                    i god fysisk form og forstå at forhold og vær kan endre seg
-                    raskt. Les turbeskrivelsen nøye og vurder om du oppfyller
-                    kravene før du bestiller.
-                  </p>
-                </section>
-              ) : null}
             </div>
           </div>
         </div>
