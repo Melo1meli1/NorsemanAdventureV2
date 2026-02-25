@@ -106,6 +106,11 @@ export function BookSpotCard({
   const signedUp = Math.max(0, totalSeats - seatsAvailable);
   const isSoldOut = seatsAvailable <= 0;
 
+  // Check if this is the GRUS 2026 tour - use external booking URL
+  const isGrus2026Tour = tourId === "3f807187-5819-4e0a-8987-0289e880b670";
+  const externalBookingUrl =
+    "https://www.letsreg.com/no/register/grus2026säfsenmednorsemanadventuresogktm_20022026095513";
+
   return (
     <aside
       className={cn(
@@ -154,10 +159,21 @@ export function BookSpotCard({
             aria-label="Bestill nå"
             asChild
           >
-            <Link href={`/public/tours/${tourId}/bestill`}>
-              <ShoppingCart className="size-5" aria-hidden />
-              Bestill nå
-            </Link>
+            {isGrus2026Tour ? (
+              <a
+                href={externalBookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ShoppingCart className="size-5" aria-hidden />
+                Bestill nå
+              </a>
+            ) : (
+              <Link href={`/public/tours/${tourId}/bestill`}>
+                <ShoppingCart className="size-5" aria-hidden />
+                Bestill nå
+              </Link>
+            )}
           </Button>
         )}
         {isSoldOut && tourId && <WaitlistDialog tourId={tourId} />}
