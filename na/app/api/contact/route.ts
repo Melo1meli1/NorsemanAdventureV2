@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       !message?.trim()
     ) {
       return NextResponse.json(
-        { error: "Alle felt er påkrevd" },
+        { error: "Alle felt er " },
         { status: 400 },
       );
     }
