@@ -4,7 +4,7 @@
     "@radix-ui/react-accordion": "^1.2.12",
     "@supabase/supabase-js": "^2.93.3",
     "react-dropzone": "^15.0.0",
-    "react-hook-form": "^7.71.1"
+    "react-hook-form": "^7.71.2"
   },
   "devDependencies": {
     "eslint": "^9",
