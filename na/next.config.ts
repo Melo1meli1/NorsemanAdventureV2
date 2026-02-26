@@ -5,9 +5,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   async rewrites() {
     return [
-      { source: "/turer", destination: "/public/tours" },
-      { source: "/turer/:path*", destination: "/public/tours/:path*" },
-      { source: "/galleri", destination: "/public/gallery" },
+      { source: "/turer", destination: "/tours" },
+      { source: "/turer/:path*", destination: "/tours/:path*" },
+      { source: "/galleri", destination: "/gallery" },
     ];
   },
   images: {
