@@ -35,6 +35,7 @@ type TourFormValues = Omit<
   id?: string;
   vanskelighetsgrad?: string;
   terreng?: string;
+  external_booking_url?: string; // letsRegUrl
 };
 
 type TourFormOutput =
@@ -89,7 +90,7 @@ export default function TourForm({
             long_description: initialTour.long_description ?? "",
             hoydepunkter: initialTour.hoydepunkter ?? "",
             sted: initialTour.sted ?? "",
-            vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",
+            /*vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",*/
             terreng: initialTour.terreng ?? "",
             price: initialTour.price,
             start_date: toDateInputValue(initialTour.start_date),
@@ -177,8 +178,14 @@ export default function TourForm({
         ? data.end_date.toISOString().slice(0, 10)
         : String(data.end_date ?? ""),
     );
-    formData.set("seats_available", String(data.seats_available ?? 0));
-    formData.set("total_seats", String(data.total_seats ?? 0));
+    const externalBookingUrl =
+      "external_booking_url" in data
+        ? String(data.external_booking_url ?? "").trim()
+        : "";
+
+    formData.set("external_booking_url", externalBookingUrl);
+    //formData.set("seats_available", String(data.seats_available ?? 0));
+    //formData.set("total_seats", String(data.total_seats ?? 0));
     formData.set("image_url", isEdit ? (initialTour?.image_url ?? "") : "");
     formData.set("status", status);
 
@@ -280,7 +287,8 @@ export default function TourForm({
       </div>
 
       {/* Sted, vanskelighetsgrad, terreng – 3 columns grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Sted */}
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="sted"
@@ -299,7 +307,7 @@ export default function TourForm({
             <p className="text-xs text-red-400">{errors.sted.message}</p>
           )}
         </div>
-        <div className="flex flex-col gap-1.5">
+        {/*<div className="flex flex-col gap-1.5">
           <label
             htmlFor="vanskelighetsgrad"
             className="text-sm font-medium text-neutral-200"
@@ -323,7 +331,7 @@ export default function TourForm({
               {errors.vanskelighetsgrad.message}
             </p>
           )}
-        </div>
+        </div>*/}
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="terreng"
@@ -346,10 +354,8 @@ export default function TourForm({
             <p className="text-xs text-red-400">{errors.terreng.message}</p>
           )}
         </div>
-      </div>
 
-      {/* Pris + Plasser */}
-      <div className="grid grid-cols-2 gap-4">
+        {/* Pris */}
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="price"
@@ -370,7 +376,31 @@ export default function TourForm({
             <p className="text-xs text-red-400">{errors.price.message}</p>
           )}
         </div>
+
+        {/* LetsReg URL */}
         <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="external_booking_url"
+            className="text-sm font-medium text-neutral-200"
+          >
+            LetsReg URL
+          </label>
+
+          <Input
+            id="external_booking_url"
+            type="url"
+            placeholder="https://www.letsreg.com/..."
+            className={inputClassName}
+            {...register("external_booking_url")}
+          />
+
+          {errors.external_booking_url && (
+            <p className="text-xs text-red-400">
+              {errors.external_booking_url.message}
+            </p>
+          )}
+        </div>
+        {/*<div className="flex flex-col gap-1.5">
           <label
             htmlFor="total_seats"
             className="text-sm font-medium text-neutral-200"
@@ -407,7 +437,7 @@ export default function TourForm({
               {errors.seats_available.message}
             </p>
           )}
-        </div>
+        </div>*/}
       </div>
 
       {/* Startdato + Sluttdato */}

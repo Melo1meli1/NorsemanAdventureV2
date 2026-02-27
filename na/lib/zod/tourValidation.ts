@@ -55,6 +55,7 @@ export const draftTourSchema = z.object({
   long_description: nullableString,
   hoydepunkter: nullableString,
   sted: z.string().trim().default(""),
+  external_booking_url: z.string().trim().url("Ugyldig URL").default(""),
   vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
   terreng: optionalEnumField(terrengEnum),
   price: z.coerce.number().nonnegative().default(0),
@@ -77,30 +78,49 @@ export const baseTourSchema = z.object({
     })
     .trim()
     .min(1, "Tittel er påkrevd."),
+
   short_description: z
     .string({
       message: "Kort beskrivelse er påkrevd.",
     })
     .trim()
     .min(1, "Kort beskrivelse er påkrevd."),
+
   long_description: nullableString,
+
   hoydepunkter: nullableString,
+
   sted: z
     .string({
       message: "Sted er påkrevd.",
     })
     .trim()
     .min(1, "Sted er påkrevd."),
+
+  external_booking_url: z
+    .string({ message: "LetsReg URL er påkrevd." })
+    .trim()
+    .url("Ugyldig URL")
+    .min(1, "LetsReg URL er påkrevd."),
+
   vanskelighetsgrad: optionalEnumField(vanskelighetsgradEnum),
+
   terreng: optionalEnumField(terrengEnum),
+
   price: z.coerce
     .number({
       message: "Pris må være et tall.",
     })
     .positive("Pris må være større enn 0."),
+
   start_date: startDateSchema,
+
   end_date: endDateSchema,
-  seats_available: z.coerce
+
+  seats_available: z.coerce.number().int().min(0).optional(),
+
+  total_seats: z.coerce.number().int().min(0).optional(),
+  /*seats_available: z.coerce
     .number({
       message: "Ledige plasser er påkrevd.",
     })
@@ -111,7 +131,7 @@ export const baseTourSchema = z.object({
       message: "Totalt antall plasser er påkrevd.",
     })
     .int("Totalt antall plasser må være et heltall.")
-    .min(1, "Totalt antall plasser må være minst 1."),
+    .min(1, "Totalt antall plasser må være minst 1."),*/
   image_url: nullableString,
   status: tourStatusEnum.default("draft"),
 });
@@ -121,10 +141,16 @@ export const createTourSchema = baseTourSchema
     message: "Sluttdato er påkrevd.",
     path: ["end_date"],
   })
-  .refine((data) => data.seats_available <= data.total_seats, {
-    message: "Ledige plasser kan ikke være flere enn totalt antall plasser.",
-    path: ["seats_available"],
-  })
+  .refine(
+    (data) =>
+      data.seats_available === undefined ||
+      data.total_seats === undefined ||
+      data.seats_available <= data.total_seats,
+    {
+      message: "Ledige plasser kan ikke være flere enn totalt antall plasser.",
+      path: ["seats_available"],
+    },
+  )
   .superRefine((data, ctx) => {
     if (data.end_date != null && data.end_date <= data.start_date) {
       ctx.addIssue({

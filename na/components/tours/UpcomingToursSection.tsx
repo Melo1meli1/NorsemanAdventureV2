@@ -9,7 +9,7 @@ type UpcomingToursSectionProps = {
 
 export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
   return (
-    <section className="bg-card/50 w-full py-16 md:py-24">
+    <section className="bg-card/60 w-full py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <header className="mb-12 text-center">
           <h2 className="text-primary mb-3 text-3xl font-bold tracking-tight md:text-4xl">
