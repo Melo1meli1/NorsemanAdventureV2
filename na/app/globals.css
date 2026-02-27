@@ -6,12 +6,12 @@
 /* Base design tokens (HSL components) */
 :root {
   /* Dark adventure theme - inspired by motorcycle touring */
-  --background: 220 20% 8%;
+  --background: 220 20% 10%;
   --foreground: 40 30% 95%;
   --page-background: 220 20% 8%;
 
-  --card: 220 19% 12%;
-  --card-foreground: 40 30% 95%;
+  --card: 215 25% 16%;
+  --card-foreground: 210 35% 97%;
 
   --popover: 220 18% 10%;
   --popover-foreground: 40 30% 95%;
@@ -82,7 +82,7 @@
   --shadow-card: 0 10px 40px hsl(220 20% 4% / 0.5);
 }
 
-/* Optional: support .dark class if you ever need it */
+/*!* Optional: support .dark class if you ever need it *!
 .dark {
   --background: 220 20% 8%;
   --foreground: 40 30% 95%;
@@ -103,7 +103,7 @@
   --border: 220 15% 20%;
   --input: 220 15% 18%;
   --ring: 22 82% 51%;
-}
+}*/
 
 /* Tell Tailwind about our design tokens (Tailwind v4 @theme) */
 @theme inline {

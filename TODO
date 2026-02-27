@@ -1,0 +1,23 @@
+sElve bakgrunnen på hele programmet i blå i steden for svart
+
+Booking:
+Nytt inputfelt for lenke url når man lager tour
+Oppdatere alle instanser av dette til å bruke link-url
+dersom lenke-url ikke finnes, eller sluttdato er passert, skal bestill knappen være utilgjengelig (stopep videre)
+
+fjerne antall plasser
+
+nivå beskrivelse i egen boks der ekspert boksen var.
+
+Legge inn gutta med mail
+
+endre oversikt til annet innhold
+
+endre default navn og rolle per bruker
+
+fikse galleri bug
+
+Slette mock data og legge inn turer
+
+fjerne bestillinger side
+

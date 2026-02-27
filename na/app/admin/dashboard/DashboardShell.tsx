@@ -389,7 +389,7 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
           </Link>
         </header>
 
-        <div className="flex-1 space-y-6 overflow-y-auto px-4 py-6 md:px-8">
+        <div className="bg-background flex-1 space-y-6 overflow-y-auto px-4 py-6 md:px-8">
           {activeSection === "overview" && (
             <>
               {statsError && (
