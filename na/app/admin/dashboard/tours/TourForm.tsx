@@ -93,6 +93,7 @@ export default function TourForm({
             /*vanskelighetsgrad: initialTour.vanskelighetsgrad ?? "",*/
             terreng: initialTour.terreng ?? "",
             price: initialTour.price,
+            external_booking_url: initialTour.external_booking_url ?? "",
             start_date: toDateInputValue(initialTour.start_date),
             end_date: toDateInputValue(initialTour.end_date),
             seats_available: initialTour.seats_available,

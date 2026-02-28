@@ -13,7 +13,6 @@ Slette mock data og legge inn turer
 endre default navn og rolle per bruker
 endre oversikt til annet innhold
 på turer, hvor kommer kort bildet fra??
-når jeg redigerer turer, så forsvinner url lenken. jeg vil at den som all annen informasjon skal ligge inne.
 
 Generellt:
 Fjerne antall plasser på Cards visning
@@ -27,6 +26,7 @@ bestill nå knappen på kortene sender ikek til noe sted. external booking url i
 legg inn gruppestørrelse slik at vsiningsside boksen på bunn ikke viser 0.
 legg tilbake inn vanskelighetsgrad når man lager tur.
 påmeldingsfrist som eget felt i laging av tur, men også i kort til brukere.
+sjekk hvorfor det går så treigt
 
 Hjemmesiden:
 fyle inn riktig info på om oss på hjemmesiden
