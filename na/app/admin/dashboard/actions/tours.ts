@@ -49,9 +49,10 @@ function mapCreateInputToInsert(
     terreng: TourInsert["terreng"];
     price: number;
     start_date: Date;
-    end_date: Date | null | undefined;
-    seats_available: number;
+    end_date: Date;
+    //seats_available: number;
     total_seats: number;
+    external_booking_url: TourInsert["external_booking_url"];
     image_url: string | null | undefined;
     status: TourInsert["status"];
   }>,
@@ -66,8 +67,9 @@ function mapCreateInputToInsert(
     terreng: input.terreng ?? null,
     price: input.price,
     start_date: input.start_date.toISOString(),
-    end_date: input.end_date ? input.end_date.toISOString() : null,
-    seats_available: input.seats_available,
+    end_date: input.end_date.toISOString(),
+    external_booking_url: input.external_booking_url ?? null,
+    //seats_available: input.seats_available,
     total_seats: input.total_seats,
     image_url: input.image_url ?? null,
     status: input.status,
@@ -85,8 +87,9 @@ function mapUpdateInputToUpdate(
     terreng: TourUpdate["terreng"];
     price: number;
     start_date: Date;
-    end_date: Date | null | undefined;
-    seats_available: number;
+    end_date: Date;
+    external_booking_url: TourUpdate["external_booking_url"];
+    //seats_available: number;
     total_seats: number;
     image_url: string | null | undefined;
     status: TourUpdate["status"];
@@ -102,16 +105,19 @@ function mapUpdateInputToUpdate(
   if (input.hoydepunkter !== undefined)
     update.hoydepunkter = input.hoydepunkter;
   if (input.sted !== undefined) update.sted = input.sted;
+  if (input.external_booking_url !== undefined)
+    update.external_booking_url = input.external_booking_url;
   if (input.vanskelighetsgrad !== undefined)
     update.vanskelighetsgrad = input.vanskelighetsgrad;
   if (input.terreng !== undefined) update.terreng = input.terreng;
   if (input.price !== undefined) update.price = input.price;
   if (input.start_date !== undefined)
     update.start_date = input.start_date.toISOString();
-  if (input.end_date !== undefined)
-    update.end_date = input.end_date ? input.end_date.toISOString() : null;
-  if (input.seats_available !== undefined)
-    update.seats_available = input.seats_available;
+  if (input.end_date !== undefined) {
+    update.end_date = input.end_date.toISOString();
+  }
+  /*if (input.seats_available !== undefined)
+    update.seats_available = input.seats_available;*/
   if (input.total_seats !== undefined) update.total_seats = input.total_seats;
   if (input.image_url !== undefined) update.image_url = input.image_url;
   if (input.status !== undefined) update.status = input.status;
@@ -133,7 +139,7 @@ export async function createTour(formData: FormData) {
     start_date: formData.get("start_date"),
     end_date: formData.get("end_date"),
     //seats_available: formData.get("seats_available"),
-    //total_seats: formData.get("total_seats"),
+    total_seats: formData.get("total_seats"),
     image_url: formData.get("image_url"),
     status: formData.get("status") ?? undefined,
   };
@@ -158,7 +164,8 @@ export async function createTour(formData: FormData) {
     image_url: d.image_url ?? null,
     long_description: d.long_description ?? null,
     price: d.price ?? 0,
-    seats_available: d.seats_available ?? 0,
+    //seats_available: d.seats_available ?? 0,
+    external_booking_url: d.external_booking_url ?? null,
     total_seats: d.total_seats ?? 0,
     short_description: d.short_description ?? null,
     start_date: d.start_date ?? new Date(),
@@ -201,7 +208,7 @@ export async function updateTour(formData: FormData) {
     start_date: formData.get("start_date") ?? undefined,
     end_date: formData.get("end_date") ?? undefined,
     //seats_available: formData.get("seats_available") ?? undefined,
-    //total_seats: formData.get("total_seats") ?? undefined,
+    total_seats: formData.get("total_seats") ?? undefined,
     image_url: formData.get("image_url") ?? undefined,
     status: formData.get("status") ?? undefined,
   };

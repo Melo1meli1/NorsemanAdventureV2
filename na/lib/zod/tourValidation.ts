@@ -20,25 +20,13 @@ const startDateSchema = z.coerce
     message: "Ugyldig startdato.",
   });
 
-const endDateSchema = z
-  .union([
-    z.coerce
-      .date({
-        message: "Ugyldig sluttdato.",
-      })
-      .refine((date) => !Number.isNaN(date.getTime()), {
-        message: "Ugyldig sluttdato.",
-      }),
-    z.literal("").transform(() => null),
-    z.null(),
-    z.undefined(),
-  ])
-  .transform((value) => {
-    if (value instanceof Date) return value;
-    return null;
+const endDateSchema = z.coerce
+  .date({
+    message: "Ugyldig sluttdato.",
   })
-  .nullable()
-  .optional();
+  .refine((date) => !Number.isNaN(date.getTime()), {
+    message: "Ugyldig sluttdato.",
+  });
 
 // ── Shared enum/select fields ──
 const optionalEnumField = (enumSchema: z.ZodEnum<[string, ...string[]]>) =>
@@ -137,10 +125,10 @@ export const baseTourSchema = z.object({
 });
 
 export const createTourSchema = baseTourSchema
-  .refine((data) => data.end_date != null, {
+  /*.refine((data) => data.end_date != null, {
     message: "Sluttdato er påkrevd.",
     path: ["end_date"],
-  })
+  })*/
   .refine(
     (data) =>
       data.seats_available === undefined ||
@@ -152,7 +140,7 @@ export const createTourSchema = baseTourSchema
     },
   )
   .superRefine((data, ctx) => {
-    if (data.end_date != null && data.end_date <= data.start_date) {
+    if (data.end_date <= data.start_date) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["end_date"],

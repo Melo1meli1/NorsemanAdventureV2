@@ -185,7 +185,7 @@ export default function TourForm({
 
     formData.set("external_booking_url", externalBookingUrl);
     //formData.set("seats_available", String(data.seats_available ?? 0));
-    //formData.set("total_seats", String(data.total_seats ?? 0));
+    formData.set("total_seats", String(data.total_seats ?? 0));
     formData.set("image_url", isEdit ? (initialTour?.image_url ?? "") : "");
     formData.set("status", status);
 

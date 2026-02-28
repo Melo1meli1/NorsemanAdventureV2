@@ -175,10 +175,12 @@ export default async function TourDetailPage({ params }: Props) {
                 </div>
               ) : null}
               <BookSpotCard
+                externalBookingUrl={tour.external_booking_url ?? ""}
                 price={tour.price}
                 initialSeatsAvailable={initialSeatsAvailable}
                 totalSeats={totalSeats}
                 tourId={id}
+                endDate={tour.end_date}
               />
             </div>
           </div>
