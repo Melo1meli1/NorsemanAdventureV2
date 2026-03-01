@@ -1,8 +1,8 @@
 const TEAM_MEMBERS = [
   {
     name: "Geir",
-    role: "Grunnlegger & Guide",
-    experience: "15+ års erfaring",
+    role: "Grunnlegger",
+    experience: "10+ års erfaring",
     initial: "G",
   },
   {
@@ -12,9 +12,9 @@ const TEAM_MEMBERS = [
     initial: "V",
   },
   {
-    name: "Kristian",
-    role: "Guide & Mekaniker",
-    experience: "8+ års erfaring",
+    name: "Kenneth",
+    role: "Guide",
+    experience: "10+ års erfaring",
     initial: "K",
   },
 ] as const;

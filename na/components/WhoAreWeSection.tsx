@@ -19,8 +19,8 @@ export function WhoAreWeSection() {
         <div className="relative">
           <div className="relative mt-8 aspect-video w-full max-w-md overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/5 lg:max-w-none lg:rounded-l-none">
             <Image
-              src="/tour-summer.jpg"
-              alt="Motorsykkelgruppe kjører langs norsk fjordlandskap"
+              src="/Gruppebilde.png"
+              alt="Gruppebilde Norseman Teamet"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"

@@ -33,8 +33,8 @@ export function AboutSection() {
         <div className="relative">
           <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/5">
             <Image
-              src="/tour-summer.jpg"
-              alt="Motorsykkelgruppe kjører langs norsk fjordlandskap"
+              src="/Gruppebilde.png"
+              alt="Gruppebilde Norseman Teamet"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
