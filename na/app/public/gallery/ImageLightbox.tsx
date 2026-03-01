@@ -53,7 +53,7 @@ export function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
           src={src}
           alt={alt}
           fill
-          className="object-contain"
+          className="object-cover" //SE TILBAKE
           sizes="100vw"
           onClick={(e) => e.stopPropagation()}
           unoptimized

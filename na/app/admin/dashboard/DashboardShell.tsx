@@ -213,7 +213,7 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
               alt=""
               width={40}
               height={35}
-              className="h-10 w-10 rounded-full object-contain"
+              className="h-10 w-10 rounded-full object-cover" //SE TILBAKE
             />
           </div>
           <span className="text-sm font-semibold tracking-wide">ADMIN</span>
@@ -292,7 +292,7 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
                     alt=""
                     width={40}
                     height={35}
-                    className="h-10 w-10 rounded-full object-contain"
+                    className="h-10 w-10 rounded-full object-cover" // SE TILBAKE
                   />
                 </div>
                 <span className="text-sm font-semibold tracking-wide">

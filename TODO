@@ -2,7 +2,7 @@ ANNET:
 nivå beskrivelse i egen boks der ekspert boksen var.
 
 GALLERI:
-fikse galleri bug
+galleri endirng i database for raskere loading og bedre kvalitet.
 
 nyheter:
 legge inn noen nyheter
@@ -13,6 +13,11 @@ Slette mock data og legge inn turer
 endre default navn og rolle per bruker
 endre oversikt til annet innhold
 på turer, hvor kommer kort bildet fra??
+lag at høydepunkter kan utvides i høyde.
+når man lager eller redigerer tur, skal man kun komme ut av boksen ved trykk på x, og ikke ut av skjermen.
+legg inn gruppestørrelse (antall deltakere) i oprett og rediger skjema, og på brukervisning.
+når en tur er ferdig, så skal bestill nå, bli om til kontakt skjema knapp eller noe.
+toggel på synlighet i redigering husker ikke state.
 
 Generellt:
 Fjerne antall plasser på Cards visning
@@ -27,6 +32,10 @@ legg inn gruppestørrelse slik at vsiningsside boksen på bunn ikke viser 0.
 legg tilbake inn vanskelighetsgrad når man lager tur.
 påmeldingsfrist som eget felt i laging av tur, men også i kort til brukere.
 sjekk hvorfor det går så treigt
+kommende turer viser også tidligere turer. Kankje vise de med seneste dato først?
+påmeldingsfrist?
+
+
 
 Hjemmesiden:
 fyle inn riktig info på om oss på hjemmesiden
@@ -34,9 +43,10 @@ endre forsidebilde og beskrivelse
 
 
 INFO TURER:
-Vietnam November 2025
-Sør Afrika 2026
-Georgia 2026
+Vietnam November 2025 (LAGT INN)
+Vietnam November 2026 (LAGT INN)
+Sør Afrika 2026 (LAGT INN)
+Georgia 2026 (LAGT INN)
 Mongolia 2026
 World Cup Skiskyting 2026
 GRUS 2026

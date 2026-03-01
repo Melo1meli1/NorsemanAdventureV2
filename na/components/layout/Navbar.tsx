@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { label: "Forside", href: "/" },
   { label: "Turer", href: "/public/tours" },
   { label: "Nyheter", href: "/public/news" },
-  { label: "Bildegalleri", href: "/galleri" },
+  { label: "Bildegalleri", href: "/public/gallery" },
   { label: "Om oss", href: "/om-oss" },
 ];
 
