@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Users } from "lucide-react";
 //import { Users } from "lucide-react";
 import type { Tour } from "@/lib/types";
 import {
@@ -90,13 +90,12 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
               <div />
             )}
             <div className="flex items-center gap-2">
-              {/*<Users className="h-4 w-4 shrink-0" />
+              <Users className="h-4 w-4 shrink-0" />
               <span>
-                {tour.seats_available} av{" "}
-                {(tour as { total_seats?: number }).total_seats ??
-                  tour.seats_available}{" "}
-                plasser
-              </span>*/}
+                {/*{tour.seats_available} av{" "}
+                {(tour as { total_seats?: number }).total_seats ?? tour.seats_available}{" "}*/}
+                {(tour as { total_seats?: number }).total_seats} plasser
+              </span>
             </div>
             <p className="text-primary text-lg font-bold tracking-tight">
               {formatPrice(tour.price)}
