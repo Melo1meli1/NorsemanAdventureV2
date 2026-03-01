@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Instagram,
-  Youtube,
-  Send,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Facebook, Instagram, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const CONTACT_INFO = [
@@ -39,8 +31,11 @@ const SOCIAL_LINKS = [
     href: "https://www.facebook.com/norseman.adventures?mibextid=wwXIfr&rdid=7MlJOe9Mhv9bkoR5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17vdLqFNXh%2F%3Fmibextid%3DwwXIfr%26ref%3D1",
     label: "Facebook",
   },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  {
+    icon: Instagram,
+    href: "https://www.instagram.com/norseman_adventures?igsh=MXcxeHBlamRhOXRnZA==",
+    label: "Instagram",
+  },
 ] as const;
 
 export function ContactSection() {

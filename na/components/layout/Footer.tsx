@@ -2,14 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Facebook,
-  Instagram,
-  Youtube,
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
 import { subscribeToNewsletter } from "@/app/actions/subscribers";
 
@@ -26,8 +19,11 @@ const SOCIAL_LINKS = [
     href: "https://www.facebook.com/norseman.adventures?mibextid=wwXIfr&rdid=7MlJOe9Mhv9bkoR5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17vdLqFNXh%2F%3Fmibextid%3DwwXIfr%26ref%3D1",
     label: "Facebook",
   },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  {
+    icon: Instagram,
+    href: "https://www.instagram.com/norseman_adventures?igsh=MXcxeHBlamRhOXRnZA==",
+    label: "Instagram",
+  },
 ] as const;
 
 const CONTACT_INFO = [

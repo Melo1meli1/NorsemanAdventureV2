@@ -165,8 +165,7 @@ export function renderNorsemanEmailLayout(
         ">
             <div style="margin: 15px 0;">
                 <a href="https://www.facebook.com/norseman.adventures?mibextid=wwXIfr&rdid=7MlJOe9Mhv9bkoR5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17vdLqFNXh%2F%3Fmibextid%3DwwXIfr%26ref%3D1" style="color: #64748b; text-decoration: none; margin: 0 10px;">Facebook</a>
-                <a href="#" style="color: #64748b; text-decoration: none; margin: 0 10px;">Instagram</a>
-                <a href="#" style="color: #64748b; text-decoration: none; margin: 0 10px;">YouTube</a>
+                <a href="https://www.instagram.com/norseman_adventures?igsh=MXcxeHBlamRhOXRnZA==" style="color: #64748b; text-decoration: none; margin: 0 10px;">Instagram</a>
             </div>
             
             <p> 2026 Norseman Adventures. Alle rettigheter reservert.</p>
