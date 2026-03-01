@@ -1,5 +1,5 @@
 "use client";
-
+import { getHomepageVisitsThisMonth } from "components/admin/dashboard/actions/analytics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,13 +10,21 @@ import {
   Newspaper,
   ImageIcon,
   ClipboardList,
+  X,
+} from "lucide-react";
+/*import {
+  Home,
+  Mountain,
+  Newspaper,
+  ImageIcon,
+  ClipboardList,
   BookOpen,
   Users,
   MapPin,
   X,
-} from "lucide-react";
+} from "lucide-react";*/
 import type { Tour } from "@/lib/types";
-import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
+//import { BOOKING_STATUS_LABELS } from "@/lib/zod/bookingValidation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/supabaseBrowser";
 import {
   getBookingStats,
@@ -33,6 +41,7 @@ import { OrdersView } from "./orders/OrdersView";
 import { GalleryOnlyView } from "./gallery/GalleryOnlyView";
 import { NewsListView } from "./news/NewsListView";
 import type { News } from "@/lib/types/news";
+import { OverviewSection } from "@/components/admin/overview/OverviewSection";
 
 const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
@@ -81,6 +90,8 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
   const [selectedGalleryTour, setSelectedGalleryTour] = useState<Tour | null>(
     null,
   );
+  const [homepageVisitsThisMonth, setHomepageVisitsThisMonth] =
+    useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [kpiStats, setKpiStats] = useState<BookingStats | null>(null);
   const [recentBookings, setRecentBookings] = useState<
@@ -111,6 +122,7 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
   const fetchStats = useCallback(async () => {
     setIsLoadingStats(true);
     setStatsError(null);
+
     try {
       const [statsResult, recentResult] = await Promise.all([
         getBookingStats(),
@@ -132,6 +144,13 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
     }
   }, []);
 
+  const fetchHomepageVisits = useCallback(async () => {
+    const result = await getHomepageVisitsThisMonth();
+    if (result.success) {
+      setHomepageVisitsThisMonth(result.count);
+    }
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
     if (activeSection === "overview") {
@@ -144,13 +163,14 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
       return;
     }
     router.replace(nextParams ? `?${nextParams}` : "");
-  }, [activeSection, searchParams, router]);
+  }, [activeSection]); //, searchParams, router
 
   useEffect(() => {
     if (activeSection === "overview") {
       fetchStats();
+      fetchHomepageVisits();
     }
-  }, [activeSection, fetchStats]);
+  }, [activeSection, fetchStats, fetchHomepageVisits]);
 
   // Realtime: oppdater KPI og Siste bestillinger ved endringer i bookings/participants
   const statsRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -192,6 +212,12 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
       supabase.removeChannel(channel);
     };
   }, [activeSection, fetchStats]);
+  // Brukes kun for å unngå ESLint-feil mens vi bygger om oversikt.
+
+  void kpiStats;
+  void recentBookings;
+  void isLoadingStats;
+  void statsError;
 
   return (
     <main className="bg-page-background flex min-h-screen overflow-x-hidden text-neutral-50">
@@ -390,7 +416,7 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
         </header>
 
         <div className="bg-background flex-1 space-y-6 overflow-y-auto px-4 py-6 md:px-8">
-          {activeSection === "overview" && (
+          {/*{activeSection === "overview" && (
             <>
               {statsError && (
                 <p className="rounded-lg border border-red-500/30 bg-red-950/30 px-4 py-2 text-sm text-red-300">
@@ -536,6 +562,16 @@ export function DashboardShell({ tours = [], news = [] }: DashboardShellProps) {
                 )}
               </section>
             </>
+          )}*/}
+          {activeSection === "overview" && (
+            <OverviewSection
+              tours={tours}
+              news={news}
+              homepageVisitsThisMonth={homepageVisitsThisMonth}
+              onGoToTours={() => setActiveSection("tours")}
+              onGoToNews={() => setActiveSection("news")}
+              onGoToOrders={() => setActiveSection("orders")}
+            />
           )}
 
           {activeSection === "tours" && (

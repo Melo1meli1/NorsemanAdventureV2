@@ -60,6 +60,7 @@ export default async function TourDetailPage({ params }: Props) {
             className="object-cover"
             sizes="100vw"
             priority
+            unoptimized
           />
           <div
             className="to-background absolute inset-0 bg-linear-to-b from-transparent via-transparent"
