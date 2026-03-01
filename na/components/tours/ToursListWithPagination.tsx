@@ -5,7 +5,7 @@ import type { Tour } from "@/lib/types";
 import { TourCard } from "./TourCard";
 import { Pagination } from "@/components/ui/pagination";
 
-type ToursListWithPaginationProps = {
+export type ToursListWithPaginationProps = {
   tours: Tour[];
 };
 

@@ -2,6 +2,7 @@ ANNET:
 nivå beskrivelse i egen boks der ekspert boksen var.
 fjern next symbol
 KOMMENDE TURER I MOTSATT REKKEFØLGE
+gruppestørrelse i kortene
 
 GALLERI:
 galleri endirng i database for raskere loading og bedre kvalitet.
@@ -36,6 +37,7 @@ påmeldingsfrist som eget felt i laging av tur, men også i kort til brukere.
 sjekk hvorfor det går så treigt
 kommende turer viser også tidligere turer. Kankje vise de med seneste dato først?
 påmeldingsfrist?
+turer som har vært for over 400 dager siden, skal ikek vises på siden.
 
 
 
