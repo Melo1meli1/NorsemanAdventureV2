@@ -295,7 +295,7 @@ export type Database = {
       booking_type: "tur";
       terreng: "asfalt" | "grus" | "blandet";
       tour_status: "draft" | "published";
-      vanskelighetsgrad: "nybegynner" | "intermedi├ªr" | "erfaren" | "ekspert";
+      vanskelighetsgrad: "nybegynner" | "intermediær" | "erfaren" | "ekspert";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -436,7 +436,7 @@ export const Constants = {
       booking_type: ["tur"],
       terreng: ["asfalt", "grus", "blandet"],
       tour_status: ["draft", "published"],
-      vanskelighetsgrad: ["nybegynner", "intermedi├ªr", "erfaren", "ekspert"],
+      vanskelighetsgrad: ["nybegynner", "intermediær", "erfaren", "ekspert"],
     },
   },
 } as const;
