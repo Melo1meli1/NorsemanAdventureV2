@@ -3,7 +3,7 @@ import { Constants } from "@/lib/database.types";
 
 const tourStatusEnum = z.enum(Constants.public.Enums.tour_status);
 const vanskelighetsgradEnum = z.enum(Constants.public.Enums.vanskelighetsgrad);
-const sesongEnum = z.enum(Constants.public.Enums.sesong);
+//const sesongEnum = z.enum(Constants.public.Enums.sesong);
 const terrengEnum = z.enum(Constants.public.Enums.terreng);
 
 const nullableString = z
@@ -70,11 +70,11 @@ export const baseTourSchema = z.object({
     .transform((v) => (v === "" ? null : v))
     .nullable()
     .optional(),
-  sesong: z
+  /*sesong: z
     .union([sesongEnum, z.literal("")])
     .transform((v) => (v === "" ? null : v))
     .nullable()
-    .optional(),
+    .optional(),*/
   terreng: z
     .union([terrengEnum, z.literal("")])
     .transform((v) => (v === "" ? null : v))
