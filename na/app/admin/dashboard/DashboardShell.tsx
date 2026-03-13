@@ -9,7 +9,9 @@ import {
   Mountain,
   Newspaper,
   ImageIcon,
+  /*
   ClipboardList,
+*/
   X,
 } from "lucide-react";
 /*import {
@@ -47,7 +49,9 @@ const navItems = [
   { id: "overview", label: "Oversikt", icon: Home },
   { id: "tours", label: "Turer", icon: Mountain },
   { id: "news", label: "Nyheter", icon: Newspaper },
+  /*
   { id: "orders", label: "Bestillinger", icon: ClipboardList },
+*/
   { id: "gallery", label: "Galleri", icon: ImageIcon },
 ] as const;
 
