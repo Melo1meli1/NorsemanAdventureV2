@@ -28,7 +28,6 @@ export default function TourFormModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="tour-form-modal-title"
-      onClick={onClose}
     >
       <div
         className="bg-card relative flex max-h-[90vh] w-full min-w-0 flex-col rounded-2xl border border-neutral-800 shadow-xl shadow-black/40"
