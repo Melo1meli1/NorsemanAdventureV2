@@ -298,7 +298,7 @@ export const ParticipantBookingForm = forwardRef<
             <span>
               Jeg har lest og godkjenner{" "}
               <a
-                href="/Bacheloringeniørfag_data_forkurs_V2026.pdf"
+                href="/LeggInnVilkårVedBehov"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline hover:no-underline"

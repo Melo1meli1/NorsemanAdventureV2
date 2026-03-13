@@ -54,45 +54,31 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
   );
 }
 */
+
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/supabase-server";
 import type { Tour } from "@/lib/types";
 import { TourCard } from "./TourCard";
 import { Button } from "@/components/ui/button";
 
-type UpcomingToursSectionProps = {
-  tours: Tour[];
-};
+export async function UpcomingToursSection() {
+  const supabase = await createClient();
 
-function toDate(value: string | null | undefined) {
-  if (!value) return null;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
+  const now = new Date().toISOString();
 
-function isFinished(tour: Tour) {
-  const end = toDate(tour.end_date);
-  if (!end) return false;
+  const { data: tours, error } = await supabase
+    .from("tours")
+    .select("*")
+    .eq("status", "published")
+    .gte("start_date", now)
+    .order("start_date", { ascending: true })
+    .limit(3);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (error) {
+    console.error("Feil ved henting av kommende turer:", error);
+  }
 
-  const endDay = new Date(end);
-  endDay.setHours(0, 0, 0, 0);
-
-  return endDay < today;
-}
-
-export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
-  const upcomingTours = tours
-    .filter((t) => !isFinished(t))
-    .slice()
-    .sort((a, b) => {
-      const aStart =
-        toDate(a.start_date)?.getTime() ?? Number.POSITIVE_INFINITY;
-      const bStart =
-        toDate(b.start_date)?.getTime() ?? Number.POSITIVE_INFINITY;
-      return aStart - bStart;
-    });
+  const upcomingTours = (tours ?? []) as Tour[];
 
   return (
     <section className="bg-card/60 w-full py-16 md:py-24">
@@ -119,11 +105,12 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
                 />
               ))}
             </div>
+
             <div className="mt-12 flex justify-center">
               <Button
                 asChild
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium/80 rounded-lg px-8 py-3 text-base"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-8 py-3 text-base"
               >
                 <Link href="/public/tours">SE ALLE TURER →</Link>
               </Button>
@@ -131,7 +118,7 @@ export function UpcomingToursSection({ tours }: UpcomingToursSectionProps) {
           </>
         ) : (
           <p className="text-muted-foreground text-center">
-            Ingen turer er publisert ennå. Kom tilbake senere.
+            Ingen kommende turer er publisert ennå.
           </p>
         )}
       </div>
