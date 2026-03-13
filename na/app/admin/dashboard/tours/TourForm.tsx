@@ -477,6 +477,24 @@ export default function TourForm({
             <p className="text-xs text-red-400">{errors.end_date.message}</p>
           )}
         </div>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="total_seats"
+            className="text-sm font-medium text-neutral-200"
+          >
+            Gruppestørrelse *
+          </label>
+          <Input
+            id="total_seats"
+            type="number"
+            min={1}
+            className={inputClassName}
+            {...register("total_seats", { valueAsNumber: true })}
+          />
+          {errors.total_seats && (
+            <p className="text-xs text-red-400">{errors.total_seats.message}</p>
+          )}
+        </div>
       </div>
 
       <p className="flex items-center gap-2 text-base text-neutral-400">
