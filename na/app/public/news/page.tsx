@@ -5,16 +5,20 @@ export const revalidate = 60;
 
 export default async function NewsPage() {
   const supabase = await createClient();
-  const { data: news } = await supabase
+
+  const { data: news, error } = await supabase
     .from("news")
     .select("*")
     .eq("status", "published")
     .order("published_at", { ascending: false });
 
+  if (error) {
+    console.error("Feil ved henting av nyheter:", error);
+  }
+
   return (
     <main className="bg-background min-h-screen py-12">
       <div className="mx-auto max-w-6xl px-8 sm:px-12 md:px-16">
-        {/* Page header */}
         <div className="mb-12 text-center">
           <h1 className="text-foreground mb-4 text-4xl font-bold sm:text-5xl">
             Nyheter
@@ -25,12 +29,30 @@ export default async function NewsPage() {
           </p>
         </div>
 
-        {news && news.length > 0 ? (
+        {error ? (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-center">
+            <p className="font-semibold text-red-400">
+              Kunne ikke hente nyheter fra databasen.
+            </p>
+            <p className="mt-2 text-sm text-red-300">
+              Sjekk Supabase RLS-policyer og miljøvariabler.
+            </p>
+            <pre className="mt-4 overflow-x-auto text-left text-xs text-red-200">
+              {JSON.stringify(error, null, 2)}
+            </pre>
+          </div>
+        ) : news && news.length > 0 ? (
           <NewsListWithPagination news={news} />
         ) : (
-          <p className="text-muted-foreground text-center">
-            Ingen publiserte nyheter for øyeblikket.
-          </p>
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              Ingen publiserte nyheter for øyeblikket.
+            </p>
+
+            <pre className="text-muted-foreground/70 mt-6 overflow-x-auto text-left text-xs">
+              {JSON.stringify({ newsCount: news?.length ?? 0, news }, null, 2)}
+            </pre>
+          </div>
         )}
       </div>
     </main>
