@@ -1,6 +1,6 @@
 import { UpcomingToursSection } from "@/components/tours/UpcomingToursSection";
 import { HeroCarousel } from "@/components/HeroCarousel";
-import { WhoAreWeSection } from "@/components/WhoAreWeSection";
+// import { WhoAreWeSection } from "@/components/WhoAreWeSection";
 import { HomepageVisitTracker } from "@/components/HomepageVisitTracker";
 
 //export const revalidate = 60;
@@ -12,7 +12,9 @@ export default async function Home() {
       <HomepageVisitTracker />
       <HeroCarousel />
       <UpcomingToursSection />
+      {/*
       <WhoAreWeSection />
+*/}
     </main>
   );
 }
