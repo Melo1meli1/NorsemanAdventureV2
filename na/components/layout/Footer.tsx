@@ -7,10 +7,10 @@ import { useState } from "react";
 import { subscribeToNewsletter } from "@/app/actions/subscribers";
 
 const NAV_LINKS = [
-  { label: "Våre Turer", href: "/public/tours" },
-  { label: "Bildegalleri", href: "/galleri" },
-  { label: "Nyheter", href: "#" },
-  { label: "Om Oss & Kontakt", href: "#" },
+  { label: "Våre turer", href: "/public/tours" },
+  { label: "Nyheter", href: "/public/news" },
+  { label: "Bildegalleri", href: "/public/gallery" },
+  { label: "Om oss & kontakt", href: "/om-oss" },
 ] as const;
 
 const SOCIAL_LINKS = [
