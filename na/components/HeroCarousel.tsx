@@ -23,20 +23,20 @@ const SLIDES: Slide[] = [
     alt: "Motorsykler kjører langs norsk fjordlandskap om sommeren",
     title: "UTFORSK NORGES\nSKJØNNHET",
     description: "Fra fjord til fjell - opplev Norge på den beste måten",
-    ctaLabel: "TREFF & ARRANGEMENTER",
+    ctaLabel: "SE VÅRE TURER",
     ctaHref: "/public/tours",
   },
   {
-    image: "/kursbilde.jfif",
-    alt: "Skiløper på vei opp snødekt fjelltopp i Norge",
+    image: "/kursbilde.jpg",
+    alt: "Kursing i motorsykling",
     title: "KURS &\nOPPLÆRING",
     description: "Ski, toppturer og vinteropplevelser i verdensklasse",
-    ctaLabel: "UTENLANDSTURER",
+    ctaLabel: "SE VÅRE TURER",
     ctaHref: "/public/tours",
   },
   {
     image: "/hero-motorcycle.jpg",
-    alt: "Motorsyklist kjører mot solnedgang i norske fjell",
+    alt: "Motorsyklist kjører mot solnedgang i utenlandske fjell",
     title: "OPPLEV EVENTYR\nPÅ TO HJUL",
     description: "Uforglemmelige motorsykkelturer i Norge og utlandet",
     ctaLabel: "SE VÅRE TURER",
@@ -81,7 +81,7 @@ function SlideContent({ slide }: { slide: Slide }) {
               {slide.ctaLabel}
             </Link>
             <Link
-              href="#om-oss"
+              href="/om-oss"
               className="text-foreground hover:text-primary inline-block py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
             >
               LÆR MER OM OSS
@@ -213,8 +213,8 @@ export function HeroCarousel() {
                         {slide.ctaLabel}
                       </Link>
                       <Link
-                        href="#om-oss"
-                        className="text-foreground hover:text-primary inline-block py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
+                        href="/om-oss"
+                        className="text-foreground hover:text-primary border-primary inline-block rounded border-2 px-10 py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
                       >
                         LÆR MER OM OSS
                       </Link>
