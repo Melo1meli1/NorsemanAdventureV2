@@ -25,7 +25,7 @@ export default async function NewsPage() {
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
             Hold deg oppdatert med de siste nyhetene, tips og oppdateringer fra
-            NorseMan Adventures.
+            Norseman Adventures.
           </p>
         </div>
 
