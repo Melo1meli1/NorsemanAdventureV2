@@ -17,14 +17,14 @@ export function ToursListWithPagination({
     if (typeof window === "undefined") {
       return 6;
     }
-    return window.matchMedia("(max-width: 767px)").matches ? 3 : 6;
+    return window.matchMedia("(max-width: 767px)").matches ? 6 : 6;
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const handleChange = (event: MediaQueryListEvent) => {
-      setToursPerPage(event.matches ? 3 : 6);
+      setToursPerPage(event.matches ? 6 : 6);
       setCurrentPage(1);
     };
 
