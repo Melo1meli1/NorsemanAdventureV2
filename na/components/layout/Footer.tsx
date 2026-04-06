@@ -219,7 +219,7 @@ export function Footer() {
         {/* Bottom section */}
         <div className="border-border mt-8 border-t pt-6">
           <p className="text-muted-foreground text-center text-sm">
-            © 2026 NorseMan Adventures. Alle rettigheter reservert.
+            © 2026 Norseman Adventures. Alle rettigheter reservert.
           </p>
         </div>
       </div>
