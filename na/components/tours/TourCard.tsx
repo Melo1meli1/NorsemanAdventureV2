@@ -47,6 +47,7 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
+          {/* todo kan legges tilbake terreng badge
           <div className="absolute top-3 left-3 flex flex-wrap gap-2">
             {terrengLabel && (
               <span
@@ -61,9 +62,13 @@ export function TourCard({ tour, className, fromPage }: TourCardProps) {
               >
                 {terrengLabel}
               </span>
-            )}
-            <DifficultyBadge vanskelighetsgrad={tour.vanskelighetsgrad} />
-          </div>
+            )}*/}
+{/* todo vansjelighetsgrad kan legges tilbake senere
+
+           <DifficultyBadge vanskelighetsgrad={tour.vanskelighetsgrad} />
+           </div>
+*/}
+
         </div>
 
         <div className="flex flex-1 flex-col p-5">
