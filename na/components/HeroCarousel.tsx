@@ -21,18 +21,18 @@ const SLIDES: Slide[] = [
   {
     image: "/tour-summer.jpg",
     alt: "Motorsykler kjører langs norsk fjordlandskap om sommeren",
-    title: "UTFORSK NORGES\nSKJØNNHET",
-    description: "Fra fjord til fjell - opplev Norge på den beste måten",
+    title: "EKTE ENTUSIASME\nEKTE EVENTYR",
+    description: "Motorsykkelturer ledet av folk med lidenskap for veien",
     ctaLabel: "SE VÅRE TURER",
-    ctaHref: "/public/tours",
+    ctaHref: "/public/tours"
   },
   {
     image: "/kursbilde.jpg",
     alt: "Kursing i motorsykling",
     title: "KURS &\nOPPLÆRING",
-    description: "Ski, toppturer og vinteropplevelser i verdensklasse",
-    ctaLabel: "SE VÅRE TURER",
-    ctaHref: "/public/tours",
+    description: "Kurs for både nye og erfarne motorsyklister.",
+    ctaLabel: "SE VÅRE KURS",
+    ctaHref: "/public/tours" //todo sett lenke til kurs senere
   },
   {
     image: "/hero-motorcycle.jpg",
@@ -40,8 +40,8 @@ const SLIDES: Slide[] = [
     title: "OPPLEV EVENTYR\nPÅ TO HJUL",
     description: "Uforglemmelige motorsykkelturer i Norge og utlandet",
     ctaLabel: "SE VÅRE TURER",
-    ctaHref: "/public/tours",
-  },
+    ctaHref: "/public/tours"
+  }
 ];
 
 function SlideContent({ slide }: { slide: Slide }) {
@@ -62,29 +62,31 @@ function SlideContent({ slide }: { slide: Slide }) {
           "absolute inset-0 bg-linear-to-t",
           slide.image === "/winter-sports.jpg"
             ? "from-black/90 via-black/60 to-black/30"
-            : "from-black/80 via-black/40 to-black/20",
+            : "from-black/80 via-black/40 to-black/20"
         )}
       />
       <div className="absolute inset-0 flex flex-col justify-end px-6 pb-28 sm:px-12 md:px-20 lg:px-28 lg:pb-32">
         <div className="mb-40 flex flex-col">
-          <h2 className="text-primary mb-3 text-4xl leading-[1.05] font-extrabold tracking-tight whitespace-pre-line uppercase sm:text-5xl md:text-6xl lg:text-7xl">
+          <h2
+            className="text-primary mb-3 text-4xl leading-[1.05] font-extrabold tracking-tight whitespace-pre-line uppercase sm:text-5xl md:text-6xl lg:text-7xl">
             {slide.title}
           </h2>
           <p className="text-foreground/90 mb-8 max-w-xl text-base font-light italic sm:text-lg md:text-xl">
             {slide.description}
           </p>
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-col items-start gap-6 sm:flex-row sm:flex-wrap">
             <Link
               href={slide.ctaHref}
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground inline-block rounded border-2 px-10 py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
+              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground inline-flex w-full max-w-md justify-center rounded border-2 px-10 py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
             >
               {slide.ctaLabel}
             </Link>
+
             <Link
               href="/om-oss"
-              className="text-foreground hover:text-primary inline-block py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
+              className="text-foreground hover:text-primary border-primary inline-flex w-full max-w-md justify-center rounded border-2 px-10 py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
             >
-              LÆR MER OM OSS
+              HVEM ER VI
             </Link>
           </div>
         </div>
@@ -95,7 +97,7 @@ function SlideContent({ slide }: { slide: Slide }) {
 
 export function HeroCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 45 }, [
-    Autoplay({ delay: 6000, stopOnInteraction: false }),
+    Autoplay({ delay: 6000, stopOnInteraction: false })
   ]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(true);
@@ -104,7 +106,7 @@ export function HeroCarousel() {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
   const scrollTo = useCallback(
     (index: number) => emblaApi?.scrollTo(index),
-    [emblaApi],
+    [emblaApi]
   );
 
   const onSelect = useCallback(() => {
@@ -136,7 +138,7 @@ export function HeroCarousel() {
         scrollNext();
       }
     },
-    [scrollPrev, scrollNext],
+    [scrollPrev, scrollNext]
   );
 
   return (
@@ -184,7 +186,7 @@ export function HeroCarousel() {
                     "absolute inset-0 bg-linear-to-t",
                     slide.image === "/winter-sports.jpg"
                       ? "from-black/90 via-black/60 to-black/30"
-                      : "from-black/80 via-black/40 to-black/20",
+                      : "from-black/80 via-black/40 to-black/20"
                   )}
                 />
 
@@ -195,11 +197,12 @@ export function HeroCarousel() {
                     "transition-opacity duration-1000 ease-in-out",
                     selectedIndex === index && isAnimating
                       ? "opacity-100"
-                      : "opacity-0",
+                      : "opacity-0"
                   )}
                 >
                   <div className="mb-40 flex flex-col">
-                    <h2 className="text-primary mb-3 text-4xl leading-[1.05] font-extrabold tracking-tight whitespace-pre-line uppercase sm:text-5xl md:text-6xl lg:text-7xl">
+                    <h2
+                      className="text-primary mb-3 text-4xl leading-[1.05] font-extrabold tracking-tight whitespace-pre-line uppercase sm:text-5xl md:text-6xl lg:text-7xl">
                       {slide.title}
                     </h2>
                     <p className="text-foreground/90 mb-8 max-w-xl text-base font-light italic sm:text-lg md:text-xl">
@@ -216,7 +219,7 @@ export function HeroCarousel() {
                         href="/om-oss"
                         className="text-foreground hover:text-primary border-primary inline-block rounded border-2 px-10 py-4 text-lg font-bold tracking-wider uppercase transition-colors md:text-xl"
                       >
-                        LÆR MER OM OSS
+                        HVEM ER VI
                       </Link>
                     </div>
                   </div>
@@ -262,7 +265,7 @@ export function HeroCarousel() {
                 "h-2.5 rounded-full transition-all duration-300 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
                 selectedIndex === index
                   ? "bg-primary w-8"
-                  : "w-2.5 bg-white/50 hover:bg-white/80",
+                  : "w-2.5 bg-white/50 hover:bg-white/80"
               )}
             />
           ))}
