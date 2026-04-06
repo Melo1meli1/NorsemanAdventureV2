@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       <p style="white-space: pre-wrap;">${message}</p>
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
       <p style="color: #666; font-size: 12px;">
-        Sendt fra NorseMan Adventures kontaktskjema
+        Sendt fra Norseman Adventures kontaktskjema
       </p>
     `;
 
