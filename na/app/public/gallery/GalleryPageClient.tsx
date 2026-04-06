@@ -28,7 +28,7 @@ export function GalleryPageClient({ images, tours }: GalleryPageClientProps) {
         aria-labelledby="galleri-hero-heading"
       >
         <Image
-          src="/hero-motorcycle.jpg"
+          src="/grusnatur.webp"
           alt=""
           fill
           className="object-cover object-[50%_60%]"
