@@ -7,7 +7,7 @@
     "react-hook-form": "^7.71.1"
   },
   "devDependencies": {
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-plugin-react": "^7",
     "globals": "^17",
     "husky": "^9",
