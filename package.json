@@ -11,7 +11,7 @@
     "eslint-plugin-react": "^7",
     "globals": "^17",
     "husky": "^9",
-    "lint-staged": "^16",
+    "lint-staged": "^17",
     "prettier": "^3",
     "prettier-plugin-tailwindcss": "^0.7",
     "typescript-eslint": "^8"
